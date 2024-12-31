@@ -280,19 +280,27 @@ MAX_COMMAND = 0x23
 MAX_DATA_LEN = 18
 
 
-def make_packet(command: bytes, data: bytes) -> bytes:
+Packet = Tuple[int, bytes]
+
+
+def serialize_packet(packet: Packet) -> bytes:
+    """
+    Serialize a packet into bytes.
+    """
+
+    cmd, data = packet
     assert len(data) <= MAX_DATA_LEN, "Too much data"
-    packet = command + len(data).to_bytes() + data
-    crc = make_crc(packet)
+    pkt = cmd.to_bytes() + len(data).to_bytes() + data
+    crc = make_crc(pkt)
 
-    return packet + crc
-
-
-Command = int
-Packet = Tuple[Command, bytes]
+    return pkt + crc
 
 
 def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
+    """
+    Parse bytes as packets.
+    """
+
     # There must be at least 4 bytes - command, 0, "", CRC
     if len(buffer) < 4:
         return (None, buffer)

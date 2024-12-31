@@ -12,6 +12,7 @@ description = "Library for interacting with crystalfontz LCD displays"
 readme = "README.md"
 keywords = []
 license = { text = "Apache-2.0" }
+requires-python = ">=3.12"
 dependencies = [
   "appdirs",
   "pyserial",

@@ -4,19 +4,9 @@ from typing import Any, Optional
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
-from crystalfontz.packet import parse_packet
-
-
-class CrystalfontzError(Exception):
-    """An error in the Crystalfontz client."""
-
-    pass
-
-
-class ConnectionError(CrystalfontzError):
-    """A connection error."""
-
-    pass
+from crystalfontz.error import ConnectionError
+from crystalfontz.packet import serialize_packet, Packet, parse_packet
+from crystalfontz.report import Report
 
 
 class Client(asyncio.Protocol):
@@ -52,12 +42,18 @@ class Client(asyncio.Protocol):
     def data_received(self, data: bytes) -> None:
         self._buffer += data
 
-        packet, data = parse_packet(self._buffer)
-        self._buffer = data
+        packet, buff = parse_packet(self._buffer)
+        self._buffer = buff
 
-        if packet:
-            cmd, _data = packet
-            print(cmd, _data)
+        while packet:
+            self.reports.put_nowait(Report.from_packet(packet))
+            packet, buff = parse_packet(self._buffer)
+            self._buffer = buff
+
+
+    def send_packet(self, packet: Packet) -> None:
+        buff = serialize_packet(packet)
+        self._transport.write(buff)
 
     def ping(self) -> None:
         raise NotImplementedError("ping")
