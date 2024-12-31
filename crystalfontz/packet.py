@@ -277,7 +277,6 @@ MAX_COMMAND = 0xFF
 # TODO: Specific to my LCD
 MAX_DATA_LEN = 18
 
-print("max cmd:", MAX_COMMAND)
 Packet = Tuple[int, bytes]
 
 
