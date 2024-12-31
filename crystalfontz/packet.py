@@ -326,12 +326,13 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     print("crc", crc)
     print("rest", rest)
 
-    expected = make_crc(buffer[0 : length + 2])
+    try:
+        expected = make_crc(buffer[0 : length + 2])
 
-    if crc == expected:
-        return ((cmd, data), rest)
-    else:
-        print("crc unexpected!")
+        if crc == expected:
+            return ((cmd, data), rest)
+    except Exception as exc:
+        print(exc)
 
     # Garbage crc - throw out the byte and try again
     return parse_packet(buffer[1:])
