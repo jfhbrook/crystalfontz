@@ -14,7 +14,6 @@ default:
 
 _venv:
   if [ ! -d .venv ]; then uv venv; fi
-  uv pip install --upgrade pip
 
 _clean-venv:
   rm -rf .venv

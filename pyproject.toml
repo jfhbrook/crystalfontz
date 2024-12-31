@@ -13,7 +13,10 @@ readme = "README.md"
 keywords = []
 license = { text = "Apache-2.0" }
 dependencies = [
-
+  "appdirs",
+  "pyserial",
+  "pyserial-asyncio",
+  "pyyaml",
 ]
 
 
