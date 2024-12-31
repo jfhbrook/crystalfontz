@@ -1,9 +1,5 @@
-import asyncio
 from enum import Enum
-from typing import Dict, List, Self, Type
-
-from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
-from serial_asyncio import create_serial_connection, SerialTransport
+from typing import List
 
 
 class KeyActivity(Enum):

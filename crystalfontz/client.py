@@ -1,8 +1,10 @@
 import asyncio
-from typing import Optional
+from typing import Any, Optional
 
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
+
+from crystalfontz.packet import parse_packet
 
 
 class CrystalfontzError(Exception):
@@ -27,6 +29,7 @@ class Client(asyncio.Protocol):
         self._buffer: bytes = b""
         self._loop: asyncio.AbstractEventLoop = _loop
         self._connection_made: asyncio.Future[None] = self._loop.create_future()
+        self.reports: asyncio.Queue[Any] = asyncio.Queue()
 
     def connection_made(self, transport) -> None:
         self.transport = transport
@@ -46,11 +49,15 @@ class Client(asyncio.Protocol):
             raise ConnectionError("Can not close uninitialized connection")
         self._transport.close()
 
-    def data_received(self, data: bytes):
-        # TODO: buffer
-        # TODO: check if received full packet
-        # TODO: unpack status
-        pass
+    def data_received(self, data: bytes) -> None:
+        self._buffer += data
+
+        packet, data = parse_packet(self._buffer)
+        self._buffer = data
+
+        if packet:
+            cmd, _data = packet
+            print(cmd, _data)
 
     def ping(self) -> None:
         raise NotImplementedError("ping")

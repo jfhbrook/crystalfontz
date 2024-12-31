@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-This is the documentation for crystalfontz.
-"""
+from typing import Optional, Tuple
 
 # See: https://github.com/crystalfontz/cfa_linux_examples/blob/master/include/cf_packet.c
 CRC_TABLE = [
@@ -277,6 +275,7 @@ def make_crc(packet: bytes, seed: int = 0xFFFF) -> bytes:
     return crc.to_bytes()[:2]
 
 
+MAX_COMMAND = 0x23
 # TODO: Specific to my LCD
 MAX_DATA_LEN = 18
 
@@ -287,3 +286,39 @@ def make_packet(command: bytes, data: bytes) -> bytes:
     crc = make_crc(packet)
 
     return packet + crc
+
+
+Command = int
+Packet = Tuple[Command, bytes]
+
+
+def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
+    # There must be at least 4 bytes - command, 0, "", CRC
+    if len(buffer) < 4:
+        return (None, buffer)
+
+    cmd = buffer[0]
+    length = buffer[1]
+
+    # When a byte looks like garbage, shift it off and try again
+    if cmd > MAX_COMMAND or cmd < 0:
+        return parse_packet(buffer[1:])
+
+    if length > MAX_DATA_LEN or length < 0:
+        return parse_packet(buffer[1:])
+
+    # Given a length, the buffer should have that many bytes, plus the two for
+    # command and length respectively, plus a 16 bit CRC. If we don't have
+    # that, the packet must be incomplete.
+    if len(buffer) < (length + 4):
+        return (None, buffer)
+
+    data = buffer[3 : length + 2]
+    crc = buffer[length + 2 : length + 4]
+    rest = buffer[length + 4 :]
+
+    if crc == make_crc(buffer[0 : length + 2]):
+        return ((cmd, data), rest)
+
+    # Garbage crc - throw out the byte and try again
+    return parse_packet(buffer[1:])
