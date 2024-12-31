@@ -1,0 +1,10 @@
+name: crystalfontz
+channels:
+  - conda-forge
+  - default
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+    - -r requirements_dev.txt
+    - -e .
