@@ -20,7 +20,7 @@ class Client(asyncio.Protocol):
         self._buffer: bytes = b""
         self._loop: asyncio.AbstractEventLoop = _loop
         self._connection_made: asyncio.Future[None] = self._loop.create_future()
-        self.reports: asyncio.Queue[Any] = asyncio.Queue()
+        self.reports: asyncio.Queue[Report] = asyncio.Queue()
 
     def connection_made(self, transport) -> None:
         self.transport = transport
