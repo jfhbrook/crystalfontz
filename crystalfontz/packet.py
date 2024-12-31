@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import struct
 from typing import Optional, Tuple
 
 # See: https://github.com/crystalfontz/cfa_linux_examples/blob/master/include/cf_packet.c
@@ -264,15 +265,13 @@ CRC_TABLE = [
 
 
 def make_crc(packet: bytes, seed: int = 0xFFFF) -> bytes:
-    length = len(packet)
     crc: int = seed
-    i = 0
-    while length > 0:
-        crc = (crc << 8) ^ CRC_TABLE[crc ^ packet[i] & 0xFF]
-        i += 1
-        length -= 1
 
-    return crc.to_bytes()[:2]
+    for i in range(len(packet)):
+        crc = (crc << 8) ^ CRC_TABLE[(crc ^ packet[i]) & 0xFF]
+        crc = crc & 0xFF
+
+    return struct.pack(">H", crc)
 
 
 MAX_COMMAND = 0x23
@@ -301,6 +300,8 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     Parse bytes as packets.
     """
 
+    print("buffer:", buffer)
+
     # There must be at least 4 bytes - command, 0, "", CRC
     if len(buffer) < 4:
         return (None, buffer)
@@ -325,8 +326,12 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     crc = buffer[length + 2 : length + 4]
     rest = buffer[length + 4 :]
 
-    if crc == make_crc(buffer[0 : length + 2]):
+    expected = make_crc(buffer[0 : length + 2])
+    print(list(crc), "==", list(expected))
+    if crc == expected:
         return ((cmd, data), rest)
+    else:
+        print("crc unexpected!")
 
     # Garbage crc - throw out the byte and try again
     return parse_packet(buffer[1:])
