@@ -322,6 +322,10 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     crc = buffer[length + 2 : length + 4]
     rest = buffer[length + 4 :]
 
+    print("data", data)
+    print("crc", crc)
+    print("rest", rest)
+
     expected = make_crc(buffer[0 : length + 2])
 
     if crc == expected:

@@ -44,11 +44,13 @@ class Client(asyncio.Protocol):
         self._buffer += data
 
         packet, buff = parse_packet(self._buffer)
+        print(packet, buff)
         self._buffer = buff
 
         while packet:
             self.reports.put_nowait(Report.from_packet(packet))
             packet, buff = parse_packet(self._buffer)
+            print(packet, buff)
             self._buffer = buff
 
     def send_command(self, command: Command) -> None:
