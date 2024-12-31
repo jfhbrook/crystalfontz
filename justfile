@@ -21,7 +21,7 @@ _clean-venv:
 # Install all dependencies
 install:
   @just _venv
-  uv sync
+  uv sync --dev
   uv pip install -e .
 
 # Update all dependencies
