@@ -270,7 +270,11 @@ def make_crc(packet: bytes, seed: int = 0xFFFF) -> bytes:
     for i in range(len(packet)):
         crc = (crc >> 8) ^ CRC_TABLE[(crc ^ packet[i]) & 0xFF]
 
-    return struct.pack("<h", ~crc)
+    crc = ~crc
+    if crc < 0:
+        crc = crc + 0x10000
+
+    return struct.pack("<H", crc)
 
 
 MAX_COMMAND = 0xFF
