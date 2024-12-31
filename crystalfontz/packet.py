@@ -274,11 +274,11 @@ def make_crc(packet: bytes, seed: int = 0xFFFF) -> bytes:
     return struct.pack(">H", crc)
 
 
-MAX_COMMAND = 0x23
+MAX_COMMAND = 0xFF
 # TODO: Specific to my LCD
 MAX_DATA_LEN = 18
 
-
+print("max cmd:", MAX_COMMAND)
 Packet = Tuple[int, bytes]
 
 
@@ -300,8 +300,6 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     Parse bytes as packets.
     """
 
-    print("buffer:", buffer)
-
     # There must be at least 4 bytes - command, 0, "", CRC
     if len(buffer) < 4:
         return (None, buffer)
@@ -322,12 +320,25 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     if len(buffer) < (length + 4):
         return (None, buffer)
 
-    data = buffer[3 : length + 2]
+    print("buffer:", buffer)
+    print("len(buffer):", len(buffer))
+
+    print("cmd", cmd)
+    print("length", length)
+    print("(expected length 1)")
+
+    data = buffer[2 : length + 2]
     crc = buffer[length + 2 : length + 4]
     rest = buffer[length + 4 :]
 
+    print("data", data)
+    print("crc", crc)
+    print("rest", rest)
+
     expected = make_crc(buffer[0 : length + 2])
-    print(list(crc), "==", list(expected))
+    print("expected", expected)
+
+    raise Exception("lol")
     if crc == expected:
         return ((cmd, data), rest)
     else:

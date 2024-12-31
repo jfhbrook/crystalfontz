@@ -1,0 +1,9 @@
+buffer: b'\x80\x01\x04\xdc\x95'
+len(buffer): 5
+cmd 128
+length 1
+(expected length 1)
+data b'\x04'
+crc b'\xdc\x95'
+rest b''
+expected b'\x00Z'
