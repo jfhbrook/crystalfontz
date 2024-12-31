@@ -2,6 +2,9 @@
 
 import struct
 from typing import Optional, Tuple
+import warnings
+
+from crystalfontz.error import CrcError
 
 # See: https://github.com/crystalfontz/cfa_linux_examples/blob/master/include/cf_packet.c
 CRC_TABLE = [
@@ -267,14 +270,17 @@ CRC_TABLE = [
 def make_crc(packet: bytes, seed: int = 0xFFFF) -> bytes:
     crc: int = seed
 
-    for i in range(len(packet)):
-        crc = (crc >> 8) ^ CRC_TABLE[(crc ^ packet[i]) & 0xFF]
+    try:
+        for i in range(len(packet)):
+            crc = (crc >> 8) ^ CRC_TABLE[(crc ^ packet[i]) & 0xFF]
 
-    crc = ~crc
-    if crc < 0:
-        crc = crc + 0x10000
+        crc = ~crc
+        if crc < 0:
+            crc = crc + 0x10000
 
-    return struct.pack("<H", crc)
+        return struct.pack("<H", crc)
+    except Exception as exc:
+        raise CrcError(f"Error while calculating crc: {exc}")
 
 
 MAX_COMMAND = 0xFF
@@ -302,6 +308,10 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     Parse bytes as packets.
     """
 
+    def synchronize(message: str) -> Tuple[Optional[Packet], bytes]:
+        warnings.warn(message)
+        return parse_packet(buffer[1:])
+
     # There must be at least 4 bytes - command, 0, "", CRC
     if len(buffer) < 4:
         return (None, buffer)
@@ -310,11 +320,11 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     length = buffer[1]
 
     # When a byte looks like garbage, shift it off and try again
-    if cmd > MAX_COMMAND or cmd < 0:
-        return parse_packet(buffer[1:])
+    if cmd > MAX_COMMAND:
+        return synchronize(f"Unexpected command: {cmd}")
 
-    if length > MAX_DATA_LEN or length < 0:
-        return parse_packet(buffer[1:])
+    if length > MAX_DATA_LEN:
+        return synchronize(f"Message length {length} > {MAX_DATA_LEN}")
 
     # Given a length, the buffer should have that many bytes, plus the two for
     # command and length respectively, plus a 16 bit CRC. If we don't have
@@ -326,17 +336,13 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     crc = buffer[length + 2 : length + 4]
     rest = buffer[length + 4 :]
 
-    print("data", data)
-    print("crc", crc)
-    print("rest", rest)
-
     try:
         expected = make_crc(buffer[0 : length + 2])
 
         if crc == expected:
             return ((cmd, data), rest)
-    except Exception as exc:
-        print(exc)
+    except CrcError as exc:
+        return synchronize(str(exc))
 
     # Garbage crc - throw out the byte and try again
-    return parse_packet(buffer[1:])
+    return synchronize(f"Invalid CRC: {crc}")

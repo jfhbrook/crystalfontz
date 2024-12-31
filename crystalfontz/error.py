@@ -14,6 +14,14 @@ class ConnectionError(CrystalfontzError):
     pass
 
 
+class CrcError(CrystalfontzError):
+    """
+    An error while generating a CRC.
+    """
+
+    pass
+
+
 class ParseError(CrystalfontzError):
     """
     An error while parsing incoming data.
