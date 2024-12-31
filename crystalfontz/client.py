@@ -4,8 +4,9 @@ from typing import Any, Optional
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
+from crystalfontz.command import Command
 from crystalfontz.error import ConnectionError
-from crystalfontz.packet import serialize_packet, Packet, parse_packet
+from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import Report
 
 
@@ -50,6 +51,8 @@ class Client(asyncio.Protocol):
             packet, buff = parse_packet(self._buffer)
             self._buffer = buff
 
+    def send_command(self, command: Command) -> None:
+        self.send_packet(command.to_packet())
 
     def send_packet(self, packet: Packet) -> None:
         buff = serialize_packet(packet)

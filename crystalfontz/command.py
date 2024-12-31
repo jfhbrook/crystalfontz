@@ -1,41 +1,216 @@
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Self, Type
 
+from crystalfontz.packet import Packet
 
-class Command(Enum):
-    PING = 0x00
-    GET_VERSIONS = 0x01
-    WRITE_USER_FLASH = 0x02
-    READ_USER_FLASH = 0x03
-    STORE_BOOT_STATE = 0x04
-    POWER_CMD = 0x05
-    CLEAR = 0x06
-    SET_L1 = 0x07
-    SET_L2 = 0x08
-    SET_SPECIAL = 0x09
-    POKE = 0x0A
-    SET_CURSOR_POS = 0x0B
-    SET_CURSOR_STYLE = 0x0C
-    SET_CONTRAST = 0x0D
-    SET_BACKLIGHT = 0x0E
-    # 0x0F-0x11 are reserved
-    READ_DOW_INFO = 0x12
-    SETUP_TEMP_REPORT = 0x13
-    DOW_TXN = 0x14
-    SETUP_TEMP_DISPLAY = 0x15
-    RAW_CMD = 0x16
-    CONFIG_KEY_REPORT = 0x17
-    POLL_KEYPAD = 0x18
-    # 0x19-0x1B are reserved
-    SET_ATX_SWITCH = 0x1C
-    CONFIG_WATCHDOG = 0x1D
-    READ_STATUS = 0x1E
-    SEND_DATA = 0x1F
-    # 0x20 is reserved for CFA631 key legends
-    SET_BAUD = 0x21
-    CONFIG_GPIO = 0x22
-    READ_GPIO = 0x23
 
-    @classmethod
-    def to_bytes(cls: Type[Self], cmd: Self) -> bytes:
-        return cmd.value.to_bytes()
+class Command(ABC):
+    @abstractmethod
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class Ping(Command):
+    command: int = 0x00
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class Versions(Command):
+    command: int = 0x01
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class WriteUserFlash(Command):
+    command: int = 0x02
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class ReadUserFlash(Command):
+    command: int = 0x03
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class PowerCommand(Command):
+    command: int = 0x05
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class ClearScreen(Command):
+    command: int = 0x06
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SetLine1(Command):
+    command: int = 0x07
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SetLine2(Command):
+    command: int = 0x08
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SetSpecialCharacterData(Command):
+    command: int = 0x09
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class Poke(Command):
+    command: int = 0x0A
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SetCursorPosition(Command):
+    command: int = 0x0B
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SetCursorStyle(Command):
+    command: int = 0x0C
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SetContrast(Command):
+    command: int = 0x0  #
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SetBacklight(Command):
+    command: int = 0x0E
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+# 0x0F-0x11 are reserved
+
+
+class ReadDowInfo(Command):
+    command: int = 0x12
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SetupTemperatureReport(Command):
+    command: int = 0x13
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class DowTransaction(Command):
+    command: int = 0x14
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SetupTemperatureDisplay(Command):
+    command: int = 0x15
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class RawCommand(Command):
+    command: int = 0x16
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class ConfigKeyReport(Command):
+    command: int = 0x17
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class PollKeypad(Command):
+    command: int = 0x18
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+# 0x19-0x1B are reserved
+
+
+class SetAtxPower(Command):
+    command: int = 0x1C
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class ConfigWatchdog(Command):
+    command: int = 0x1D
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class ReadStatus(Command):
+    command: int = 0x1E
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class SendData(Command):
+    command: int = 0x1F
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+# 0x20 is reserved for CFA631 key legends
+
+
+class SetBaud(Command):
+    command: int = 0x21
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class ConfigGpio(Command):
+    command: int = 0x22
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
+
+
+class ReadGpio(Command):
+    command: int = 0x23
+
+    def to_packet(self) -> Packet:
+        raise NotImplementedError("to_packet")
