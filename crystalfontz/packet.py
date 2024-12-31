@@ -268,10 +268,9 @@ def make_crc(packet: bytes, seed: int = 0xFFFF) -> bytes:
     crc: int = seed
 
     for i in range(len(packet)):
-        crc = (crc << 8) ^ CRC_TABLE[(crc ^ packet[i]) & 0xFF]
-        crc = crc & 0xFF
+        crc = (crc >> 8) ^ CRC_TABLE[(crc ^ packet[i]) & 0xFF]
 
-    return struct.pack(">H", crc)
+    return struct.pack("<h", ~crc)
 
 
 MAX_COMMAND = 0xFF
@@ -320,25 +319,12 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     if len(buffer) < (length + 4):
         return (None, buffer)
 
-    print("buffer:", buffer)
-    print("len(buffer):", len(buffer))
-
-    print("cmd", cmd)
-    print("length", length)
-    print("(expected length 1)")
-
     data = buffer[2 : length + 2]
     crc = buffer[length + 2 : length + 4]
     rest = buffer[length + 4 :]
 
-    print("data", data)
-    print("crc", crc)
-    print("rest", rest)
-
     expected = make_crc(buffer[0 : length + 2])
-    print("expected", expected)
 
-    raise Exception("lol")
     if crc == expected:
         return ((cmd, data), rest)
     else:
