@@ -2,7 +2,12 @@
 
 ## High Priority
 
-- [ ] Tests for character encoding
+- [ ] Test that client still works for button presses
+- [ ] Manually test ping/pong
+- [ ] Manually test versions
+- [ ] Manually test writing L1/L2
+- [ ] Write character table abstraction
+- [ ] Write device abstraction
 
 ## Commands
 
@@ -12,17 +17,19 @@
 - [-] get versions
 - [-] set line 1, set line 2
   - [-] encode characters based on CGROM
-- clear screen
-- set contrast
-- set backlight
-- set cursor style
-- set cursor position
-- poll keypad
-- reboot, reset or power off
-- store boot state
-- poke
 - [ ] read status
+  - [-] report status type
+  - [ ] report command type
   - note, device and firmware specific
+- [ ] clear screen
+- [ ] set contrast
+- [ ] set backlight
+- [ ] set cursor style
+- [ ] set cursor position
+- [ ] poll keypad
+- [ ] reboot, reset or power off
+- [ ] store boot state
+- [ ] poke
 
 ### Long Tail
 
@@ -39,7 +46,6 @@
 - set gpio
 - read gpio
 
-## Other
+## Long Tail
 
-- Encode characters based on ROM
-- Retry a few times if packet if fails to respond within 250ms
+- [ ] Retry a few times if packet if fails to respond within 250ms
