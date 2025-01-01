@@ -13,10 +13,9 @@
 
 ### The Basics
 
-- [-] ping
-- [-] get versions
+- [x] ping
+- [x] get versions
 - [-] set line 1, set line 2
-  - [-] encode characters based on CGROM
 - [ ] read status
   - [-] report status type
   - [ ] report command type

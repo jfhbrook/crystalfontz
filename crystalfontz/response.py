@@ -72,6 +72,20 @@ class Status(Response):
         backlight = data[14]
 
 
+class SetLine1Response(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        if len(data) != 0:
+            raise ParseError("Response expected to be 0 bytes, is {len(data)} bytes")
+        pass
+
+
+class SetLine2Response(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        if len(data) != 0:
+            raise ParseError("Response expected to be 0 bytes, is {len(data)} bytes")
+        pass
+
+
 class KeyActivityReport(Response):
     """
     A key activity report from the Crystalfontz LCD.
@@ -116,6 +130,8 @@ class TemperatureReport(Response):
 RESPONSE_CLASSES: Dict[int, Type[Response]] = {
     0x40: Pong,
     0x41: Versions,
+    0x47: SetLine1Response,
+    0x48: SetLine2Response,
     0x5E: Status,
     0x80: KeyActivityReport,
     0x82: TemperatureReport,

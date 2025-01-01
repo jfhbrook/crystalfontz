@@ -8,7 +8,13 @@ from serial_asyncio import create_serial_connection, SerialTransport
 from crystalfontz.command import Command, GetVersions, Ping, SetLine1, SetLine2
 from crystalfontz.error import ConnectionError
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
-from crystalfontz.response import Pong, Response, Versions
+from crystalfontz.response import (
+    Pong,
+    Response,
+    SetLine1Response,
+    SetLine2Response,
+    Versions,
+)
 
 R = TypeVar("R", bound=Response)
 
@@ -111,11 +117,13 @@ class Client(asyncio.Protocol):
     def clear(self) -> None:
         raise NotImplementedError("clear")
 
-    def set_l1(self, line: str) -> None:
-        raise NotImplementedError("set_l1")
+    async def set_line_1(self, line: str) -> SetLine1Response:
+        self.send_command(SetLine1(line))
+        return await self.expect(SetLine1Response)
 
-    def set_l2(self, line: str) -> None:
-        raise NotImplementedError("set_l2")
+    async def set_line_2(self, line: str) -> SetLine2Response:
+        self.send_command(SetLine2(line))
+        return await self.expect(SetLine2Response)
 
     def set_special_char_data(self) -> None:
         raise NotImplementedError("set_special_char_data")
