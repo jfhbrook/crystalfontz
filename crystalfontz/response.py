@@ -22,7 +22,7 @@ class Response(ABC):
         if code in RESPONSE_CLASSES:
             return RESPONSE_CLASSES[code](data)
 
-        raise ParseError(f"Unknown report code {code}")
+        raise ParseError(f"Unknown response ({code}, {data})")
 
 
 class Pong(Response):

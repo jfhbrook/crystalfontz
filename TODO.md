@@ -1,5 +1,11 @@
 # TODO
 
+b'\x07\x05Hello\xb4\xc4'
+
+crystalfontz.error.ParseError: Unknown response (199, b'')
+
+
+
 ## High Priority
 
 - [x] Test that client still works for button presses
