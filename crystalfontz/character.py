@@ -1,4 +1,3 @@
-import codecs
 from typing import Dict, Tuple
 
 from crystalfontz.error import EncodeError
@@ -59,7 +58,7 @@ for row in CGROM.split("\n")[1:-1]:
     i += 1
 
 
-def encode(input: str, errors="strict") -> Tuple[bytes, int]:
+def encode_chars(input: str, errors="strict") -> Tuple[bytes, int]:
     output: bytes = b""
     i = 0
     while i < len(input):
@@ -83,11 +82,3 @@ def encode(input: str, errors="strict") -> Tuple[bytes, int]:
         i += 1
 
     return output, len(output)
-
-
-def decode(input: bytes, errors="strict") -> Tuple[str, int]:
-    decoded = codecs.decode(input, encoding="ascii", errors=errors)
-    return decoded, len(decoded)
-
-
-codec: codecs.CodecInfo = codecs.CodecInfo(encode, decode, name="CrystalFontz")
