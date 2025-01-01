@@ -4,10 +4,10 @@ from typing import Any, Optional
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
-from crystalfontz.command import Command
+from crystalfontz.command import Command, GetVersions, Ping, SetLine1, SetLine2
 from crystalfontz.error import ConnectionError
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
-from crystalfontz.report import Report
+from crystalfontz.response import Pong, Response, Versions
 
 
 class Client(asyncio.Protocol):
@@ -20,7 +20,7 @@ class Client(asyncio.Protocol):
         self._buffer: bytes = b""
         self._loop: asyncio.AbstractEventLoop = _loop
         self._connection_made: asyncio.Future[None] = self._loop.create_future()
-        self.reports: asyncio.Queue[Report] = asyncio.Queue()
+        self.reports: asyncio.Queue[Response] = asyncio.Queue()
 
     def connection_made(self, transport) -> None:
         self.transport = transport
@@ -47,7 +47,7 @@ class Client(asyncio.Protocol):
         self._buffer = buff
 
         while packet:
-            self.reports.put_nowait(Report.from_packet(packet))
+            self.reports.put_nowait(Response.from_packet(packet))
             packet, buff = parse_packet(self._buffer)
             self._buffer = buff
 

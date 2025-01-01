@@ -30,6 +30,14 @@ class ParseError(CrystalfontzError):
     pass
 
 
+class EncodeError(CrystalfontzError):
+    """
+    An error while encoding text.
+    """
+
+    pass
+
+
 class SerializationError(CrystalfontzError):
     """
     An error while serializing data.

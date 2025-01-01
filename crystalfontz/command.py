@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Self, Type
 
+from crystalfontz.codec import codec
+from crystalfontz.error import SerializationError
 from crystalfontz.packet import Packet
 
 
@@ -14,15 +14,20 @@ class Command(ABC):
 class Ping(Command):
     command: int = 0x00
 
+    def __init__(self, payload: bytes) -> None:
+        if len(payload) > 16:
+            raise SerializationError(f"Payload length {len(payload)} > 16")
+        self.payload: bytes = payload
+
     def to_packet(self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.payload)
 
 
-class Versions(Command):
+class GetVersions(Command):
     command: int = 0x01
 
     def to_packet(self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, b"")
 
 
 class WriteUserFlash(Command):
@@ -56,15 +61,23 @@ class ClearScreen(Command):
 class SetLine1(Command):
     command: int = 0x07
 
+    def __init__(self, line: str) -> None:
+        buffer, _ = codec.encode(line)
+        self.line = buffer
+
     def to_packet(self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.line)
 
 
 class SetLine2(Command):
     command: int = 0x08
 
+    def __init__(self, line: str) -> None:
+        buffer, _ = codec.encode(line)
+        self.line = buffer
+
     def to_packet(self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.line)
 
 
 class SetSpecialCharacterData(Command):
