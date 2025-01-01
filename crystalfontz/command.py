@@ -64,7 +64,7 @@ class SetLine1(Command):
     def __init__(self, line: str) -> None:
         buffer = encode_chars(line)
         # TODO: This "16" is device specific
-        self.line = buffer.rjust(16, b" ")
+        self.line = buffer.ljust(16, b" ")
 
     def to_packet(self) -> Packet:
         return (self.command, self.line)
@@ -75,7 +75,7 @@ class SetLine2(Command):
 
     def __init__(self, line: str) -> None:
         buffer = encode_chars(line)
-        self.line = buffer.rjust(16, b" ")
+        self.line = buffer.ljust(16, b" ")
 
     def to_packet(self) -> Packet:
         return (self.command, self.line)

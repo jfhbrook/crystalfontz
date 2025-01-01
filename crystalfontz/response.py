@@ -76,7 +76,6 @@ class SetLine1Response(Response):
     def __init__(self: Self, data: bytes) -> None:
         if len(data) != 0:
             raise ParseError("Response expected to be 0 bytes, is {len(data)} bytes")
-        pass
 
 
 class SetLine2Response(Response):
