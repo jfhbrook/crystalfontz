@@ -26,12 +26,15 @@ class Response(ABC):
 
 
 class Pong(Response):
-    def __init__(self, data: bytes) -> None:
+    def __init__(self: Self, data: bytes) -> None:
         self.response = data
+
+    def __str__(self: Self) -> str:
+        return f"Pong({self.response})"
 
 
 class Versions(Response):
-    def __init__(self, data: bytes) -> None:
+    def __init__(self: Self, data: bytes) -> None:
         decoded = data.decode("ascii")
         model, versions = decoded.split(":")
         hw_rev, fw_rev = versions.split(",")
@@ -40,10 +43,16 @@ class Versions(Response):
         self.hardware_rev: str = hw_rev.strip()
         self.firmware_rev: str = fw_rev.strip()
 
+    def __str__(self: Self) -> str:
+        return (
+            f"Versions(model={self.model}, hardware_rev={self.hardware_rev}, "
+            f"firmware_rev={self.firmware_rev})"
+        )
+
 
 class Status(Response):
     # TODO: Device AND firmware specific
-    def __init__(self, data: bytes) -> None:
+    def __init__(self: Self, data: bytes) -> None:
         if len(data) != 15:
             raise ParseError(f"Status expected to be 15 bytes, is {len(data)} bytes")
         # data[0] is reserved
@@ -70,10 +79,10 @@ class KeyActivityReport(Response):
     Status: Untested
     """
 
-    def __init__(self, data: bytes) -> None:
+    def __init__(self: Self, data: bytes) -> None:
         self.activity: KeyActivity = KeyActivity.from_bytes(data)
 
-    def __str__(self) -> str:
+    def __str__(self: Self) -> str:
         return f"KeyActivityReport({self.activity.name})"
 
 
@@ -84,10 +93,10 @@ class TemperatureReport(Response):
     Status: Untested
     """
 
-    def __init__(self, data: bytes) -> None:
+    def __init__(self: Self, data: bytes) -> None:
         if len(data) != 4:
             raise ParseError("Temperature report expects 4 bytes of data")
-        self.sensor_idx: int = data[0]
+        self.idx: int = data[0]
         value = struct.unpack(">H", data[1:2])[0]
         dow_crc_status = data[3]
 
@@ -96,6 +105,12 @@ class TemperatureReport(Response):
 
         self.celsius: float = value / 16.0
         self.fahrenheit: float = (9 / 5 * self.celsius) + 32.0
+
+    def __str__(self: Self) -> str:
+        return (
+            f"TemperatureReport({self.idx}, celsius={self.celsius}, "
+            f"fahrenheit={self.fahrenheit})"
+        )
 
 
 RESPONSE_CLASSES: Dict[int, Type[Response]] = {

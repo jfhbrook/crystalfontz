@@ -2,7 +2,7 @@
 
 ## High Priority
 
-- [ ] Test that client still works for button presses
+- [x] Test that client still works for button presses
 - [ ] Manually test ping/pong
 - [ ] Manually test versions
 - [ ] Manually test writing L1/L2

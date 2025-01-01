@@ -6,10 +6,10 @@ from crystalfontz.response import KeyActivityReport
 async def main() -> None:
     client = await create_connection("/dev/ttyUSB0")
 
-    reports = client.subscribe(KeyActivityReport)
+    pong = await client.ping(b"ping!")
+    
+    print(pong)
 
-    while True:
-        print(await reports.get())
 
 
 asyncio.run(main())
