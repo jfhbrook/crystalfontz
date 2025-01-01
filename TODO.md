@@ -3,8 +3,8 @@
 ## High Priority
 
 - [x] Test that client still works for button presses
-- [ ] Manually test ping/pong
-- [ ] Manually test versions
+- [x] Manually test ping/pong
+- [x] Manually test versions
 - [ ] Manually test writing L1/L2
 - [ ] Write character table abstraction
 - [ ] Write device abstraction

@@ -7,9 +7,12 @@ async def main() -> None:
     client = await create_connection("/dev/ttyUSB0")
 
     pong = await client.ping(b"ping!")
-    
+
     print(pong)
 
+    versions = await client.versions()
+
+    print(versions)
 
 
 asyncio.run(main())
