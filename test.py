@@ -1,14 +1,15 @@
 import asyncio
 
 from crystalfontz.client import create_connection
+from crystalfontz.response import KeyActivityReport
 
 async def main() -> None:
     client = await create_connection("/dev/ttyUSB0")
 
-    for i in range(10):
-        print(await client.reports.get())
+    reports = client.subscribe(KeyActivityReport)
 
-    client.close()
+    while True:
+        print(await reports.get())
 
 
 asyncio.run(main())

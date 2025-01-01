@@ -1,5 +1,6 @@
 import asyncio
-from typing import Any, Optional
+from collections import defaultdict
+from typing import cast, Dict, List, Optional, Type, TypeVar
 
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
@@ -8,6 +9,8 @@ from crystalfontz.command import Command, GetVersions, Ping, SetLine1, SetLine2
 from crystalfontz.error import ConnectionError
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.response import Pong, Response, Versions
+
+R = TypeVar("R", bound=Response)
 
 
 class Client(asyncio.Protocol):
@@ -20,7 +23,10 @@ class Client(asyncio.Protocol):
         self._buffer: bytes = b""
         self._loop: asyncio.AbstractEventLoop = _loop
         self._connection_made: asyncio.Future[None] = self._loop.create_future()
-        self.reports: asyncio.Queue[Response] = asyncio.Queue()
+        self._expect: Optional[Type[Response]] = None
+        self._queues: Dict[Type[Response], List[asyncio.Queue[Response]]] = defaultdict(
+            lambda: list()
+        )
 
     def connection_made(self, transport) -> None:
         self.transport = transport
@@ -47,9 +53,33 @@ class Client(asyncio.Protocol):
         self._buffer = buff
 
         while packet:
-            self.reports.put_nowait(Response.from_packet(packet))
+            self._packet_received(packet)
             packet, buff = parse_packet(self._buffer)
             self._buffer = buff
+
+    def _packet_received(self, packet: Packet) -> None:
+        res = Response.from_packet(packet)
+        if type(res) in self._queues:
+            for q in self._queues[type(res)]:
+                q.put_nowait(res)
+
+    def subscribe[R](self, cls: Type[R]) -> asyncio.Queue[R]:
+        q: asyncio.Queue[R] = asyncio.Queue()
+        self._queues[cast(Type[Response], cls)].append(cast(asyncio.Queue[Response], q))
+        return q
+
+    def unsubscribe[R](self, cls: Type[R], q: asyncio.Queue[R]) -> None:
+        key = cast(Type[Response], cls)
+        self._queues[key] = cast(
+            List[asyncio.Queue[Response]],
+            [q_ for q_ in self._queues[key] if q_ != cast(asyncio.Queue[Response], q)],
+        )
+
+    async def expect[R](self, cls: Type[R]) -> R:
+        q = self.subscribe(cls)
+        res = await q.get()
+        self.unsubscribe(cls, q)
+        return res
 
     def send_command(self, command: Command) -> None:
         self.send_packet(command.to_packet())
@@ -58,11 +88,13 @@ class Client(asyncio.Protocol):
         buff = serialize_packet(packet)
         self._transport.write(buff)
 
-    def ping(self) -> None:
-        raise NotImplementedError("ping")
+    async def ping(self, payload: bytes) -> Pong:
+        self.send_command(Ping(payload))
+        return await self.expect(Pong)
 
-    def versions(self) -> str:
-        raise NotImplementedError("versions")
+    async def versions(self) -> Versions:
+        self.send_command(GetVersions())
+        return await self.expect(Versions)
 
     def write_user_flash(self) -> None:
         raise NotImplementedError("write_user_flash")
