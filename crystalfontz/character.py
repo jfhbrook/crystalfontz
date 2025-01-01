@@ -15,12 +15,20 @@ from crystalfontz.error import EncodeError
 # There is also exactly one character, a ^-1 character (inverse), that doesn't
 # have a single unicode character. That character is special cased in the serializer.
 #
-# TODO: This ROM might also be device specific.
+# TODO: This ROM might be device specific.
 #
 
-# ^{-1}
-inv = "\u207b\u00B9"
+# Unicode to represent _^{-1}, ie an inverse
+super_minus = "\u207b"
+super_one = "\u00B9"
+inv = f"{super_minus}{super_one}"
+
+# I marked this character as a horizontal bar, but it may be intended as a
+# katakana character
 hbar = "―"
+block = "█"
+
+# Known Japanese punctuation
 japan_interpunct = "・"
 japan_lquote = "「"
 japan_rquote = "」"
@@ -46,39 +54,39 @@ CGROM = """
  /?O_o←  ツソ_°ö█
 """
 
-ENCODE_TABLE: Dict[str, int] = dict()
+ENCODE_TABLE: Dict[str, bytes] = dict()
 
 i = 0
 
 for row in CGROM.split("\n")[1:-1]:
     j = 0
     for char in row:
-        ENCODE_TABLE[char] = j * 16 + i
+        if char != "_":
+            ENCODE_TABLE[char] = (j * 16 + i).to_bytes()
         j += 1
     i += 1
 
+ENCODE_TABLE[inv] = (244 + 9).to_bytes()
 
-def encode_chars(input: str, errors="strict") -> Tuple[bytes, int]:
+
+def encode_chars(input: str, errors="strict") -> bytes:
     output: bytes = b""
     i = 0
     while i < len(input):
         char = input[i]
-        # Special case
-        if char == "_":
-            if errors == "strict":
-                raise EncodeError(f"Unknown character {char}")
-        elif char in ENCODE_TABLE:
-            output = ENCODE_TABLE[char].to_bytes()
+        if char in ENCODE_TABLE:
+            output += ENCODE_TABLE[char]
         elif char == "\u207b":
-            # Special case ^{-1}. I don't know if this is the idiomatic way
-            # to type this.
+            # Special case for inverse
             if input[i + 1] == "\u00B9":
-                output += (233).to_bytes()
+                output += ENCODE_TABLE[inv]
                 i += 1
         else:
             if errors == "strict":
                 raise EncodeError(f"Unknown character {char}")
+            else:
+                output += (161).to_bytes()
 
         i += 1
 
-    return output, len(output)
+    return output

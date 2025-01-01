@@ -62,7 +62,7 @@ class SetLine1(Command):
     command: int = 0x07
 
     def __init__(self, line: str) -> None:
-        buffer, _ = encode_chars(line)
+        buffer = encode_chars(line)
         self.line = buffer
 
     def to_packet(self) -> Packet:
@@ -73,7 +73,7 @@ class SetLine2(Command):
     command: int = 0x08
 
     def __init__(self, line: str) -> None:
-        buffer, _ = encode_chars(line)
+        buffer = encode_chars(line)
         self.line = buffer
 
     def to_packet(self) -> Packet:
