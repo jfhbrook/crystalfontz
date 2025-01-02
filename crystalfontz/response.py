@@ -58,6 +58,14 @@ class Versions(Response):
         )
 
 
+class PowerResponse(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        assert_empty(data)
+
+    def __str__(self: Self) -> str:
+        return "PowerResponse()"
+
+
 class ClearedScreen(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
@@ -70,30 +78,48 @@ class SetLine1Response(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
 
+    def __str__(self: Self) -> str:
+        return "SetLine1Response()"
+
 
 class SetLine2Response(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
+
+    def __str__(self: Self) -> str:
+        return "SetLine2Response()"
 
 
 class CursorPositionSet(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
 
+    def __str__(self: Self) -> str:
+        return "CursorPositionSet()"
+
 
 class CursorStyleSet(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
+
+    def __str__(self: Self) -> str:
+        return "CursorStyleSet()"
 
 
 class ContrastSet(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
 
+    def __str__(self: Self) -> str:
+        return "ContrastSet()"
+
 
 class BacklightSet(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
+
+    def __str__(self: Self) -> str:
+        return "BacklightSet()"
 
 
 class StatusResponse(Response):
@@ -149,6 +175,7 @@ RESPONSE_CLASSES: Dict[int, Type[Response]] = {
     # Command responses start with bits 0b01
     0x40: Pong,
     0x41: Versions,
+    0x45: PowerResponse,
     0x46: ClearedScreen,
     0x47: SetLine1Response,
     0x48: SetLine2Response,

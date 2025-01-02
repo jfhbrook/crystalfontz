@@ -11,12 +11,15 @@ from crystalfontz.command import (
     GetVersions,
     Ping,
     ReadStatus,
+    RebootLCD,
+    ResetHost,
     SetBacklight,
     SetContrast,
     SetCursorPosition,
     SetCursorStyle,
     SetLine1,
     SetLine2,
+    ShutdownHost,
 )
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DEVICES, DeviceStatus
@@ -31,6 +34,7 @@ from crystalfontz.response import (
     CursorStyleSet,
     KeyActivityReport,
     Pong,
+    PowerResponse,
     Response,
     SetLine1Response,
     SetLine2Response,
@@ -153,8 +157,17 @@ class Client(asyncio.Protocol):
     def store_boot_state(self) -> None:
         raise NotImplementedError("store_boot_state")
 
-    def power_command(self) -> None:
-        raise NotImplementedError("power_command")
+    async def reboot_lcd(self: Self) -> PowerResponse:
+        self.send_command(RebootLCD())
+        return await self.expect(PowerResponse)
+
+    async def reset_host(self: Self) -> PowerResponse:
+        self.send_command(ResetHost())
+        return await self.expect(PowerResponse)
+
+    async def shutdown_host(self: Self) -> PowerResponse:
+        self.send_command(ShutdownHost())
+        return await self.expect(PowerResponse)
 
     async def clear_screen(self) -> ClearedScreen:
         self.send_command(ClearScreen())

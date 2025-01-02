@@ -13,7 +13,7 @@
 - [-] set cursor style
 - [-] set cursor position
 - [ ] poll keypad
-- [ ] reboot, reset or power off
+- [-] reboot, reset or power off
 - [ ] store boot state
 - [ ] read status
   - [-] report status type

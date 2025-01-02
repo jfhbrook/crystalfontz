@@ -55,8 +55,22 @@ class ReadUserFlash(Command):
 class PowerCommand(Command):
     command: int = 0x05
 
+    pass
+
+
+class RebootLCD(PowerCommand):
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, b"\x08\x18\x99")
+
+
+class ResetHost(PowerCommand):
+    def to_packet(self: Self) -> Packet:
+        return (self.command, b"\x12\x28\x97")
+
+
+class ShutdownHost(PowerCommand):
+    def to_packet(self: Self) -> Packet:
+        return (self.command, b"\x03\x11\x95")
 
 
 class ClearScreen(Command):
