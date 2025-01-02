@@ -74,7 +74,7 @@ class ClearedScreen(Response):
         return "ClearedScreen()"
 
 
-class SetLine1Response(Response):
+class Line1Set(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
 
@@ -82,7 +82,7 @@ class SetLine1Response(Response):
         return "SetLine1Response()"
 
 
-class SetLine2Response(Response):
+class Line2Set(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
 
@@ -177,8 +177,8 @@ RESPONSE_CLASSES: Dict[int, Type[Response]] = {
     0x41: Versions,
     0x45: PowerResponse,
     0x46: ClearedScreen,
-    0x47: SetLine1Response,
-    0x48: SetLine2Response,
+    0x47: Line1Set,
+    0x48: Line2Set,
     0x4B: CursorStyleSet,
     0x4D: ContrastSet,
     0x4E: BacklightSet,

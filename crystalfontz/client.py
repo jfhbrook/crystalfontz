@@ -33,11 +33,11 @@ from crystalfontz.response import (
     CursorPositionSet,
     CursorStyleSet,
     KeyActivityReport,
+    Line1Set,
+    Line2Set,
     Pong,
     PowerResponse,
     Response,
-    SetLine1Response,
-    SetLine2Response,
     StatusResponse,
     TemperatureReport,
     Versions,
@@ -173,13 +173,13 @@ class Client(asyncio.Protocol):
         self.send_command(ClearScreen())
         return await self.expect(ClearedScreen)
 
-    async def set_line_1(self, line: str) -> SetLine1Response:
+    async def set_line_1(self, line: str) -> Line1Set:
         self.send_command(SetLine1(line, self.device))
-        return await self.expect(SetLine1Response)
+        return await self.expect(Line1Set)
 
-    async def set_line_2(self, line: str) -> SetLine2Response:
+    async def set_line_2(self, line: str) -> Line2Set:
         self.send_command(SetLine2(line, self.device))
-        return await self.expect(SetLine2Response)
+        return await self.expect(Line2Set)
 
     def set_special_char_data(self) -> None:
         raise NotImplementedError("set_special_char_data")
