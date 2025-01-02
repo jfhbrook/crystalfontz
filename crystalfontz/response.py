@@ -12,6 +12,11 @@ def assert_empty(data: bytes) -> None:
         raise DecodeError("Response expected to be 0 bytes, is {len(data)} bytes")
 
 
+def assert_len(n: int, data: bytes) -> None:
+    if len(data) != n:
+        raise DecodeError(f"Response expected to be {n} bytes, is {len(data)} bytes")
+
+
 class Response(ABC):
     """
     A response received from the Crystalfontz LCD.
@@ -79,7 +84,7 @@ class Line1Set(Response):
         assert_empty(data)
 
     def __str__(self: Self) -> str:
-        return "SetLine1Response()"
+        return "Line1Set()"
 
 
 class Line2Set(Response):
@@ -87,7 +92,7 @@ class Line2Set(Response):
         assert_empty(data)
 
     def __str__(self: Self) -> str:
-        return "SetLine2Response()"
+        return "Line2Set()"
 
 
 class CursorPositionSet(Response):
@@ -138,6 +143,8 @@ class KeyActivityReport(Response):
     """
 
     def __init__(self: Self, data: bytes) -> None:
+        assert_len(1, data)
+
         self.activity: KeyActivity = KeyActivity.from_bytes(data)
 
     def __str__(self: Self) -> str:
@@ -152,8 +159,8 @@ class TemperatureReport(Response):
     """
 
     def __init__(self: Self, data: bytes) -> None:
-        if len(data) != 4:
-            raise DecodeError("Temperature report expects 4 bytes of data")
+        assert_len(4, data)
+
         self.idx: int = data[0]
         value = struct.unpack(">H", data[1:2])[0]
         dow_crc_status = data[3]
