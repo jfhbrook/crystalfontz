@@ -132,7 +132,7 @@ class Poke(Command):
 class SetCursorPosition(Command):
     command: int = 0x0B
 
-    def __init__(self: Self, column: int, row: int, device: Device) -> None:
+    def __init__(self: Self, row: int, column: int, device: Device) -> None:
         if column < 0:
             raise ValueError(f"Column {column} < 0")
         elif column >= device.columns:

@@ -193,8 +193,8 @@ class Client(asyncio.Protocol):
     def poke(self) -> None:
         raise NotImplementedError("poke")
 
-    async def set_cursor_position(self, column: int, row: int) -> CursorPositionSet:
-        self.send_command(SetCursorPosition(column, row, self.device))
+    async def set_cursor_position(self, row: int, column: int) -> CursorPositionSet:
+        self.send_command(SetCursorPosition(row, column, self.device))
         return await self.expect(CursorPositionSet)
 
     async def set_cursor_style(self, style: CursorStyle) -> CursorStyleSet:
