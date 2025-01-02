@@ -53,12 +53,13 @@ class Versions(Response):
         )
 
 
-class StatusResponse(Response):
+class ClearedScreen(Response):
     def __init__(self: Self, data: bytes) -> None:
-        self.data: bytes = data
+        if len(data) != 0:
+            raise DecodeError("Response expected to be 0 bytes, is {len(data)} bytes")
 
     def __str__(self: Self) -> str:
-        return f"Status({self.data})"
+        return "ClearedScreen()"
 
 
 class SetLine1Response(Response):
@@ -71,6 +72,14 @@ class SetLine2Response(Response):
     def __init__(self: Self, data: bytes) -> None:
         if len(data) != 0:
             raise DecodeError("Response expected to be 0 bytes, is {len(data)} bytes")
+
+
+class StatusResponse(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        self.data: bytes = data
+
+    def __str__(self: Self) -> str:
+        return f"Status({self.data})"
 
 
 class KeyActivityReport(Response):
@@ -118,6 +127,7 @@ RESPONSE_CLASSES: Dict[int, Type[Response]] = {
     # Command responses start with bits 0b01
     0x40: Pong,
     0x41: Versions,
+    0x46: ClearedScreen,
     0x47: SetLine1Response,
     0x48: SetLine2Response,
     0x5E: StatusResponse,

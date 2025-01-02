@@ -6,6 +6,7 @@ from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
 from crystalfontz.command import (
+    ClearScreen,
     Command,
     GetVersions,
     Ping,
@@ -18,6 +19,7 @@ from crystalfontz.error import ConnectionError
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
+    ClearedScreen,
     KeyActivityReport,
     Pong,
     Response,
@@ -145,8 +147,9 @@ class Client(asyncio.Protocol):
     def power_command(self) -> None:
         raise NotImplementedError("power_command")
 
-    def clear(self) -> None:
-        raise NotImplementedError("clear")
+    async def clear_screen(self) -> ClearedScreen:
+        self.send_command(ClearScreen())
+        return await self.expect(ClearedScreen)
 
     async def set_line_1(self, line: str) -> SetLine1Response:
         self.send_command(SetLine1(line, self.device))

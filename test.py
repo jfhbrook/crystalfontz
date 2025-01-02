@@ -9,7 +9,7 @@ async def main() -> None:
 
     client = await create_connection("/dev/ttyUSB0", report_handler=LoggingReportHandler())
 
-    print(await client.versions())
+    print(await client.clear_screen())
 
 
 loop = asyncio.get_event_loop()

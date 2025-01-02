@@ -62,7 +62,7 @@ class ClearScreen(Command):
     command: int = 0x06
 
     def to_packet(self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, b"")
 
 
 class SetLine1(Command):
