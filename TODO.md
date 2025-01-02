@@ -21,10 +21,7 @@
 
 - [x] Marquee and screensaver
 - [x] Set device based on version output
-- [ ] Report generator error handling
-- [ ] Effect error handling
-- [ ] Lock when running command
-- [ ] Clean up method names
+- [-] Lock when running command
 - [ ] Make character ROM device specific
 - [ ] Retry a few times if packet if fails to respond within 250ms
 
@@ -46,3 +43,8 @@
 - send raw data to LCD
 - set gpio
 - read gpio
+
+### Long Tail
+
+- [ ] CLI tool
+- [ ] Awaitable for close or exception

@@ -213,7 +213,7 @@ class Client(asyncio.Protocol):
     async def set_line_2(self: Self, line: str | bytes) -> Line2Set:
         return await self.send_command(SetLine2(line, self.device), Line2Set)
 
-    async def set_special_char_data(self: Self) -> None:
+    async def set_special_character_data(self: Self) -> None:
         raise NotImplementedError("set_special_char_data")
 
     async def poke(self: Self, address: int) -> Poked:
@@ -242,26 +242,26 @@ class Client(asyncio.Protocol):
     async def read_dow_info(self: Self) -> None:
         raise NotImplementedError("read_dow_info")
 
-    async def setup_temp_report(self: Self) -> None:
-        raise NotImplementedError("setup_temp_report")
+    async def setup_temperature_reporting(self: Self) -> None:
+        raise NotImplementedError("setup_temperature_reporting")
 
-    async def dow_txn(self: Self) -> None:
-        raise NotImplementedError("dow_txn")
+    async def dow_transaction(self: Self) -> None:
+        raise NotImplementedError("dow_transaction")
 
-    async def setup_temp_display(self: Self) -> None:
+    async def setup_temperature_display(self: Self) -> None:
         raise NotImplementedError("setup_temp_display")
 
-    async def raw_cmd(self: Self) -> None:
-        raise NotImplementedError("raw_cmd")
+    async def raw_command(self: Self) -> None:
+        raise NotImplementedError("raw_command")
 
-    async def config_key_report(self: Self) -> None:
-        raise NotImplementedError("config_key_report")
+    async def config_key_reporting(self: Self) -> None:
+        raise NotImplementedError("config_key_reporting")
 
     async def poll_keypad(self: Self) -> KeypadPolled:
         return await self.send_command(PollKeypad(), KeypadPolled)
 
-    async def set_atx_switch(self: Self) -> None:
-        raise NotImplementedError("set_atx_switch")
+    async def set_atx_switch_functionality(self: Self) -> None:
+        raise NotImplementedError("set_atx_switch_functionality")
 
     async def config_watchdog(self: Self) -> None:
         raise NotImplementedError("config_watchdog")
