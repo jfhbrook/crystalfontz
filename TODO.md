@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] Set device based on version output
+- [-] Set device based on version output
 
 ## Commands
 

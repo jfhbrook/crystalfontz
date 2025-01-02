@@ -148,6 +148,12 @@ class Client(asyncio.Protocol):
         self.send_command(GetVersions())
         return await self.expect(Versions)
 
+    async def load_device(self) -> None:
+        versions = await self.versions()
+        self.device = lookup_device(
+            versions.model, versions.hardware_rev, versions.firmware_rev
+        )
+
     def write_user_flash(self) -> None:
         raise NotImplementedError("write_user_flash")
 
