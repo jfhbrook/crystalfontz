@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import struct
-from typing import Dict, Self, Type
+from typing import Callable, cast, Dict, Self, Type, TypeVar
 
 from crystalfontz.error import DecodeError, DeviceError, UnknownResponseError
 from crystalfontz.keys import KeyActivity
@@ -38,6 +38,20 @@ class Response(ABC):
         raise UnknownResponseError(packet)
 
 
+RESPONSE_CLASSES: Dict[int, Type[Response]] = {}
+
+R = TypeVar("R", bound=Response)
+
+
+def code[R](code: int) -> Callable[[Type[R]], Type[R]]:
+    def decorator(cls: Type[R]) -> Type[R]:
+        RESPONSE_CLASSES[code] = cast(Type[Response], cls)
+        return cls
+
+    return decorator
+
+
+@code(0x40)
 class Pong(Response):
     def __init__(self: Self, data: bytes) -> None:
         self.response = data
@@ -46,6 +60,7 @@ class Pong(Response):
         return f"Pong({self.response})"
 
 
+@code(0x41)
 class Versions(Response):
     def __init__(self: Self, data: bytes) -> None:
         decoded = data.decode("ascii")
@@ -63,6 +78,7 @@ class Versions(Response):
         )
 
 
+@code(0x45)
 class PowerResponse(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
@@ -71,6 +87,7 @@ class PowerResponse(Response):
         return "PowerResponse()"
 
 
+@code(0x46)
 class ClearedScreen(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
@@ -79,6 +96,7 @@ class ClearedScreen(Response):
         return "ClearedScreen()"
 
 
+@code(0x47)
 class Line1Set(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
@@ -87,6 +105,7 @@ class Line1Set(Response):
         return "Line1Set()"
 
 
+@code(0x48)
 class Line2Set(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
@@ -103,6 +122,7 @@ class CursorPositionSet(Response):
         return "CursorPositionSet()"
 
 
+@code(0x4B)
 class CursorStyleSet(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
@@ -111,6 +131,7 @@ class CursorStyleSet(Response):
         return "CursorStyleSet()"
 
 
+@code(0x4D)
 class ContrastSet(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
@@ -119,6 +140,7 @@ class ContrastSet(Response):
         return "ContrastSet()"
 
 
+@code(0x4E)
 class BacklightSet(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
@@ -127,6 +149,7 @@ class BacklightSet(Response):
         return "BacklightSet()"
 
 
+@code(0x5E)
 class StatusResponse(Response):
     def __init__(self: Self, data: bytes) -> None:
         self.data: bytes = data
@@ -135,6 +158,7 @@ class StatusResponse(Response):
         return f"Status({self.data})"
 
 
+@code(0x80)
 class KeyActivityReport(Response):
     """
     A key activity report from the Crystalfontz LCD.
@@ -151,6 +175,7 @@ class KeyActivityReport(Response):
         return f"KeyActivityReport({self.activity.name})"
 
 
+@code(0x82)
 class TemperatureReport(Response):
     """
     A temperature sensor report from the Crystalfontz LCD.
@@ -176,21 +201,3 @@ class TemperatureReport(Response):
             f"TemperatureReport({self.idx}, celsius={self.celsius}, "
             f"fahrenheit={self.fahrenheit})"
         )
-
-
-RESPONSE_CLASSES: Dict[int, Type[Response]] = {
-    # Command responses start with bits 0b01
-    0x40: Pong,
-    0x41: Versions,
-    0x45: PowerResponse,
-    0x46: ClearedScreen,
-    0x47: Line1Set,
-    0x48: Line2Set,
-    0x4B: CursorStyleSet,
-    0x4D: ContrastSet,
-    0x4E: BacklightSet,
-    0x5E: StatusResponse,
-    # Reports start with bits 0b10
-    0x80: KeyActivityReport,
-    0x82: TemperatureReport,
-}
