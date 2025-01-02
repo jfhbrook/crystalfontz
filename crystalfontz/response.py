@@ -76,6 +76,11 @@ class SetLine2Response(Response):
         assert_empty(data)
 
 
+class CursorStyleSet(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        assert_empty(data)
+
+
 class ContrastSet(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
@@ -137,6 +142,7 @@ RESPONSE_CLASSES: Dict[int, Type[Response]] = {
     0x46: ClearedScreen,
     0x47: SetLine1Response,
     0x48: SetLine2Response,
+    0x4B: CursorStyleSet,
     0x4D: ContrastSet,
     0x5E: StatusResponse,
     # Reports start with bits 0b10

@@ -10,7 +10,7 @@
 - [-] clear screen
 - [-] set contrast
 - [ ] set backlight
-- [ ] set cursor style
+- [-] set cursor style
 - [ ] set cursor position
 - [ ] poll keypad
 - [ ] reboot, reset or power off

@@ -3,6 +3,7 @@ from typing import Self
 import warnings
 
 from crystalfontz.character import encode_chars
+from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
 from crystalfontz.error import EncodeError
 from crystalfontz.packet import Packet
@@ -125,8 +126,11 @@ class SetCursorPosition(Command):
 class SetCursorStyle(Command):
     command: int = 0x0C
 
+    def __init__(self, style: CursorStyle) -> None:
+        self.style: bytes = style.value.to_bytes()
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.style)
 
 
 class SetContrast(Command):

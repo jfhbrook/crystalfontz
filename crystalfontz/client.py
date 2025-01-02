@@ -12,9 +12,11 @@ from crystalfontz.command import (
     Ping,
     ReadStatus,
     SetContrast,
+    SetCursorStyle,
     SetLine1,
     SetLine2,
 )
+from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DEVICES, DeviceStatus
 from crystalfontz.error import ConnectionError
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
@@ -22,6 +24,7 @@ from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
     ClearedScreen,
     ContrastSet,
+    CursorStyleSet,
     KeyActivityReport,
     Pong,
     Response,
@@ -170,8 +173,9 @@ class Client(asyncio.Protocol):
     def set_cursor_pos(self) -> None:
         raise NotImplementedError("set_cursor_pos")
 
-    def set_cursor_style(self) -> None:
-        raise NotImplementedError("set_cursor_style")
+    async def set_cursor_style(self, style: CursorStyle) -> CursorStyleSet:
+        self.send_command(SetCursorStyle(style))
+        return await self.expect(CursorStyleSet)
 
     async def set_contrast(self, contrast: int) -> ContrastSet:
         self.send_command(SetContrast(contrast, self.device))
