@@ -1,6 +1,6 @@
 import pytest
 
-from crystalfontz.character import encode_chars, ENCODE_TABLE
+from crystalfontz.character import encode_chars, ROM
 
 # Manually encoded characters
 exc = 32 + 1
@@ -15,7 +15,7 @@ w = 112 + 7
 
 
 def test_encode_table() -> None:
-    assert ENCODE_TABLE["!"] == exc.to_bytes()
+    assert ROM["!"] == exc.to_bytes()
 
 
 @pytest.mark.parametrize(

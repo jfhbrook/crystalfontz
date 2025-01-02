@@ -1,13 +1,10 @@
 # TODO
 
-Versions(model=CFA533, hardware_rev=h1.4, firmware_rev=u1v2)
-
 ## High Priority
 
-- [ ] Write character table abstraction
-- [x] Write device abstraction
 - [ ] Logging
 - [ ] ReportHandler abstraction
+- [ ] Make character ROM device specific
 
 ## Commands
 
@@ -17,10 +14,6 @@ Versions(model=CFA533, hardware_rev=h1.4, firmware_rev=u1v2)
 - [x] get versions
 - [x] set line 1, set line 2
 - [ ] clear screen
-- [ ] read status
-  - [-] report status type
-  - [ ] report command type
-  - note, device and firmware specific
 - [ ] set contrast
 - [ ] set backlight
 - [ ] set cursor style
@@ -28,6 +21,10 @@ Versions(model=CFA533, hardware_rev=h1.4, firmware_rev=u1v2)
 - [ ] poll keypad
 - [ ] reboot, reset or power off
 - [ ] store boot state
+- [ ] read status
+  - [-] report status type
+  - [ ] report command type
+  - note, device and firmware specific
 - [ ] poke
 
 ### Long Tail
