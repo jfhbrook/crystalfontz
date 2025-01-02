@@ -23,7 +23,7 @@ class Response(ABC):
     """
 
     @abstractmethod
-    def __init__(self, data: bytes) -> None:
+    def __init__(self: Self, data: bytes) -> None:
         raise NotImplementedError("__init__")
 
     @classmethod

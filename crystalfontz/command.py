@@ -90,14 +90,14 @@ class ClearScreen(Command):
 class SetLine1(Command):
     command: int = 0x07
 
-    def __init__(self: Self, line: str, device: Device) -> None:
+    def __init__(self: Self, line: str | bytes, device: Device) -> None:
         warnings.warn(
             SET_LINE_WARNING_TEMPLATE.format(
                 code=0x07, name="Set LCD Contents, Line 1"
             ),
             DeprecationWarning,
         )
-        buffer = encode_chars(line)
+        buffer: bytes = encode_chars(line) if isinstance(line, str) else line
 
         if len(buffer) > device.columns:
             raise ValueError(f"Line length {len(buffer)} longer than {device.columns}")
@@ -111,14 +111,14 @@ class SetLine1(Command):
 class SetLine2(Command):
     command: int = 0x08
 
-    def __init__(self: Self, line: str, device: Device) -> None:
+    def __init__(self: Self, line: str | bytes, device: Device) -> None:
         warnings.warn(
             SET_LINE_WARNING_TEMPLATE.format(
                 code=0x08, name="Set LCD Contents, Line 2"
             ),
             DeprecationWarning,
         )
-        buffer = encode_chars(line)
+        buffer: bytes = encode_chars(line) if isinstance(line, str) else line
 
         if len(buffer) > device.columns:
             raise ValueError(f"Line length {len(buffer)} longer than {device.columns}")
@@ -293,12 +293,15 @@ class ReadStatus(Command):
 class SendData(Command):
     command: int = 0x1F
 
-    def __init__(self: Self, row: int, column: int, text: str, device: Device) -> None:
+    def __init__(
+        self: Self, row: int, column: int, text: str | bytes, device: Device
+    ) -> None:
         if not (0 <= row < device.lines):
             raise ValueError(f"{row} is not a valid row")
         if not (0 <= column < device.columns):
             raise ValueError(f"{column} is not a valid column")
-        buffer = encode_chars(text)
+
+        buffer: bytes = encode_chars(text) if isinstance(text, str) else text
 
         if len(buffer) > device.columns:
             raise ValueError(f"Text length {len(buffer)} longer than {device.columns}")

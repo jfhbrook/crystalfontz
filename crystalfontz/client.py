@@ -27,6 +27,7 @@ from crystalfontz.command import (
 )
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
+from crystalfontz.effects import Marquee, Screensaver
 from crystalfontz.error import ConnectionError
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
@@ -75,6 +76,10 @@ class Client(asyncio.Protocol):
             lambda: list()
         )
 
+    #
+    # pyserial callbacks
+    #
+
     def connection_made(self: Self, transport) -> None:
         if not isinstance(transport, SerialTransport):
             raise ConnectionError("Transport is not a SerialTransport")
@@ -121,6 +126,10 @@ class Client(asyncio.Protocol):
             for q in self._queues[type(res)]:
                 q.put_nowait(res)
 
+    #
+    # Event subscriptions
+    #
+
     def subscribe[R](self: Self, cls: Type[R]) -> asyncio.Queue[R]:
         q: asyncio.Queue[R] = asyncio.Queue()
         self._queues[cast(Type[Response], cls)].append(cast(asyncio.Queue[Response], q))
@@ -138,6 +147,10 @@ class Client(asyncio.Protocol):
         res = await q.get()
         self.unsubscribe(cls, q)
         return res
+
+    #
+    # Commands
+    #
 
     def send_command(self: Self, command: Command) -> None:
         self.send_packet(command.to_packet())
@@ -162,10 +175,10 @@ class Client(asyncio.Protocol):
             versions.model, versions.hardware_rev, versions.firmware_rev
         )
 
-    def write_user_flash(self: Self) -> None:
+    async def write_user_flash(self: Self) -> None:
         raise NotImplementedError("write_user_flash")
 
-    def read_user_flash(self: Self) -> None:
+    async def read_user_flash(self: Self) -> None:
         raise NotImplementedError("read_user_flash")
 
     async def store_boot_state(self: Self) -> BootStateStored:
@@ -188,15 +201,15 @@ class Client(asyncio.Protocol):
         self.send_command(ClearScreen())
         return await self.expect(ClearedScreen)
 
-    async def set_line_1(self: Self, line: str) -> Line1Set:
+    async def set_line_1(self: Self, line: str | bytes) -> Line1Set:
         self.send_command(SetLine1(line, self.device))
         return await self.expect(Line1Set)
 
-    async def set_line_2(self: Self, line: str) -> Line2Set:
+    async def set_line_2(self: Self, line: str | bytes) -> Line2Set:
         self.send_command(SetLine2(line, self.device))
         return await self.expect(Line2Set)
 
-    def set_special_char_data(self: Self) -> None:
+    async def set_special_char_data(self: Self) -> None:
         raise NotImplementedError("set_special_char_data")
 
     async def poke(self: Self, address: int) -> Poked:
@@ -224,32 +237,32 @@ class Client(asyncio.Protocol):
         self.send_command(SetBacklight(lcd_brightness, keypad_brightness, self.device))
         return await self.expect(BacklightSet)
 
-    def read_dow_info(self: Self) -> None:
+    async def read_dow_info(self: Self) -> None:
         raise NotImplementedError("read_dow_info")
 
-    def setup_temp_report(self: Self) -> None:
+    async def setup_temp_report(self: Self) -> None:
         raise NotImplementedError("setup_temp_report")
 
-    def dow_txn(self: Self) -> None:
+    async def dow_txn(self: Self) -> None:
         raise NotImplementedError("dow_txn")
 
-    def setup_temp_display(self: Self) -> None:
+    async def setup_temp_display(self: Self) -> None:
         raise NotImplementedError("setup_temp_display")
 
-    def raw_cmd(self: Self) -> None:
+    async def raw_cmd(self: Self) -> None:
         raise NotImplementedError("raw_cmd")
 
-    def config_key_report(self: Self) -> None:
+    async def config_key_report(self: Self) -> None:
         raise NotImplementedError("config_key_report")
 
     async def poll_keypad(self: Self) -> KeypadPolled:
         self.send_command(PollKeypad())
         return await self.expect(KeypadPolled)
 
-    def set_atx_switch(self: Self) -> None:
+    async def set_atx_switch(self: Self) -> None:
         raise NotImplementedError("set_atx_switch")
 
-    def config_watchdog(self: Self) -> None:
+    async def config_watchdog(self: Self) -> None:
         raise NotImplementedError("config_watchdog")
 
     async def read_status(self: Self) -> DeviceStatus:
@@ -257,18 +270,24 @@ class Client(asyncio.Protocol):
         res = await self.expect(StatusResponse)
         return self.device.status(res.data)
 
-    async def send_data(self: Self, row: int, column: int, data: str) -> DataSent:
+    async def send_data(
+        self: Self, row: int, column: int, data: str | bytes
+    ) -> DataSent:
         self.send_command(SendData(row, column, data, self.device))
         return await self.expect(DataSent)
 
-    def set_baud(self: Self) -> None:
+    async def set_baud(self: Self) -> None:
         raise NotImplementedError("set_baud")
 
-    def config_gpio(self: Self) -> None:
+    async def config_gpio(self: Self) -> None:
         raise NotImplementedError("config_gpio")
 
-    def read_gpio(self: Self) -> None:
+    async def read_gpio(self: Self) -> None:
         raise NotImplementedError("read_gpio")
+
+    #
+    # Report handlers
+    #
 
     async def _handle_key_activity(self: Self) -> None:
         while True:
@@ -285,6 +304,20 @@ class Client(asyncio.Protocol):
 
             report = await self._temperature_queue.get()
             await self._report_handler.on_temperature(report)
+
+    #
+    # Effects
+    #
+
+    async def marquee(
+        self: Self, row: int, text: str, tick: Optional[float] = None
+    ) -> Marquee:
+        return Marquee(row, text, client=self, tick=tick, loop=self._loop)
+
+    async def screensaver(
+        self: Self, text: str, tick: Optional[float] = None
+    ) -> Screensaver:
+        return Screensaver(text, client=self, tick=tick, loop=self._loop)
 
 
 async def create_connection(
