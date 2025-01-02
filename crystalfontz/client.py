@@ -15,6 +15,7 @@ from crystalfontz.command import (
     ReadStatus,
     RebootLCD,
     ResetHost,
+    SendData,
     SetBacklight,
     SetContrast,
     SetCursorPosition,
@@ -36,6 +37,7 @@ from crystalfontz.response import (
     ContrastSet,
     CursorPositionSet,
     CursorStyleSet,
+    DataSent,
     KeyActivityReport,
     KeypadPolled,
     Line1Set,
@@ -255,8 +257,9 @@ class Client(asyncio.Protocol):
         res = await self.expect(StatusResponse)
         return self.device.status(res.data)
 
-    def send_data(self: Self) -> None:
-        raise NotImplementedError("send_data")
+    async def send_data(self: Self, row: int, column: int, data: str) -> DataSent:
+        self.send_command(SendData(row, column, data, self.device))
+        return await self.expect(DataSent)
 
     def set_baud(self: Self) -> None:
         raise NotImplementedError("set_baud")

@@ -189,6 +189,15 @@ class StatusResponse(Response):
         return f"Status({self.data})"
 
 
+@code(0x5F)
+class DataSent(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        assert_empty(data)
+
+    def __str__(self: Self) -> str:
+        return "DataSent()"
+
+
 @code(0x80)
 class KeyActivityReport(Response):
     """

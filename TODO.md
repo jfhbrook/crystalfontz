@@ -20,10 +20,8 @@
 - [-] poll keypad
 - [-] store boot state
 - [-] poke
+- [-] send data to LCD
 - [ ] read status
-  - [-] report status type
-  - [ ] report command type
-  - note, device and firmware specific
 
 ### Long Tail
 

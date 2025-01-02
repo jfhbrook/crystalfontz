@@ -97,8 +97,11 @@ class SetLine1(Command):
             ),
             DeprecationWarning,
         )
-
         buffer = encode_chars(line)
+
+        if len(buffer) > device.columns:
+            raise ValueError(f"Line length {len(buffer)} longer than {device.columns}")
+
         self.line = buffer.ljust(device.columns, b" ")
 
     def to_packet(self: Self) -> Packet:
@@ -116,6 +119,10 @@ class SetLine2(Command):
             DeprecationWarning,
         )
         buffer = encode_chars(line)
+
+        if len(buffer) > device.columns:
+            raise ValueError(f"Line length {len(buffer)} longer than {device.columns}")
+
         self.line = buffer.ljust(device.columns, b" ")
 
     def to_packet(self: Self) -> Packet:
@@ -286,8 +293,22 @@ class ReadStatus(Command):
 class SendData(Command):
     command: int = 0x1F
 
+    def __init__(self: Self, row: int, column: int, text: str, device: Device) -> None:
+        if not (0 <= row < device.lines):
+            raise ValueError(f"{row} is not a valid row")
+        if not (0 <= column < device.columns):
+            raise ValueError(f"{column} is not a valid column")
+        buffer = encode_chars(text)
+
+        if len(buffer) > device.columns:
+            raise ValueError(f"Text length {len(buffer)} longer than {device.columns}")
+
+        self.row: int = row
+        self.column: int = column
+        self.text: bytes = buffer
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.column.to_bytes() + self.row.to_bytes() + self.text)
 
 
 # 0x20 is reserved for CFA631 key legends
