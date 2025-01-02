@@ -152,16 +152,17 @@ class Marquee(Effect):
         tick: Optional[float] = None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
-        if not (0 <= row < client.device.lines):
+        device = client.device
+        if not (0 <= row < device.lines):
             raise ValueError(f"Invalid row: {row}")
 
-        _tick = tick if tick is not None else 1.0
+        _tick = tick if tick is not None else 0.3
 
         super().__init__(client=client, tick=_tick, loop=loop)
         self._pause: float = pause if pause is not None else _tick
 
         self.row: int = row
-        self.text: bytes = encode_chars(text)
+        self.text: bytes = encode_chars(text).ljust(device.columns, b" ")
         self.shift: int = 0
 
     async def start(self: Self) -> None:
@@ -202,13 +203,15 @@ class Screensaver(Effect):
             )
 
         super().__init__(
-            client=client, tick=tick if tick is not None else 5.0, loop=loop
+            client=client, tick=tick if tick is not None else 3.0, loop=loop
         )
 
         self.text: bytes = buffer
 
     async def render(self: Self) -> None:
         device = self.client.device
+
+        await self.client.clear_screen()
 
         row = random.randrange(0, device.lines)
         column = random.randrange(0, device.columns - len(self.text))

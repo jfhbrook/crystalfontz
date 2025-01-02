@@ -241,7 +241,7 @@ class Client(asyncio.Protocol):
         return await self.expect(ContrastSet)
 
     async def set_backlight(
-        self: Self, lcd_brightness: int, keypad_brightness: Optional[int] = None
+        self: Self, lcd_brightness: float, keypad_brightness: Optional[float] = None
     ) -> BacklightSet:
         self.send_command(SetBacklight(lcd_brightness, keypad_brightness, self.device))
         return await self.expect(BacklightSet)

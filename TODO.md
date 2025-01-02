@@ -14,13 +14,13 @@
   - (only tested reboot)
 - [-] poll keypad
 - [-] store boot state
-- [-] poke
-- [-] send data to LCD
+- [x] poke
+- [x] send data to LCD
 
 ## Features/Improvements
 
-- [-] Marquee and screensaver
-- [-] Set device based on version output
+- [x] Marquee and screensaver
+- [x] Set device based on version output
 - [ ] Report generator error handling
 - [ ] Clean up method names
 - [ ] Make character ROM device specific
