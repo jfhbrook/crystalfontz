@@ -92,7 +92,7 @@ class SetLine1(Command):
         )
 
         buffer = encode_chars(line)
-        self.line = buffer.ljust(device.LINE_WIDTH, b" ")
+        self.line = buffer.ljust(device.columns, b" ")
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.line)
@@ -109,7 +109,7 @@ class SetLine2(Command):
             DeprecationWarning,
         )
         buffer = encode_chars(line)
-        self.line = buffer.ljust(device.LINE_WIDTH, b" ")
+        self.line = buffer.ljust(device.columns, b" ")
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.line)
@@ -135,12 +135,12 @@ class SetCursorPosition(Command):
     def __init__(self: Self, column: int, row: int, device: Device) -> None:
         if column < 0:
             raise ValueError(f"Column {column} < 0")
-        elif column >= device.LINE_WIDTH:
-            raise ValueError(f"Column {column} >= {device.LINE_WIDTH}")
+        elif column >= device.columns:
+            raise ValueError(f"Column {column} >= {device.columns}")
         if row < 0:
             raise ValueError(f"Row {row} < 0")
-        elif row >= device.LINE_COUNT:
-            raise ValueError(f"Row {row} >= {device.LINE_COUNT}")
+        elif row >= device.lines:
+            raise ValueError(f"Row {row} >= {device.lines}")
 
         self.row = row
         self.column = column
@@ -179,21 +179,12 @@ class SetBacklight(Command):
     command: int = 0x0E
 
     def __init__(
-        self: Self, lcd_brightness: int, keypad_brightness: Optional[int] = None
+        self: Self,
+        lcd_brightness: int,
+        keypad_brightness: Optional[int],
+        device: Device,
     ) -> None:
-        if lcd_brightness < 0:
-            raise ValueError(f"LCD brightness {lcd_brightness} < 0")
-        elif lcd_brightness > 00:
-            raise ValueError(f"LCD brightness {lcd_brightness} > 100")
-        self.brightness: bytes = lcd_brightness.to_bytes()
-
-        # NOTE: This feature is not CF633 compatible.
-        if keypad_brightness is not None:
-            if keypad_brightness < 0:
-                raise ValueError(f"Keypad brightness {keypad_brightness} < 0")
-            elif keypad_brightness > 100:
-                raise ValueError(f"Keypad brightness {keypad_brightness} > 100")
-            self.brightness += keypad_brightness.to_bytes()
+        self.brightness = device.brightness(lcd_brightness, keypad_brightness)
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.brightness)

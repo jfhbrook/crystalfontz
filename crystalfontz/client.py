@@ -203,7 +203,7 @@ class Client(asyncio.Protocol):
     async def set_backlight(
         self, lcd_brightness: int, keypad_brightness: Optional[int] = None
     ) -> BacklightSet:
-        self.send_command(SetBacklight(lcd_brightness, keypad_brightness))
+        self.send_command(SetBacklight(lcd_brightness, keypad_brightness, self.device))
         return await self.expect(BacklightSet)
 
     def read_dow_info(self) -> None:
