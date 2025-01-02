@@ -52,6 +52,13 @@ class ReadUserFlash(Command):
         raise NotImplementedError("to_packet")
 
 
+class StoreBootState(Command):
+    command: int = 0x04
+
+    def to_packet(self: Self) -> Packet:
+        return (self.command, b"")
+
+
 class PowerCommand(Command):
     command: int = 0x05
 
@@ -233,7 +240,7 @@ class PollKeypad(Command):
     command: int = 0x18
 
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, b"")
 
 
 # 0x19-0x1B are reserved

@@ -1,5 +1,69 @@
+from dataclasses import dataclass
 from enum import Enum
-from typing import List
+from typing import List, Self, Type
+
+KP_UP = 0x01
+KP_ENTER = 0x02
+KP_EXIT = 0x04
+KP_LEFT = 0x08
+KP_RIGHT = 0x10
+KP_DOWN = 0x20
+
+
+@dataclass
+class KeyState:
+    pressed: bool
+    pressed_since: bool
+    released_since: bool
+
+
+@dataclass
+class KeyStates:
+    up: KeyState
+    enter: KeyState
+    exit: KeyState
+    left: KeyState
+    right: KeyState
+    down: KeyState
+
+    @classmethod
+    def from_bytes(cls: Type[Self], state: bytes) -> Self:
+        pressed = state[0]
+        pressed_since = state[1]
+        released_since = state[2]
+
+        return cls(
+            up=KeyState(
+                pressed=bool(pressed & KP_UP),
+                pressed_since=bool(pressed_since & KP_UP),
+                released_since=bool(released_since & KP_UP),
+            ),
+            enter=KeyState(
+                pressed=bool(pressed & KP_ENTER),
+                pressed_since=bool(pressed_since & KP_ENTER),
+                released_since=bool(released_since & KP_ENTER),
+            ),
+            exit=KeyState(
+                pressed=bool(pressed & KP_EXIT),
+                pressed_since=bool(pressed_since & KP_EXIT),
+                released_since=bool(released_since & KP_EXIT),
+            ),
+            left=KeyState(
+                pressed=bool(pressed & KP_LEFT),
+                pressed_since=bool(pressed_since & KP_LEFT),
+                released_since=bool(released_since & KP_LEFT),
+            ),
+            right=KeyState(
+                pressed=bool(pressed & KP_RIGHT),
+                pressed_since=bool(pressed_since & KP_RIGHT),
+                released_since=bool(released_since & KP_RIGHT),
+            ),
+            down=KeyState(
+                pressed=bool(pressed & KP_DOWN),
+                pressed_since=bool(pressed_since & KP_DOWN),
+                released_since=bool(released_since & KP_DOWN),
+            ),
+        )
 
 
 class KeyActivity(Enum):
@@ -17,7 +81,7 @@ class KeyActivity(Enum):
     KEY_EXIT_RELEASE = 12
 
     @classmethod
-    def from_bytes(cls, activity: bytes) -> "KeyActivity":
+    def from_bytes(cls: Type[Self], activity: bytes) -> "KeyActivity":
         return KEY_ACTIVITIES[activity[0] - 1]
 
 

@@ -1,6 +1,7 @@
 # TODO
 
 - [-] Set device based on version output
+- [ ] Report generator error handling
 
 ## Commands
 
@@ -16,13 +17,13 @@
 - [x] set cursor position
 - [x] reboot, reset or power off
   - (only tested reboot)
-- [ ] poll keypad
-- [ ] store boot state
+- [-] poll keypad
+- [-] store boot state
+- [ ] poke
 - [ ] read status
   - [-] report status type
   - [ ] report command type
   - note, device and firmware specific
-- [ ] poke
 
 ### Long Tail
 
@@ -42,5 +43,6 @@
 ## Long Tail
 
 - [ ] Debug logging
+- [ ] Clean up method names
 - [ ] Make character ROM device specific
 - [ ] Retry a few times if packet if fails to respond within 250ms

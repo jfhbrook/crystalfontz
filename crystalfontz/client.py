@@ -10,6 +10,7 @@ from crystalfontz.command import (
     Command,
     GetVersions,
     Ping,
+    PollKeypad,
     ReadStatus,
     RebootLCD,
     ResetHost,
@@ -20,6 +21,7 @@ from crystalfontz.command import (
     SetLine1,
     SetLine2,
     ShutdownHost,
+    StoreBootState,
 )
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
@@ -28,11 +30,13 @@ from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
     BacklightSet,
+    BootStateStored,
     ClearedScreen,
     ContrastSet,
     CursorPositionSet,
     CursorStyleSet,
     KeyActivityReport,
+    KeypadPolled,
     Line1Set,
     Line2Set,
     Pong,
@@ -160,8 +164,9 @@ class Client(asyncio.Protocol):
     def read_user_flash(self) -> None:
         raise NotImplementedError("read_user_flash")
 
-    def store_boot_state(self) -> None:
-        raise NotImplementedError("store_boot_state")
+    async def store_boot_state(self) -> BootStateStored:
+        self.send_command(StoreBootState())
+        return await self.expect(BootStateStored)
 
     async def reboot_lcd(self: Self) -> PowerResponse:
         self.send_command(RebootLCD())
@@ -230,8 +235,9 @@ class Client(asyncio.Protocol):
     def config_key_report(self) -> None:
         raise NotImplementedError("config_key_report")
 
-    def poll_keypad(self) -> None:
-        raise NotImplementedError("poll_keypad")
+    async def poll_keypad(self) -> KeypadPolled:
+        self.send_command(PollKeypad())
+        return await self.expect(KeypadPolled)
 
     def set_atx_switch(self) -> None:
         raise NotImplementedError("set_atx_switch")

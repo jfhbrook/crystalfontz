@@ -3,7 +3,7 @@ import struct
 from typing import Callable, cast, Dict, Self, Type, TypeVar
 
 from crystalfontz.error import DecodeError, DeviceError, UnknownResponseError
-from crystalfontz.keys import KeyActivity
+from crystalfontz.keys import KeyActivity, KeyStates
 from crystalfontz.packet import Packet
 
 
@@ -78,6 +78,15 @@ class Versions(Response):
         )
 
 
+@code(0x44)
+class BootStateStored(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        assert_empty(data)
+
+    def __str__(self: Self) -> str:
+        return "BootStateStored()"
+
+
 @code(0x45)
 class PowerResponse(Response):
     def __init__(self: Self, data: bytes) -> None:
@@ -148,6 +157,16 @@ class BacklightSet(Response):
 
     def __str__(self: Self) -> str:
         return "BacklightSet()"
+
+
+@code(0x58)
+class KeypadPolled(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        assert_len(3, data)
+        self.states = KeyStates.from_bytes(data)
+
+    def __str__(self: Self) -> str:
+        return f"KeypadPolled(states={self.states})"
 
 
 @code(0x5E)
