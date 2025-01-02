@@ -11,6 +11,7 @@ from crystalfontz.command import (
     GetVersions,
     Ping,
     ReadStatus,
+    SetContrast,
     SetLine1,
     SetLine2,
 )
@@ -20,6 +21,7 @@ from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
     ClearedScreen,
+    ContrastSet,
     KeyActivityReport,
     Pong,
     Response,
@@ -171,8 +173,10 @@ class Client(asyncio.Protocol):
     def set_cursor_style(self) -> None:
         raise NotImplementedError("set_cursor_style")
 
-    def set_contrast(self) -> None:
-        raise NotImplementedError("set_contrast")
+    async def set_contrast(self, contrast: int) -> ContrastSet:
+        self.send_command(SetContrast(contrast, self.device))
+
+        return await self.expect(ContrastSet)
 
     def set_backlight(self) -> None:
         raise NotImplementedError("set_backlight")

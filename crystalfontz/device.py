@@ -9,6 +9,7 @@ DeviceStatus = Any
 
 class Device(ABC):
     LINE_WIDTH = 16
+    ENHANCED_CONTRAST = False
 
     def status(self: Self, data: bytes) -> DeviceStatus:
         raise NotImplementedError("parse_status")
@@ -16,6 +17,12 @@ class Device(ABC):
 
 class CFA533_H1_4_U1_V2(Device):
     LINE_WIDTH = 16
+
+    # CFA633 accepts one byte between 0 and 200. CFA533 will accept one byte
+    # as well, with value between 0 and 50. However, CFA533 will also accept
+    # *two* bytes, where the first byte is ignored and the second byte will be
+    # used to allow for better resolution.
+    ENHANCED_CONTRAST = True
 
     def status(self: Self, data: bytes) -> DeviceStatus:
         if len(data) != 15:

@@ -8,7 +8,7 @@
 - [x] get versions
 - [x] set line 1, set line 2
 - [-] clear screen
-- [ ] set contrast
+- [-] set contrast
 - [ ] set backlight
 - [ ] set cursor style
 - [ ] set cursor position

@@ -7,6 +7,11 @@ from crystalfontz.keys import KeyActivity
 from crystalfontz.packet import Packet
 
 
+def assert_empty(data: bytes) -> None:
+    if len(data) != 0:
+        raise DecodeError("Response expected to be 0 bytes, is {len(data)} bytes")
+
+
 class Response(ABC):
     """
     A response received from the Crystalfontz LCD.
@@ -55,8 +60,7 @@ class Versions(Response):
 
 class ClearedScreen(Response):
     def __init__(self: Self, data: bytes) -> None:
-        if len(data) != 0:
-            raise DecodeError("Response expected to be 0 bytes, is {len(data)} bytes")
+        assert_empty(data)
 
     def __str__(self: Self) -> str:
         return "ClearedScreen()"
@@ -64,14 +68,17 @@ class ClearedScreen(Response):
 
 class SetLine1Response(Response):
     def __init__(self: Self, data: bytes) -> None:
-        if len(data) != 0:
-            raise DecodeError("Response expected to be 0 bytes, is {len(data)} bytes")
+        assert_empty(data)
 
 
 class SetLine2Response(Response):
     def __init__(self: Self, data: bytes) -> None:
-        if len(data) != 0:
-            raise DecodeError("Response expected to be 0 bytes, is {len(data)} bytes")
+        assert_empty(data)
+
+
+class ContrastSet(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        assert_empty(data)
 
 
 class StatusResponse(Response):
@@ -130,6 +137,7 @@ RESPONSE_CLASSES: Dict[int, Type[Response]] = {
     0x46: ClearedScreen,
     0x47: SetLine1Response,
     0x48: SetLine2Response,
+    0x4D: ContrastSet,
     0x5E: StatusResponse,
     # Reports start with bits 0b10
     0x80: KeyActivityReport,
