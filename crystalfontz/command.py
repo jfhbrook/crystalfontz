@@ -60,17 +60,17 @@ class PowerCommand(Command):
 
 class RebootLCD(PowerCommand):
     def to_packet(self: Self) -> Packet:
-        return (self.command, b"\x08\x18\x99")
+        return (self.command, bytes([8, 18, 99]))
 
 
 class ResetHost(PowerCommand):
     def to_packet(self: Self) -> Packet:
-        return (self.command, b"\x12\x28\x97")
+        return (self.command, bytes([12, 28, 97]))
 
 
 class ShutdownHost(PowerCommand):
     def to_packet(self: Self) -> Packet:
-        return (self.command, b"\x03\x11\x95")
+        return (self.command, bytes([3, 11, 95]))
 
 
 class ClearScreen(Command):
