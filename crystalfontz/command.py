@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from crystalfontz.character import encode_chars
-from crystalfontz.error import SerializationError
+from crystalfontz.error import EncodeError
 from crystalfontz.packet import Packet
 
 
@@ -16,7 +16,7 @@ class Ping(Command):
 
     def __init__(self, payload: bytes) -> None:
         if len(payload) > 16:
-            raise SerializationError(f"Payload length {len(payload)} > 16")
+            raise EncodeError(f"Payload length {len(payload)} > 16")
         self.payload: bytes = payload
 
     def to_packet(self) -> Packet:

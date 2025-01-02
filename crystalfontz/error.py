@@ -22,9 +22,9 @@ class CrcError(CrystalfontzError):
     pass
 
 
-class ParseError(CrystalfontzError):
+class DecodeError(CrystalfontzError):
     """
-    An error while parsing incoming data.
+    An error while decoding incoming data.
     """
 
     pass
@@ -32,15 +32,7 @@ class ParseError(CrystalfontzError):
 
 class EncodeError(CrystalfontzError):
     """
-    An error while encoding text.
-    """
-
-    pass
-
-
-class SerializationError(CrystalfontzError):
-    """
-    An error while serializing data.
+    An error while encoding outgoing data.
     """
 
     pass
