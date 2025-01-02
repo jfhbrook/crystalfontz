@@ -194,7 +194,7 @@ class KeypadPolled(Response):
 
 
 @code(0x5E)
-class StatusResponse(Response):
+class StatusRead(Response):
     def __init__(self: Self, data: bytes) -> None:
         self.data: bytes = data
 

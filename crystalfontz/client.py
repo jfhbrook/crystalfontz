@@ -48,7 +48,7 @@ from crystalfontz.response import (
     PowerResponse,
     RawResponse,
     Response,
-    StatusResponse,
+    StatusRead,
     TemperatureReport,
     Versions,
 )
@@ -72,6 +72,7 @@ class Client(asyncio.Protocol):
         self._transport: Optional[SerialTransport] = None
         self._connection_made: asyncio.Future[None] = self._loop.create_future()
 
+        self._lock: asyncio.Lock = asyncio.Lock()
         self._expect: Optional[Type[Response]] = None
         self._queues: Dict[Type[Response], List[asyncio.Queue[Response]]] = defaultdict(
             lambda: list()
@@ -161,8 +162,10 @@ class Client(asyncio.Protocol):
     # Commands
     #
 
-    def send_command(self: Self, command: Command) -> None:
-        self.send_packet(command.to_packet())
+    async def send_command[R](self: Self, command: Command, response_cls: Type[R]) -> R:
+        async with self._lock:
+            self.send_packet(command.to_packet())
+            return await self.expect(response_cls)
 
     def send_packet(self: Self, packet: Packet) -> None:
         if not self._transport:
@@ -171,12 +174,10 @@ class Client(asyncio.Protocol):
         self._transport.write(buff)
 
     async def ping(self: Self, payload: bytes) -> Pong:
-        self.send_command(Ping(payload))
-        return await self.expect(Pong)
+        return await self.send_command(Ping(payload), Pong)
 
     async def versions(self: Self) -> Versions:
-        self.send_command(GetVersions())
-        return await self.expect(Versions)
+        return await self.send_command(GetVersions(), Versions)
 
     async def load_device(self: Self) -> None:
         versions = await self.versions()
@@ -191,60 +192,52 @@ class Client(asyncio.Protocol):
         raise NotImplementedError("read_user_flash")
 
     async def store_boot_state(self: Self) -> BootStateStored:
-        self.send_command(StoreBootState())
-        return await self.expect(BootStateStored)
+        return await self.send_command(StoreBootState(), BootStateStored)
 
     async def reboot_lcd(self: Self) -> PowerResponse:
-        self.send_command(RebootLCD())
-        return await self.expect(PowerResponse)
+        return await self.send_command(RebootLCD(), PowerResponse)
 
     async def reset_host(self: Self) -> PowerResponse:
-        self.send_command(ResetHost())
+        await self.send_command(ResetHost(), PowerResponse)
         return await self.expect(PowerResponse)
 
     async def shutdown_host(self: Self) -> PowerResponse:
-        self.send_command(ShutdownHost())
-        return await self.expect(PowerResponse)
+        return await self.send_command(ShutdownHost(), PowerResponse)
 
     async def clear_screen(self: Self) -> ClearedScreen:
-        self.send_command(ClearScreen())
-        return await self.expect(ClearedScreen)
+        return await self.send_command(ClearScreen(), ClearedScreen)
 
     async def set_line_1(self: Self, line: str | bytes) -> Line1Set:
-        self.send_command(SetLine1(line, self.device))
-        return await self.expect(Line1Set)
+        return await self.send_command(SetLine1(line, self.device), Line1Set)
 
     async def set_line_2(self: Self, line: str | bytes) -> Line2Set:
-        self.send_command(SetLine2(line, self.device))
-        return await self.expect(Line2Set)
+        return await self.send_command(SetLine2(line, self.device), Line2Set)
 
     async def set_special_char_data(self: Self) -> None:
         raise NotImplementedError("set_special_char_data")
 
     async def poke(self: Self, address: int) -> Poked:
-        self.send_command(Poke(address))
-        return await self.expect(Poked)
+        return await self.send_command(Poke(address), Poked)
 
     async def set_cursor_position(
         self: Self, row: int, column: int
     ) -> CursorPositionSet:
-        self.send_command(SetCursorPosition(row, column, self.device))
-        return await self.expect(CursorPositionSet)
+        return await self.send_command(
+            SetCursorPosition(row, column, self.device), CursorPositionSet
+        )
 
     async def set_cursor_style(self: Self, style: CursorStyle) -> CursorStyleSet:
-        self.send_command(SetCursorStyle(style))
-        return await self.expect(CursorStyleSet)
+        return await self.send_command(SetCursorStyle(style), CursorStyleSet)
 
     async def set_contrast(self: Self, contrast: float) -> ContrastSet:
-        self.send_command(SetContrast(contrast, self.device))
-
-        return await self.expect(ContrastSet)
+        return await self.send_command(SetContrast(contrast, self.device), ContrastSet)
 
     async def set_backlight(
         self: Self, lcd_brightness: float, keypad_brightness: Optional[float] = None
     ) -> BacklightSet:
-        self.send_command(SetBacklight(lcd_brightness, keypad_brightness, self.device))
-        return await self.expect(BacklightSet)
+        return await self.send_command(
+            SetBacklight(lcd_brightness, keypad_brightness, self.device), BacklightSet
+        )
 
     async def read_dow_info(self: Self) -> None:
         raise NotImplementedError("read_dow_info")
@@ -265,8 +258,7 @@ class Client(asyncio.Protocol):
         raise NotImplementedError("config_key_report")
 
     async def poll_keypad(self: Self) -> KeypadPolled:
-        self.send_command(PollKeypad())
-        return await self.expect(KeypadPolled)
+        return await self.send_command(PollKeypad(), KeypadPolled)
 
     async def set_atx_switch(self: Self) -> None:
         raise NotImplementedError("set_atx_switch")
@@ -275,15 +267,15 @@ class Client(asyncio.Protocol):
         raise NotImplementedError("config_watchdog")
 
     async def read_status(self: Self) -> DeviceStatus:
-        self.send_command(ReadStatus())
-        res = await self.expect(StatusResponse)
+        res = await self.send_command(ReadStatus(), StatusRead)
         return self.device.status(res.data)
 
     async def send_data(
         self: Self, row: int, column: int, data: str | bytes
     ) -> DataSent:
-        self.send_command(SendData(row, column, data, self.device))
-        return await self.expect(DataSent)
+        return await self.send_command(
+            SendData(row, column, data, self.device), DataSent
+        )
 
     async def set_baud(self: Self) -> None:
         raise NotImplementedError("set_baud")
