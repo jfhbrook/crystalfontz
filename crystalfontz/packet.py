@@ -4,7 +4,7 @@ import struct
 from typing import Optional, Tuple
 import warnings
 
-from crystalfontz.error import CrcError
+from crystalfontz.error import CrcError, EncodeError
 
 # See: https://github.com/crystalfontz/cfa_linux_examples/blob/master/include/cf_packet.c
 CRC_TABLE = [
@@ -296,7 +296,8 @@ def serialize_packet(packet: Packet) -> bytes:
     """
 
     cmd, data = packet
-    assert len(data) <= MAX_DATA_LEN, "Too much data"
+    if len(data) > MAX_DATA_LEN:
+        raise EncodeError(f"Too much data ({len(data)} > {MAX_DATA_LEN}")
     pkt = cmd.to_bytes() + len(data).to_bytes() + data
     crc = make_crc(pkt)
 
