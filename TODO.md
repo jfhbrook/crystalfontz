@@ -1,5 +1,7 @@
 # TODO
 
+- [ ] Set device based on version output
+
 ## Commands
 
 ### The Basics
