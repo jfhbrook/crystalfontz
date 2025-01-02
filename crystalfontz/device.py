@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
-from collections import defaultdict
-from typing import Any, Dict, Optional, Self
+from typing import Any, Optional, Self
 import warnings
 
-from crystalfontz.error import DecodeError
+from crystalfontz.error import DecodeError, DeviceLookupError
 
 DeviceStatus = Any
 
@@ -71,6 +70,9 @@ class CFA633(Device):
 
         return lcd_brightness.to_bytes()
 
+    def status(self: Self, data: bytes) -> DeviceStatus:
+        raise NotImplementedError("status")
+
 
 class CFA533(Device):
     model = "CFA533"
@@ -121,8 +123,12 @@ class CFA533(Device):
         raise NotImplementedError("parse_status")
 
 
-FirmwareDict = Dict[str, Device]
-HardwareDict = Dict[str, FirmwareDict]
-DeviceDict = Dict[str, HardwareDict]
-
-DEVICES: DeviceDict = {"CFA533": defaultdict(lambda: defaultdict(lambda: CFA533()))}
+def lookup_device(
+    model: str, hardware_rev: str = "<any>", firmware_rev: str = "<any>"
+) -> Device:
+    if model == "CFA633":
+        return CFA633()
+    elif model == "CFA533":
+        return CFA533()
+    else:
+        raise DeviceLookupError(f"Unknown device {model} {hardware_rev} {firmware_rev}")

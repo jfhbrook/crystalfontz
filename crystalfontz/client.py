@@ -22,7 +22,7 @@ from crystalfontz.command import (
     ShutdownHost,
 )
 from crystalfontz.cursor import CursorStyle
-from crystalfontz.device import Device, DEVICES, DeviceStatus
+from crystalfontz.device import Device, DeviceStatus, lookup_device
 from crystalfontz.error import ConnectionError
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
@@ -284,7 +284,7 @@ async def create_connection(
     _loop = loop if loop else asyncio.get_running_loop()
 
     if not device:
-        device = DEVICES[model][hardware_rev][firmware_rev]
+        device = lookup_device(model, hardware_rev, firmware_rev)
 
     if not report_handler:
         report_handler = NoopReportHandler()

@@ -41,6 +41,14 @@ class EncodeError(CrystalfontzError):
     pass
 
 
+class DeviceLookupError(CrystalfontzError):
+    """
+    An error while looking up a device.
+    """
+
+    pass
+
+
 class UnknownResponseError(DecodeError):
     """
     An error raised when the response code is unrecognized.
