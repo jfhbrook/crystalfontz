@@ -19,7 +19,7 @@
   - (only tested reboot)
 - [-] poll keypad
 - [-] store boot state
-- [ ] poke
+- [-] poke
 - [ ] read status
   - [-] report status type
   - [ ] report command type

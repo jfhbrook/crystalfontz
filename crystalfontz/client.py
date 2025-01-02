@@ -10,6 +10,7 @@ from crystalfontz.command import (
     Command,
     GetVersions,
     Ping,
+    Poke,
     PollKeypad,
     ReadStatus,
     RebootLCD,
@@ -39,6 +40,7 @@ from crystalfontz.response import (
     KeypadPolled,
     Line1Set,
     Line2Set,
+    Poked,
     Pong,
     PowerResponse,
     Response,
@@ -90,17 +92,17 @@ class Client(asyncio.Protocol):
 
         self._connection_made.set_result(None)
 
-    def connection_lost(self, exc: Optional[Exception]) -> None:
+    def connection_lost(self: Self, exc: Optional[Exception]) -> None:
         self._running = False
         if exc:
             raise ConnectionError("Connection lost") from exc
 
-    def close(self) -> None:
+    def close(self: Self) -> None:
         self._running = False
         if self._transport:
             self._transport.close()
 
-    def data_received(self, data: bytes) -> None:
+    def data_received(self: Self, data: bytes) -> None:
         self._buffer += data
 
         packet, buff = parse_packet(self._buffer)
@@ -111,60 +113,60 @@ class Client(asyncio.Protocol):
             packet, buff = parse_packet(self._buffer)
             self._buffer = buff
 
-    def _packet_received(self, packet: Packet) -> None:
+    def _packet_received(self: Self, packet: Packet) -> None:
         res = Response.from_packet(packet)
         if type(res) in self._queues:
             for q in self._queues[type(res)]:
                 q.put_nowait(res)
 
-    def subscribe[R](self, cls: Type[R]) -> asyncio.Queue[R]:
+    def subscribe[R](self: Self, cls: Type[R]) -> asyncio.Queue[R]:
         q: asyncio.Queue[R] = asyncio.Queue()
         self._queues[cast(Type[Response], cls)].append(cast(asyncio.Queue[Response], q))
         return q
 
-    def unsubscribe[R](self, cls: Type[R], q: asyncio.Queue[R]) -> None:
+    def unsubscribe[R](self: Self, cls: Type[R], q: asyncio.Queue[R]) -> None:
         key = cast(Type[Response], cls)
         self._queues[key] = cast(
             List[asyncio.Queue[Response]],
             [q_ for q_ in self._queues[key] if q_ != cast(asyncio.Queue[Response], q)],
         )
 
-    async def expect[R](self, cls: Type[R]) -> R:
+    async def expect[R](self: Self, cls: Type[R]) -> R:
         q = self.subscribe(cls)
         res = await q.get()
         self.unsubscribe(cls, q)
         return res
 
-    def send_command(self, command: Command) -> None:
+    def send_command(self: Self, command: Command) -> None:
         self.send_packet(command.to_packet())
 
-    def send_packet(self, packet: Packet) -> None:
+    def send_packet(self: Self, packet: Packet) -> None:
         if not self._transport:
             raise ConnectionError("Must be connected to send data")
         buff = serialize_packet(packet)
         self._transport.write(buff)
 
-    async def ping(self, payload: bytes) -> Pong:
+    async def ping(self: Self, payload: bytes) -> Pong:
         self.send_command(Ping(payload))
         return await self.expect(Pong)
 
-    async def versions(self) -> Versions:
+    async def versions(self: Self) -> Versions:
         self.send_command(GetVersions())
         return await self.expect(Versions)
 
-    async def load_device(self) -> None:
+    async def load_device(self: Self) -> None:
         versions = await self.versions()
         self.device = lookup_device(
             versions.model, versions.hardware_rev, versions.firmware_rev
         )
 
-    def write_user_flash(self) -> None:
+    def write_user_flash(self: Self) -> None:
         raise NotImplementedError("write_user_flash")
 
-    def read_user_flash(self) -> None:
+    def read_user_flash(self: Self) -> None:
         raise NotImplementedError("read_user_flash")
 
-    async def store_boot_state(self) -> BootStateStored:
+    async def store_boot_state(self: Self) -> BootStateStored:
         self.send_command(StoreBootState())
         return await self.expect(BootStateStored)
 
@@ -180,86 +182,89 @@ class Client(asyncio.Protocol):
         self.send_command(ShutdownHost())
         return await self.expect(PowerResponse)
 
-    async def clear_screen(self) -> ClearedScreen:
+    async def clear_screen(self: Self) -> ClearedScreen:
         self.send_command(ClearScreen())
         return await self.expect(ClearedScreen)
 
-    async def set_line_1(self, line: str) -> Line1Set:
+    async def set_line_1(self: Self, line: str) -> Line1Set:
         self.send_command(SetLine1(line, self.device))
         return await self.expect(Line1Set)
 
-    async def set_line_2(self, line: str) -> Line2Set:
+    async def set_line_2(self: Self, line: str) -> Line2Set:
         self.send_command(SetLine2(line, self.device))
         return await self.expect(Line2Set)
 
-    def set_special_char_data(self) -> None:
+    def set_special_char_data(self: Self) -> None:
         raise NotImplementedError("set_special_char_data")
 
-    def poke(self) -> None:
-        raise NotImplementedError("poke")
+    async def poke(self: Self, address: int) -> Poked:
+        self.send_command(Poke(address))
+        return await self.expect(Poked)
 
-    async def set_cursor_position(self, row: int, column: int) -> CursorPositionSet:
+    async def set_cursor_position(
+        self: Self, row: int, column: int
+    ) -> CursorPositionSet:
         self.send_command(SetCursorPosition(row, column, self.device))
         return await self.expect(CursorPositionSet)
 
-    async def set_cursor_style(self, style: CursorStyle) -> CursorStyleSet:
+    async def set_cursor_style(self: Self, style: CursorStyle) -> CursorStyleSet:
         self.send_command(SetCursorStyle(style))
         return await self.expect(CursorStyleSet)
 
-    async def set_contrast(self, contrast: float) -> ContrastSet:
+    async def set_contrast(self: Self, contrast: float) -> ContrastSet:
         self.send_command(SetContrast(contrast, self.device))
 
         return await self.expect(ContrastSet)
 
     async def set_backlight(
-        self, lcd_brightness: int, keypad_brightness: Optional[int] = None
+        self: Self, lcd_brightness: int, keypad_brightness: Optional[int] = None
     ) -> BacklightSet:
         self.send_command(SetBacklight(lcd_brightness, keypad_brightness, self.device))
         return await self.expect(BacklightSet)
 
-    def read_dow_info(self) -> None:
+    def read_dow_info(self: Self) -> None:
         raise NotImplementedError("read_dow_info")
 
-    def setup_temp_report(self) -> None:
+    def setup_temp_report(self: Self) -> None:
         raise NotImplementedError("setup_temp_report")
 
-    def dow_txn(self) -> None:
+    def dow_txn(self: Self) -> None:
         raise NotImplementedError("dow_txn")
 
-    def setup_temp_display(self) -> None:
+    def setup_temp_display(self: Self) -> None:
         raise NotImplementedError("setup_temp_display")
 
-    def raw_cmd(self) -> None:
+    def raw_cmd(self: Self) -> None:
         raise NotImplementedError("raw_cmd")
 
-    def config_key_report(self) -> None:
+    def config_key_report(self: Self) -> None:
         raise NotImplementedError("config_key_report")
 
-    async def poll_keypad(self) -> KeypadPolled:
+    async def poll_keypad(self: Self) -> KeypadPolled:
         self.send_command(PollKeypad())
         return await self.expect(KeypadPolled)
 
-    def set_atx_switch(self) -> None:
+    def set_atx_switch(self: Self) -> None:
         raise NotImplementedError("set_atx_switch")
 
-    def config_watchdog(self) -> None:
+    def config_watchdog(self: Self) -> None:
         raise NotImplementedError("config_watchdog")
 
-    async def read_status(self) -> DeviceStatus:
+    async def read_status(self: Self) -> DeviceStatus:
         self.send_command(ReadStatus())
         res = await self.expect(StatusResponse)
         return self.device.status(res.data)
 
-    def send_data(self) -> None:
+    def send_data(self: Self) -> None:
         raise NotImplementedError("send_data")
 
-    def set_baud(self) -> None:
+    def set_baud(self: Self) -> None:
         raise NotImplementedError("set_baud")
 
-    def config_gpio(self) -> None:
+    def config_gpio(self: Self) -> None:
         raise NotImplementedError("config_gpio")
 
-    def read_gpio(self) -> None:
+    def read_gpio(self: Self) -> None:
         raise NotImplementedError("read_gpio")
 
     async def _handle_key_activity(self: Self) -> None:

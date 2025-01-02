@@ -132,8 +132,24 @@ class SetSpecialCharacterData(Command):
 class Poke(Command):
     command: int = 0x0A
 
+    def __init__(self: Self, address: int) -> None:
+        # Address is native to the LCD controller. On the CFA533 h1.4 u1v2,
+        # they are:
+        #
+        #     [0x40, 0x7F] -> CGRAM
+        #     [0x80, 0x93] -> DDRAM, line 1
+        #     [0xC0, 0xD3] -> DDRAM, line 2
+        #
+        # These are likely specific to the model and revision. Rather than
+        # attempt to validate these at the Device level, we simply assert
+        # that the address is a valid byte, and leave choosing sensible
+        # addresses as an exercise for the user.
+        if not (0 < address < 255):
+            raise ValueError(f"Address {address} is invalid")
+        self.address: bytes = address.to_bytes()
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.address)
 
 
 class SetCursorPosition(Command):
