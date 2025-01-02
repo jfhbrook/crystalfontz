@@ -14,6 +14,7 @@ async def main() -> None:
     print(await client.clear_screen())
     print(await client.set_contrast(0.5))
     print(await client.set_backlight(10))
+    # crystalfontz.error.UnknownResponseError: Unknown response (76, b'')
     print(await client.set_cursor_style(CursorStyle.BLINKING_UNDERSCORE))
     print(await client.set_cursor_position(3, 1))
 

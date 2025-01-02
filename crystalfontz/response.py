@@ -113,7 +113,7 @@ class Line2Set(Response):
     def __str__(self: Self) -> str:
         return "Line2Set()"
 
-
+@code(0x4A)
 class CursorPositionSet(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_empty(data)
