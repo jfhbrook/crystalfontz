@@ -283,8 +283,8 @@ def make_crc(packet: bytes, seed: int = 0xFFFF) -> bytes:
         raise CrcError(f"Error while calculating crc: {exc}")
 
 
-MAX_COMMAND = 0xFF
-# TODO: Specific to my LCD
+# TODO: Is this specific to the CFA533? If so, it will need to be pulled out
+# into devices...
 MAX_DATA_LEN = 18
 
 Packet = Tuple[int, bytes]
@@ -318,10 +318,6 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
 
     cmd = buffer[0]
     length = buffer[1]
-
-    # When a byte looks like garbage, shift it off and try again
-    if cmd > MAX_COMMAND:
-        return synchronize(f"Unexpected command: {cmd}")
 
     if length > MAX_DATA_LEN:
         return synchronize(f"Message length {length} > {MAX_DATA_LEN}")

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import warnings
 
 from crystalfontz.character import encode_chars
+from crystalfontz.device import Device, DEVICES
 from crystalfontz.error import EncodeError
 from crystalfontz.packet import Packet
 
@@ -67,7 +68,7 @@ class ClearScreen(Command):
 class SetLine1(Command):
     command: int = 0x07
 
-    def __init__(self, line: str) -> None:
+    def __init__(self, line: str, device: Device) -> None:
         warnings.warn(
             SET_LINE_WARNING_TEMPLATE.format(
                 code=0x07, name="Set LCD Contents, Line 1"
@@ -76,8 +77,7 @@ class SetLine1(Command):
         )
 
         buffer = encode_chars(line)
-        # TODO: This "16" is device specific
-        self.line = buffer.ljust(16, b" ")
+        self.line = buffer.ljust(device.LINE_WIDTH, b" ")
 
     def to_packet(self) -> Packet:
         return (self.command, self.line)
@@ -86,7 +86,7 @@ class SetLine1(Command):
 class SetLine2(Command):
     command: int = 0x08
 
-    def __init__(self, line: str) -> None:
+    def __init__(self, line: str, device: Device) -> None:
         warnings.warn(
             SET_LINE_WARNING_TEMPLATE.format(
                 code=0x08, name="Set LCD Contents, Line 2"
@@ -94,7 +94,7 @@ class SetLine2(Command):
             DeprecationWarning,
         )
         buffer = encode_chars(line)
-        self.line = buffer.ljust(16, b" ")
+        self.line = buffer.ljust(device.LINE_WIDTH, b" ")
 
     def to_packet(self) -> Packet:
         return (self.command, self.line)

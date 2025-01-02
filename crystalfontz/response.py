@@ -53,26 +53,12 @@ class Versions(Response):
         )
 
 
-class Status(Response):
-    # TODO: Device AND firmware specific
+class StatusResponse(Response):
     def __init__(self: Self, data: bytes) -> None:
-        if len(data) != 15:
-            raise DecodeError(f"Status expected to be 15 bytes, is {len(data)} bytes")
-        # data[0] is reserved
-        temp_1 = data[1]
-        temp_2 = data[2]
-        temp_3 = data[3]
-        temp_4 = data[4]
-        key_presses = data[5]
-        key_releases = data[6]
-        atx_power = data[7]
-        watchdog_counter = data[8]
-        contrast_adjust = data[9]
-        backlight = data[10]
-        sense_on_floppy = data[11]
-        # data[12] is reserved
-        cfa633_contrast = data[13]
-        backlight = data[14]
+        self.data: bytes = data
+
+    def __str__(self: Self) -> str:
+        return f"Status({self.data})"
 
 
 class SetLine1Response(Response):
@@ -85,7 +71,6 @@ class SetLine2Response(Response):
     def __init__(self: Self, data: bytes) -> None:
         if len(data) != 0:
             raise DecodeError("Response expected to be 0 bytes, is {len(data)} bytes")
-        pass
 
 
 class KeyActivityReport(Response):
@@ -135,7 +120,7 @@ RESPONSE_CLASSES: Dict[int, Type[Response]] = {
     0x41: Versions,
     0x47: SetLine1Response,
     0x48: SetLine2Response,
-    0x5E: Status,
+    0x5E: StatusResponse,
     # Reports start with bits 0b10
     0x80: KeyActivityReport,
     0x82: TemperatureReport,

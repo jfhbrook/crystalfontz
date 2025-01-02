@@ -5,7 +5,15 @@ from typing import cast, Dict, List, Optional, Type, TypeVar
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
-from crystalfontz.command import Command, GetVersions, Ping, SetLine1, SetLine2
+from crystalfontz.command import (
+    Command,
+    GetVersions,
+    Ping,
+    ReadStatus,
+    SetLine1,
+    SetLine2,
+)
+from crystalfontz.device import Device, DEVICES, DeviceStatus
 from crystalfontz.error import ConnectionError
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.response import (
@@ -13,6 +21,7 @@ from crystalfontz.response import (
     Response,
     SetLine1Response,
     SetLine2Response,
+    StatusResponse,
     Versions,
 )
 
@@ -22,9 +31,18 @@ R = TypeVar("R", bound=Response)
 class Client(asyncio.Protocol):
     def __init__(
         self,
+        model: str = "CFA533",
+        hardware_rev: str = "h1.4",
+        firmware_rev: str = "u1v2",
+        device: Optional[Device] = None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ):
         _loop = loop if loop else asyncio.get_running_loop()
+
+        if device:
+            self.device: Device = device
+        else:
+            self.device = DEVICES[model][hardware_rev][firmware_rev]
 
         self._buffer: bytes = b""
         self._loop: asyncio.AbstractEventLoop = _loop
@@ -118,11 +136,11 @@ class Client(asyncio.Protocol):
         raise NotImplementedError("clear")
 
     async def set_line_1(self, line: str) -> SetLine1Response:
-        self.send_command(SetLine1(line))
+        self.send_command(SetLine1(line, self.device))
         return await self.expect(SetLine1Response)
 
     async def set_line_2(self, line: str) -> SetLine2Response:
-        self.send_command(SetLine2(line))
+        self.send_command(SetLine2(line, self.device))
         return await self.expect(SetLine2Response)
 
     def set_special_char_data(self) -> None:
@@ -170,8 +188,10 @@ class Client(asyncio.Protocol):
     def config_watchdog(self) -> None:
         raise NotImplementedError("config_watchdog")
 
-    def read_status(self) -> None:
-        raise NotImplementedError("read_status")
+    async def read_status(self) -> DeviceStatus:
+        self.send_command(ReadStatus())
+        res = await self.expect(StatusResponse)
+        return self.device.status(res.data)
 
     def send_data(self) -> None:
         raise NotImplementedError("send_data")
@@ -199,7 +219,7 @@ async def create_connection(
 
     _, client = await create_serial_connection(
         _loop,
-        lambda: Client(_loop),
+        lambda: Client(loop=_loop),
         port,
         baudrate=baudrate,
         bytesize=bytesize,
