@@ -38,6 +38,19 @@ class Response(ABC):
         raise UnknownResponseError(packet)
 
 
+class RawResponse(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        self.code: int = 0xFF
+        self.data = data
+
+    @classmethod
+    def from_packet(cls: Type[Self], packet: Packet) -> Self:
+        code, data = packet
+        res = cls(data)
+        res.code = code
+        return res
+
+
 RESPONSE_CLASSES: Dict[int, Type[Response]] = {}
 
 R = TypeVar("R", bound=Response)

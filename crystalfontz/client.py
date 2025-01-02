@@ -46,6 +46,7 @@ from crystalfontz.response import (
     Poked,
     Pong,
     PowerResponse,
+    RawResponse,
     Response,
     StatusResponse,
     TemperatureReport,
@@ -125,6 +126,14 @@ class Client(asyncio.Protocol):
         if type(res) in self._queues:
             for q in self._queues[type(res)]:
                 q.put_nowait(res)
+
+        self._handle_raw_subscriptions(packet)
+
+    def _handle_raw_subscriptions(self: Self, packet: Packet) -> None:
+        if RawResponse in self._queues:
+            raw_res = RawResponse.from_packet(packet)
+            for q in self._queues[RawResponse]:
+                q.put_nowait(raw_res)
 
     #
     # Event subscriptions
