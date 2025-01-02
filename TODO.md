@@ -1,9 +1,5 @@
 # TODO
 
-## High Priority
-
-- [-] ReportHandler abstraction
-
 ## Commands
 
 ### The Basics
