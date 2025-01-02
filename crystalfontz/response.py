@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import struct
 from typing import Dict, Self, Type
 
-from crystalfontz.error import DecodeError
+from crystalfontz.error import DecodeError, DeviceError, UnknownResponseError
 from crystalfontz.keys import KeyActivity
 from crystalfontz.packet import Packet
 
@@ -22,7 +22,10 @@ class Response(ABC):
         if code in RESPONSE_CLASSES:
             return RESPONSE_CLASSES[code](data)
 
-        raise DecodeError(f"Unknown response ({code}, {data})")
+        if DeviceError.is_error_code(code):
+            raise DeviceError(packet)
+
+        raise UnknownResponseError(packet)
 
 
 class Pong(Response):
@@ -127,11 +130,13 @@ class TemperatureReport(Response):
 
 
 RESPONSE_CLASSES: Dict[int, Type[Response]] = {
+    # Command responses start with bits 0b01
     0x40: Pong,
     0x41: Versions,
     0x47: SetLine1Response,
     0x48: SetLine2Response,
     0x5E: Status,
+    # Reports start with bits 0b10
     0x80: KeyActivityReport,
     0x82: TemperatureReport,
 }

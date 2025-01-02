@@ -1,8 +1,14 @@
 from abc import ABC, abstractmethod
+import warnings
 
 from crystalfontz.character import encode_chars
 from crystalfontz.error import EncodeError
 from crystalfontz.packet import Packet
+
+SET_LINE_WARNING_TEMPLATE = (
+    "Command {code} ({code:02x}): {name} is deprecated"
+    " in favor of command 31 (0x1F): Send Data to LCD."
+)
 
 
 class Command(ABC):
@@ -62,6 +68,13 @@ class SetLine1(Command):
     command: int = 0x07
 
     def __init__(self, line: str) -> None:
+        warnings.warn(
+            SET_LINE_WARNING_TEMPLATE.format(
+                code=0x07, name="Set LCD Contents, Line 1"
+            ),
+            DeprecationWarning,
+        )
+
         buffer = encode_chars(line)
         # TODO: This "16" is device specific
         self.line = buffer.ljust(16, b" ")
@@ -74,6 +87,12 @@ class SetLine2(Command):
     command: int = 0x08
 
     def __init__(self, line: str) -> None:
+        warnings.warn(
+            SET_LINE_WARNING_TEMPLATE.format(
+                code=0x08, name="Set LCD Contents, Line 2"
+            ),
+            DeprecationWarning,
+        )
         buffer = encode_chars(line)
         self.line = buffer.ljust(16, b" ")
 

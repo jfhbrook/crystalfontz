@@ -1,17 +1,7 @@
 # TODO
 
-b'\x07\x05Hello\xb4\xc4'
-
-crystalfontz.error.ParseError: Unknown response (199, b'')
-
-
-
 ## High Priority
 
-- [x] Test that client still works for button presses
-- [x] Manually test ping/pong
-- [x] Manually test versions
-- [ ] Manually test writing L1/L2
 - [ ] Write character table abstraction
 - [ ] Write device abstraction
 
@@ -21,12 +11,12 @@ crystalfontz.error.ParseError: Unknown response (199, b'')
 
 - [x] ping
 - [x] get versions
-- [-] set line 1, set line 2
+- [x] set line 1, set line 2
+- [ ] clear screen
 - [ ] read status
   - [-] report status type
   - [ ] report command type
   - note, device and firmware specific
-- [ ] clear screen
 - [ ] set contrast
 - [ ] set backlight
 - [ ] set cursor style
