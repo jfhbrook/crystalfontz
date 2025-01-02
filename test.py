@@ -1,9 +1,14 @@
 import asyncio
+import logging
 
 from crystalfontz.client import create_connection
+from crystalfontz.report import LoggingReportHandler
 
 async def main() -> None:
-    client = await create_connection("/dev/ttyUSB0")
+    logging.basicConfig(level=logging.DEBUG)
+
+    client = await create_connection("/dev/ttyUSB0", report_handler=LoggingReportHandler())
+
     print(await client.versions())
 
 

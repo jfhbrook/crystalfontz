@@ -2,9 +2,7 @@
 
 ## High Priority
 
-- [ ] Logging
-- [ ] ReportHandler abstraction
-- [ ] Make character ROM device specific
+- [-] ReportHandler abstraction
 
 ## Commands
 
@@ -44,4 +42,6 @@
 
 ## Long Tail
 
+- [ ] Debug logging
+- [ ] Make character ROM device specific
 - [ ] Retry a few times if packet if fails to respond within 250ms
