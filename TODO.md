@@ -21,7 +21,6 @@
 
 - [-] Set device based on version output
 - [ ] Report generator error handling
-- [ ] Debug logging
 - [ ] Clean up method names
 - [ ] Make character ROM device specific
 - [ ] Retry a few times if packet if fails to respond within 250ms

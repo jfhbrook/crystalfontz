@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
+import logging
 from typing import Any, Optional, Self
 import warnings
 
 from crystalfontz.error import DecodeError, DeviceLookupError
+
+logger = logging.getLogger(__name__)
 
 DeviceStatus = Any
 
@@ -126,6 +129,12 @@ class CFA533(Device):
 def lookup_device(
     model: str, hardware_rev: str = "<any>", firmware_rev: str = "<any>"
 ) -> Device:
+    if model != "CFA533" or hardware_rev != "h1.4" or firmware_rev != "u1v2":
+        logger.warning(
+            f"{model}: {hardware_rev}, {firmware_rev} has not been "
+            "tested and may have bugs."
+        )
+
     if model == "CFA633":
         return CFA633()
     elif model == "CFA533":

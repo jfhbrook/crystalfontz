@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import struct
 from typing import Optional, Tuple
-import warnings
+
+logger = logging.getLogger(__name__)
 
 from crystalfontz.error import CrcError, EncodeError
 
@@ -301,6 +303,8 @@ def serialize_packet(packet: Packet) -> bytes:
     pkt = cmd.to_bytes() + len(data).to_bytes() + data
     crc = make_crc(pkt)
 
+    logger.debug(f"Sending packet: {pkt + crc}")
+
     return pkt + crc
 
 
@@ -310,7 +314,7 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
     """
 
     def synchronize(message: str) -> Tuple[Optional[Packet], bytes]:
-        warnings.warn(message)
+        logger.debug(message)
         return parse_packet(buffer[1:])
 
     # There must be at least 4 bytes - command, 0, "", CRC
@@ -337,6 +341,7 @@ def parse_packet(buffer: bytes) -> Tuple[Optional[Packet], bytes]:
         expected = make_crc(buffer[0 : length + 2])
 
         if crc == expected:
+            logger.debug(f"Received packet: {buffer[0 : length + 4]}")
             return ((cmd, data), rest)
     except CrcError as exc:
         return synchronize(str(exc))
