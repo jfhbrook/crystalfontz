@@ -9,9 +9,9 @@
 - [x] set line 1, set line 2
 - [-] clear screen
 - [-] set contrast
-- [ ] set backlight
+- [-] set backlight
 - [-] set cursor style
-- [ ] set cursor position
+- [-] set cursor position
 - [ ] poll keypad
 - [ ] reboot, reset or power off
 - [ ] store boot state

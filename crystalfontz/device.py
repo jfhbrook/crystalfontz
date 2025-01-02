@@ -8,6 +8,7 @@ DeviceStatus = Any
 
 
 class Device(ABC):
+    LINE_COUNT = 2
     LINE_WIDTH = 16
     ENHANCED_CONTRAST = False
 
@@ -16,6 +17,7 @@ class Device(ABC):
 
 
 class CFA533_H1_4_U1_V2(Device):
+    LINE_COUNT = 2
     LINE_WIDTH = 16
 
     # CFA633 accepts one byte between 0 and 200. CFA533 will accept one byte

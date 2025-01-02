@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Optional, Self
 import warnings
 
 from crystalfontz.character import encode_chars
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
-from crystalfontz.error import EncodeError
 from crystalfontz.packet import Packet
 
 SET_LINE_WARNING_TEMPLATE = (
@@ -25,7 +24,7 @@ class Ping(Command):
 
     def __init__(self: Self, payload: bytes) -> None:
         if len(payload) > 16:
-            raise EncodeError(f"Payload length {len(payload)} > 16")
+            raise ValueError(f"Payload length {len(payload)} > 16")
         self.payload: bytes = payload
 
     def to_packet(self) -> Packet:
@@ -119,8 +118,21 @@ class Poke(Command):
 class SetCursorPosition(Command):
     command: int = 0x0B
 
+    def __init__(self: Self, column: int, row: int, device: Device) -> None:
+        if column < 0:
+            raise ValueError(f"Column {column} < 0")
+        elif column >= device.LINE_WIDTH:
+            raise ValueError(f"Column {column} >= {device.LINE_WIDTH}")
+        if row < 0:
+            raise ValueError(f"Row {row} < 0")
+        elif row >= device.LINE_COUNT:
+            raise ValueError(f"Row {row} >= {device.LINE_COUNT}")
+
+        self.row = row
+        self.column = column
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.column.to_bytes() + self.row.to_bytes())
 
 
 class SetCursorStyle(Command):
@@ -152,8 +164,25 @@ class SetContrast(Command):
 class SetBacklight(Command):
     command: int = 0x0E
 
+    def __init__(
+        self: Self, lcd_brightness: int, keypad_brightness: Optional[int] = None
+    ) -> None:
+        if lcd_brightness < 0:
+            raise ValueError(f"LCD brightness {lcd_brightness} < 0")
+        elif lcd_brightness > 00:
+            raise ValueError(f"LCD brightness {lcd_brightness} > 100")
+        self.brightness: bytes = lcd_brightness.to_bytes()
+
+        # NOTE: This feature is not CF633 compatible.
+        if keypad_brightness is not None:
+            if keypad_brightness < 0:
+                raise ValueError(f"Keypad brightness {keypad_brightness} < 0")
+            elif keypad_brightness > 100:
+                raise ValueError(f"Keypad brightness {keypad_brightness} > 100")
+            self.brightness += keypad_brightness.to_bytes()
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.brightness)
 
 
 # 0x0F-0x11 are reserved

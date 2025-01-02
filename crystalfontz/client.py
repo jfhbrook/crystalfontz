@@ -11,7 +11,9 @@ from crystalfontz.command import (
     GetVersions,
     Ping,
     ReadStatus,
+    SetBacklight,
     SetContrast,
+    SetCursorPosition,
     SetCursorStyle,
     SetLine1,
     SetLine2,
@@ -22,8 +24,10 @@ from crystalfontz.error import ConnectionError
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
+    BacklightSet,
     ClearedScreen,
     ContrastSet,
+    CursorPositionSet,
     CursorStyleSet,
     KeyActivityReport,
     Pong,
@@ -170,8 +174,9 @@ class Client(asyncio.Protocol):
     def poke(self) -> None:
         raise NotImplementedError("poke")
 
-    def set_cursor_pos(self) -> None:
-        raise NotImplementedError("set_cursor_pos")
+    async def set_cursor_position(self, column: int, row: int) -> CursorPositionSet:
+        self.send_command(SetCursorPosition(column, row, self.device))
+        return await self.expect(CursorPositionSet)
 
     async def set_cursor_style(self, style: CursorStyle) -> CursorStyleSet:
         self.send_command(SetCursorStyle(style))
@@ -182,8 +187,11 @@ class Client(asyncio.Protocol):
 
         return await self.expect(ContrastSet)
 
-    def set_backlight(self) -> None:
-        raise NotImplementedError("set_backlight")
+    async def set_backlight(
+        self, lcd_brightness: int, keypad_brightness: Optional[int] = None
+    ) -> BacklightSet:
+        self.send_command(SetBacklight(lcd_brightness, keypad_brightness))
+        return await self.expect(BacklightSet)
 
     def read_dow_info(self) -> None:
         raise NotImplementedError("read_dow_info")
