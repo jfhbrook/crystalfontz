@@ -52,7 +52,7 @@ class UnknownResponseError(DecodeError):
         self.code = code
         self.payload = payload
 
-        super().__init__(f"Unknown response ({code}, {payload})")
+        super().__init__(f"Unknown response (0x{code:02X}, {payload})")
 
 
 class DeviceError(CrystalfontzError):
@@ -70,7 +70,7 @@ class DeviceError(CrystalfontzError):
         # The six bits following the 0b11 correspond to the command
         self.command = code & 0o77
         self.payload = payload
-        message = f"Error executing command {self.command}"
+        message = f"Error executing command 0x{self.command:02X}"
 
         if len(self.payload):
             message += f": {self.payload}"
