@@ -1,10 +1,5 @@
 # TODO
 
-- [-] Set device based on version output
-- [ ] Report generator error handling
-
-## Commands
-
 ### The Basics
 
 - [x] ping
@@ -21,26 +16,31 @@
 - [-] store boot state
 - [-] poke
 - [-] send data to LCD
-- [ ] read status
 
-### Long Tail
+## Features/Improvements
 
-- set baud rate
-- set special character data
-- configure key reporting
-- set up temperature reporting
-- read user flash
-- write user flash
-- read DOW
-- DOW transactions
-- set atx power switch
-- send raw data to LCD
-- set gpio
-- read gpio
-
-## Long Tail
-
+- [-] Set device based on version output
+- [ ] Report generator error handling
 - [ ] Debug logging
 - [ ] Clean up method names
 - [ ] Make character ROM device specific
 - [ ] Retry a few times if packet if fails to respond within 250ms
+
+### More Interesting Commands
+
+- [ ] set baud rate
+- [ ] set special character data
+- [ ] configure key reporting
+- [ ] set up temperature reporting
+- [ ] set atx power switch
+- [ ] read status
+
+### Obscure Commands
+
+- read user flash
+- write user flash
+- read DOW
+- DOW transactions
+- send raw data to LCD
+- set gpio
+- read gpio
