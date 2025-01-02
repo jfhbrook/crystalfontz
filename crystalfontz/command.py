@@ -174,8 +174,8 @@ class SetBacklight(Command):
 
     def __init__(
         self: Self,
-        lcd_brightness: int,
-        keypad_brightness: Optional[int],
+        lcd_brightness: float,
+        keypad_brightness: Optional[float],
         device: Device,
     ) -> None:
         self.brightness = device.brightness(lcd_brightness, keypad_brightness)

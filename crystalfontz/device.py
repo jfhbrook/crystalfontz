@@ -22,7 +22,7 @@ class Device(ABC):
 
     @abstractmethod
     def brightness(
-        self: Self, lcd_brightness: int, keypad_brightness: Optional[int]
+        self: Self, lcd_brightness: float, keypad_brightness: Optional[float]
     ) -> bytes:
         raise NotImplementedError("brightness")
 
@@ -38,11 +38,11 @@ def assert_contrast_in_range(contrast: float) -> None:
         raise ValueError(f"Contrast {contrast} > 1")
 
 
-def assert_brightness_in_range(name: str, brightness: int) -> None:
+def assert_brightness_in_range(name: str, brightness: float) -> None:
     if brightness < 0:
         raise ValueError(f"{name} brightness {brightness} < 0")
-    elif brightness > 100:
-        raise ValueError(f"{name} brightness {brightness} > 100")
+    elif brightness > 1:
+        raise ValueError(f"{name} brightness {brightness} > 1")
 
 
 # INCOMPLETE
@@ -61,14 +61,14 @@ class CFA633(Device):
         return int(contrast * 200).to_bytes()
 
     def brightness(
-        self: Self, lcd_brightness: int, keypad_brightness: Optional[int]
+        self: Self, lcd_brightness: float, keypad_brightness: Optional[float]
     ) -> bytes:
         assert_brightness_in_range("LCD", lcd_brightness)
 
         if keypad_brightness is not None:
             warnings.warn("CFA633 does not support keypad brightness")
 
-        return lcd_brightness.to_bytes()
+        return int(lcd_brightness * 100).to_bytes()
 
     def status(self: Self, data: bytes) -> DeviceStatus:
         raise NotImplementedError("status")
@@ -89,15 +89,15 @@ class CFA533(Device):
         return int(contrast * 50).to_bytes() + int(contrast * 255).to_bytes()
 
     def brightness(
-        self: Self, lcd_brightness: int, keypad_brightness: Optional[int]
+        self: Self, lcd_brightness: float, keypad_brightness: Optional[float]
     ) -> bytes:
         assert_brightness_in_range("LCD", lcd_brightness)
-        brightness = lcd_brightness.to_bytes()
+        brightness = int(lcd_brightness * 100).to_bytes()
 
         # CFA533 can optionally accept a second parameter for keypad brightness
         if keypad_brightness is not None:
             assert_brightness_in_range("Keypad", keypad_brightness)
-            brightness += keypad_brightness.to_bytes()
+            brightness += int(keypad_brightness * 100).to_bytes()
 
         return brightness
 
