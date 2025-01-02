@@ -92,7 +92,6 @@ class Client(asyncio.Protocol):
 
     def send_packet(self, packet: Packet) -> None:
         buff = serialize_packet(packet)
-        print(buff)
         self._transport.write(buff)
 
     async def ping(self, payload: bytes) -> Pong:

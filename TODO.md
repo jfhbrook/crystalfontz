@@ -1,9 +1,13 @@
 # TODO
 
+Versions(model=CFA533, hardware_rev=h1.4, firmware_rev=u1v2)
+
 ## High Priority
 
 - [ ] Write character table abstraction
 - [ ] Write device abstraction
+- [ ] Logging
+- [ ] ReportHandler abstraction
 
 ## Commands
 
