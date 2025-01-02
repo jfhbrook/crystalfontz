@@ -162,14 +162,8 @@ class SetCursorStyle(Command):
 class SetContrast(Command):
     command: int = 0x0D
 
-    def __init__(self: Self, contrast: int, device: Device) -> None:
-        if device.ENHANCED_CONTRAST:
-            # The first byte is ignored, only the second byte matters
-            self.contrast = contrast.to_bytes() + contrast.to_bytes()
-        else:
-            # 0-200 are accepted for CFA633, but only 0-50 are respected by
-            # CFA533.
-            self.contrast = contrast.to_bytes()
+    def __init__(self: Self, contrast: float, device: Device) -> None:
+        self.contrast = device.contrast(contrast)
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.contrast)

@@ -18,6 +18,10 @@ class Device(ABC):
     ENHANCED_CONTRAST = False
 
     @abstractmethod
+    def contrast(self: Self, contrast: float) -> bytes:
+        raise NotImplementedError("contrast")
+
+    @abstractmethod
     def brightness(
         self: Self, lcd_brightness: int, keypad_brightness: Optional[int]
     ) -> bytes:
@@ -26,6 +30,13 @@ class Device(ABC):
     @abstractmethod
     def status(self: Self, data: bytes) -> DeviceStatus:
         raise NotImplementedError("status")
+
+
+def assert_contrast_in_range(contrast: float) -> None:
+    if contrast < 0:
+        raise ValueError(f"Contrast {contrast} < 0")
+    elif contrast > 1:
+        raise ValueError(f"Contrast {contrast} > 1")
 
 
 def assert_brightness_in_range(name: str, brightness: int) -> None:
@@ -45,6 +56,11 @@ class CFA633(Device):
     columns = 16
     ENHANCED_CONTRAST = False
 
+    def contrast(self: Self, contrast: float) -> bytes:
+        # CFA633 supports a contrast setting between 0 and 200.
+        assert_contrast_in_range(contrast)
+        return int(contrast * 200).to_bytes()
+
     def brightness(
         self: Self, lcd_brightness: int, keypad_brightness: Optional[int]
     ) -> bytes:
@@ -63,7 +79,12 @@ class CFA533(Device):
 
     lines = 2
     columns = 16
-    ENHANCED_CONTRAST = True
+
+    def contrast(self: Self, contrast: float) -> bytes:
+        # CFA533 supports "enhanced contrast". The first byte is ignored and
+        # the second byte can accept the full range.
+        # CFA533 also supports "legacy contrast", but with a max value of 50.
+        return int(contrast * 50).to_bytes() + int(contrast * 255).to_bytes()
 
     def brightness(
         self: Self, lcd_brightness: int, keypad_brightness: Optional[int]

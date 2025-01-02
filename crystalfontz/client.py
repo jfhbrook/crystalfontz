@@ -195,7 +195,7 @@ class Client(asyncio.Protocol):
         self.send_command(SetCursorStyle(style))
         return await self.expect(CursorStyleSet)
 
-    async def set_contrast(self, contrast: int) -> ContrastSet:
+    async def set_contrast(self, contrast: float) -> ContrastSet:
         self.send_command(SetContrast(contrast, self.device))
 
         return await self.expect(ContrastSet)
