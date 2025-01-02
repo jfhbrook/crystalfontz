@@ -9,13 +9,14 @@
 - [x] ping
 - [x] get versions
 - [x] set line 1, set line 2
-- [-] clear screen
-- [-] set contrast
-- [-] set backlight
-- [-] set cursor style
-- [-] set cursor position
+- [x] clear screen
+- [x] set contrast
+- [x] set backlight
+- [x] set cursor style
+- [x] set cursor position
+- [x] reboot, reset or power off
+  - (only tested reboot)
 - [ ] poll keypad
-- [-] reboot, reset or power off
 - [ ] store boot state
 - [ ] read status
   - [-] report status type
