@@ -90,9 +90,7 @@ class CgRom:
 
 
 #
-# This ROM encoding is based on page 44 of this doc:
-#
-#     file:///Users/josh/Downloads/CFA533-TMI-KU.pdf
+# This ROM encoding is based on page 44 of CFA533-TMI-KU.pdf.
 #
 # However, it is *incomplete*, mostly because I don't know katakana and only
 # know a smattering of Greek. Unknown characters are filled in with spaces.
