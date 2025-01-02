@@ -318,14 +318,12 @@ class Client(asyncio.Protocol):
     # Effects
     #
 
-    async def marquee(
+    def marquee(
         self: Self, row: int, text: str, tick: Optional[float] = None
     ) -> Marquee:
         return Marquee(row, text, client=self, tick=tick, loop=self._loop)
 
-    async def screensaver(
-        self: Self, text: str, tick: Optional[float] = None
-    ) -> Screensaver:
+    def screensaver(self: Self, text: str, tick: Optional[float] = None) -> Screensaver:
         return Screensaver(text, client=self, tick=tick, loop=self._loop)
 
 

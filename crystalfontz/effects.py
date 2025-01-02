@@ -134,7 +134,7 @@ class Effect(ABC):
     async def finish(self: Self) -> None:
         pass
 
-    async def stop(self: Self) -> None:
+    def stop(self: Self) -> None:
         self._running = False
 
 
@@ -181,8 +181,8 @@ class Marquee(Effect):
 
         left: bytes = self.text[self.shift :]
         right: bytes = self.text[0 : self.shift]
-        middle: bytes = b" " * (device.columns - len(self.text))
-        return left + middle + right
+        middle: bytes = b" " * max(device.columns - len(self.text), 1)
+        return (left + middle + right)[0 : device.columns]
 
 
 class Screensaver(Effect):

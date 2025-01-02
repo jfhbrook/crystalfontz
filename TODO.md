@@ -19,6 +19,7 @@
 
 ## Features/Improvements
 
+- [-] Marquee and screensaver
 - [-] Set device based on version output
 - [ ] Report generator error handling
 - [ ] Clean up method names

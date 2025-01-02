@@ -2,7 +2,6 @@ import asyncio
 import logging
 
 from crystalfontz.client import create_connection
-from crystalfontz.cursor import CursorStyle
 from crystalfontz.report import LoggingReportHandler
 
 async def main() -> None:
@@ -10,17 +9,29 @@ async def main() -> None:
 
     client = await create_connection("/dev/ttyUSB0", report_handler=LoggingReportHandler())
 
-    print(await client.versions())
-    print(await client.clear_screen())
-    print(await client.set_contrast(0.5))
-    print(await client.set_backlight(10))
-    # crystalfontz.error.UnknownResponseError: Unknown response (76, b'')
-    print(await client.set_cursor_style(CursorStyle.BLINKING_UNDERSCORE))
-    print(await client.set_cursor_position(1, 3))
+    await client.load_device()
+
+    for _ in range(10):
+        print(await client.poll_keypad())
+        await asyncio.sleep(1)
+
+    print(await client.poke(0x40))
+
+    marquee = client.marquee(0, "Josh is cool")
+
+    f = asyncio.create_task(marquee.run())
 
     await asyncio.sleep(10)
 
-    print(await client.reboot_lcd())
+    marquee.stop()
+
+    await f
+
+    screensaver = client.screensaver("Josh!")
+
+    f = asyncio.create_task(screensaver.run())
+
+    await f
 
 
 loop = asyncio.get_event_loop()
