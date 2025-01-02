@@ -2,26 +2,26 @@ import asyncio
 import logging
 
 from crystalfontz.client import create_connection
-from crystalfontz.report import LoggingReportHandler
+from crystalfontz.report import NoopReportHandler, LoggingReportHandler
 
 async def main() -> None:
     logging.basicConfig(level=logging.INFO)
 
-    client = await create_connection("/dev/ttyUSB0", report_handler=LoggingReportHandler())
+    client = await create_connection("/dev/ttyUSB0", report_handler=NoopReportHandler())
 
     # await client.set_backlight(0.1)
 
-    # for _ in range(10):
-    #     print(await client.poll_keypad())
-    #     await asyncio.sleep(1)
+    for _ in range(10):
+        print(await client.poll_keypad())
+        await asyncio.sleep(5)
 
     # print(await client.poke(0x40))
 
-    await client.clear_screen()
+    # await client.clear_screen()
 
-    marquee = client.marquee(0, "Josh is cool")
+    # marquee = client.marquee(0, "Josh is cool")
 
-    await marquee.run()
+    # await marquee.run()
 
     # screensaver = client.screensaver("Josh!")
 

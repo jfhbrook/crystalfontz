@@ -12,7 +12,7 @@
 - [x] set cursor position
 - [x] reboot, reset or power off
   - (only tested reboot)
-- [-] poll keypad
+- [x] poll keypad
 - [-] store boot state
 - [x] poke
 - [x] send data to LCD
@@ -22,6 +22,8 @@
 - [x] Marquee and screensaver
 - [x] Set device based on version output
 - [ ] Report generator error handling
+- [ ] Effect error handling
+- [ ] Lock when running command
 - [ ] Clean up method names
 - [ ] Make character ROM device specific
 - [ ] Retry a few times if packet if fails to respond within 250ms
