@@ -40,10 +40,10 @@ class SpecialCharacter:
         return cls(char)
 
     def as_bytes(self: Self, device: DeviceProtocol) -> bytes:
-        self._validate(device)
+        self.validate(device)
         return b"".join([row.tobytes() for row in self.character])
 
-    def _validate(self: Self, device: DeviceProtocol) -> None:
+    def validate(self: Self, device: DeviceProtocol) -> None:
         if len(self.character) != device.character_height:
             raise ValueError(
                 f"Character {len(self.character)} pixels tall, should be "

@@ -1,9 +1,10 @@
 import pytest
 
-from crystalfontz.device import CFA533_CHARACTER_ROM
+from crystalfontz.character import SMILEY_FACE, SpecialCharacter
+from crystalfontz.device import CFA533, CFA533_CHARACTER_ROM
 
 # Manually encoded characters
-exc = 32 + 1
+exclamation = 32 + 1
 _ = 32 + 0
 H = 64 + 8
 d = 96 + 4
@@ -14,12 +15,22 @@ r = 112 + 2
 w = 112 + 7
 
 
-def test_encode_table() -> None:
-    assert CFA533_CHARACTER_ROM["!"] == exc.to_bytes()
+@pytest.mark.parametrize("decoded,encoded", [("!", exclamation)])
+def test_encode_table(decoded, encoded) -> None:
+    assert CFA533_CHARACTER_ROM[decoded] == encoded.to_bytes()
 
 
 @pytest.mark.parametrize(
-    "input,expected", [("Hello world!", bytes([H, e, l, l, o, _, w, o, r, l, d, exc]))]
+    "input,expected",
+    [("Hello world!", bytes([H, e, l, l, o, _, w, o, r, l, d, exclamation]))],
 )
 def test_encode(input, expected) -> None:
     assert CFA533_CHARACTER_ROM.encode(input) == expected
+
+
+@pytest.mark.parametrize("special_character", [SMILEY_FACE])
+def test_special_character_valid(special_character):
+    encoded: bytes = special_character.as_bytes(CFA533())
+    # 0x09 takes 9 bytes of data. The first character is the index (0-7) and
+    # the actual character is 8 bytes.
+    assert len(encoded) == 8, "Special character should be eight bytes"
