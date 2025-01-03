@@ -1,5 +1,7 @@
 from typing import Dict, List, Self, Type
 
+from bitstring import BitArray
+
 from crystalfontz.device import Device
 from crystalfontz.error import EncodeError
 
@@ -137,8 +139,8 @@ encode_chars = ROM.encode
 
 
 class SpecialCharacter:
-    def __init__(self: Self, character: List[bytes]) -> None:
-        self.character: List[bytes] = character
+    def __init__(self: Self, character: List[BitArray]) -> None:
+        self.character: List[BitArray] = character
 
     @classmethod
     def from_str(cls: Type[Self], character: str) -> Self:
@@ -149,15 +151,15 @@ class SpecialCharacter:
         if lines[-1] == "":
             lines = lines[0:-1]
 
-        char: List[bytes] = list()
+        char: List[BitArray] = list()
 
         for line in lines:
-            buffer = b""
+            buffer: BitArray = BitArray()
             for c in line:
                 if c == " ":
-                    buffer += b"\x00"
+                    buffer += "0b0"
                 else:
-                    buffer += b"\x01"
+                    buffer += "0b1"
             char.append(buffer)
 
         return cls(char)
@@ -172,4 +174,4 @@ class SpecialCharacter:
                 raise ValueError(
                     f"Row {i} is {len(row)} pixels wide, should be {device.character_width}"
                 )
-        return b"".join(self.character)
+        return b"".join([row.tobytes() for row in self.character])

@@ -15,7 +15,7 @@ license = { text = "Apache-2.0" }
 requires-python = ">=3.12"
 dependencies = [
   "appdirs",
-  "crcmod",
+  "bitstring",
   "pyserial",
   "pyserial-asyncio",
   "pyyaml",
