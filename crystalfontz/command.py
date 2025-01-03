@@ -307,10 +307,10 @@ class SetAtxPowerSwitchFunctionality(Command):
     command: int = 0x1C
 
     def __init__(self: Self, settings: AtxPowerSwitchFunctionalitySettings) -> None:
-        raise NotImplementedError("SetAtxPowerSwitchFunctionality")
+        self.settings = settings
 
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.settings.to_bytes())
 
 
 class ConfigureWatchdog(Command):
