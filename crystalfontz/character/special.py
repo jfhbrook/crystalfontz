@@ -61,12 +61,12 @@ class SpecialCharacter:
 SMILEY_FACE = SpecialCharacter.from_str(
     """
       
- xxxx 
-x xx x
-x xx x
-xxxxxx
-x xx x
-xx  xx
- xxxx 
+  xxx 
+ x x x
+ x x x
+ xxxxx
+ x x x
+ xx xx
+  xxx 
 """
 )
