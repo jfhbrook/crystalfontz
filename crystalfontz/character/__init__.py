@@ -9,7 +9,7 @@ from crystalfontz.character.constants import (
     japan_rquote,
     x_bar,
 )
-from crystalfontz.character.rom import CharacterRom
+from crystalfontz.character.rom import CharacterRom, SpecialCharacterRange
 from crystalfontz.character.special import SMILEY_FACE, SpecialCharacter
 
 __all__ = [
@@ -25,4 +25,5 @@ __all__ = [
     "japan_rquote",
     "SMILEY_FACE",
     "SpecialCharacter",
+    "SpecialCharacterRange",
 ]

@@ -1,3 +1,4 @@
+from bitstring import BitArray
 import pytest
 
 from crystalfontz.character import SMILEY_FACE, SpecialCharacter
@@ -34,3 +35,5 @@ def test_special_character_valid(special_character):
     # 0x09 takes 9 bytes of data. The first character is the index (0-7) and
     # the actual character is 8 bytes.
     assert len(encoded) == 8, "Special character should be eight bytes"
+    for n in encoded:
+        assert n <= 63, f"Byte {n} ({n:0b}) > 63"

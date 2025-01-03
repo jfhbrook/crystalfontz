@@ -1,11 +1,14 @@
-from typing import Dict, Self
+from typing import Dict, Self, Tuple
 
 from crystalfontz.character.constants import inverse, super_minus, super_one, x_bar
 from crystalfontz.error import EncodeError
 
+SpecialCharacterRange = Tuple[int, int]
+
 
 class CharacterRom:
     def __init__(self: Self, sheet: str) -> None:
+        self.special_character_range: SpecialCharacterRange = (0, 7)
         self._table: Dict[str, bytes] = dict()
 
         lines = sheet.split("\n")
@@ -63,3 +66,13 @@ class CharacterRom:
             i += 1
 
         return output
+
+    def set_special_character_range(self: Self, start: int, end: int) -> Self:
+        self.special_character_range = (start, end)
+        return self
+
+    def validate_special_character_index(self: Self, index: int) -> Self:
+        left, right = self.special_character_range
+        if not (left <= index <= right):
+            raise ValueError(f"{index} is outside range [{left}, {right}]")
+        return self

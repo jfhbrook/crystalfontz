@@ -44,6 +44,7 @@ CFA533_CHARACTER_ROM = (
   /?O_o←  ツソ °ö█
 """
     )
+    .set_special_character_range(0, 7)
     .set_encoding(inverse, 244 + 9)
     .set_encoding(x_bar, 240 + 8)
 )
@@ -56,7 +57,7 @@ class Device(ABC):
 
     lines: int = 2
     columns: int = 16
-    character_width: int = 8
+    character_width: int = 6
     character_height: int = 8
     character_rom: CharacterRom = CFA533_CHARACTER_ROM
 
@@ -97,7 +98,7 @@ class CFA633(Device):
 
     lines: int = 2
     columns: int = 16
-    character_width: int = 8
+    character_width: int = 6
     character_height: int = 8
     character_rom: CharacterRom = CFA533_CHARACTER_ROM
 
@@ -127,7 +128,7 @@ class CFA533(Device):
 
     lines: int = 2
     columns: int = 16
-    character_width: int = 8
+    character_width: int = 6
     character_height: int = 8
     character_rom: CharacterRom = CFA533_CHARACTER_ROM
 

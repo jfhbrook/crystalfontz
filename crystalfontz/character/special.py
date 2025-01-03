@@ -14,8 +14,8 @@ class SpecialCharacter:
     character that can be stored in user flash.
     """
 
-    def __init__(self: Self, character: List[BitArray]) -> None:
-        self.character: List[BitArray] = character
+    def __init__(self: Self, pixels: List[List[int]]) -> None:
+        self.pixels: List[List[int]] = pixels
 
     @classmethod
     def from_str(cls: Type[Self], character: str) -> Self:
@@ -26,46 +26,47 @@ class SpecialCharacter:
         if lines[-1] == "":
             lines = lines[0:-1]
 
-        char: List[BitArray] = list()
+        pixels: List[List[int]] = [
+            [0 if c == " " else 1 for c in line] for line in lines
+        ]
 
-        for line in lines:
-            buffer: BitArray = BitArray()
-            for c in line:
-                if c == " ":
-                    buffer += "0b0"
-                else:
-                    buffer += "0b1"
-            char.append(buffer)
+        width = max([len(row) for row in pixels])
+        pixels = [row + [0 for _ in range(0, width - len(row))] for row in pixels]
 
-        return cls(char)
+        return cls(pixels)
 
     def as_bytes(self: Self, device: DeviceProtocol) -> bytes:
         self.validate(device)
-        return b"".join([row.tobytes() for row in self.character])
+
+        character: BitArray = BitArray()
+
+        for row in self.pixels:
+            character += "0b00"
+            for pixel in row:
+                character += "0b1" if pixel else "0b0"
+
+        return character.tobytes()
 
     def validate(self: Self, device: DeviceProtocol) -> None:
-        if len(self.character) != device.character_height:
+        height: int = len(self.pixels)
+        width: int = len(self.pixels[0])
+
+        if width != device.character_width or height != device.character_height:
             raise ValueError(
-                f"Character {len(self.character)} pixels tall, should be "
-                f"{device.character_height}"
+                f"Character should be {device.character_width} × "
+                f"{device.character_height} pixels, is {width} × {height}"
             )
-        for i, row in enumerate(self.character):
-            if len(row) != device.character_width:
-                raise ValueError(
-                    f"Row {i} is {len(row)} pixels wide, should be "
-                    f"{device.character_width}"
-                )
 
 
 SMILEY_FACE = SpecialCharacter.from_str(
     """
-        
- xxxxxx 
-xx xx xx
-xx xx xx
-xxxxxxxx
-x xxxx x
-xx    xx
- xxxxxx 
+      
+ xxxx 
+x xx x
+x xx x
+xxxxxx
+x xx x
+xx  xx
+ xxxx 
 """
 )

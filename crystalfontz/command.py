@@ -140,10 +140,13 @@ class SetSpecialCharacterData(Command):
     def __init__(
         self: Self, index: int, character: SpecialCharacter, device: Device
     ) -> None:
+        device.character_rom.validate_special_character_index(index)
         self.index: int = index
         self.character: bytes = character.as_bytes(device)
 
     def to_packet(self: Self) -> Packet:
+        data = self.index.to_bytes() + self.character
+        assert len(data) == 9
         return (self.command, self.index.to_bytes() + self.character)
 
 
