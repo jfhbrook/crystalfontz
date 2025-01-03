@@ -16,8 +16,9 @@
 - [x] poke
 - [x] send data to LCD
 - [x] set special character data
-- [-] set baud rate
-- [-] store boot state
+- [x] set baud rate
+- [x] store boot state
+- [ ] reset state?
 - [ ] configure key reporting
 - [ ] set up temperature reporting
 - [ ] set atx power switch
