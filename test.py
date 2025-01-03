@@ -9,7 +9,7 @@ char = SpecialCharacter.from_str("""
         
  xxxxxx 
 xx xx xx
-xx xx xx 
+xx xx xx
 xxxxxxxx
 x xxxx x
 xx    xx
