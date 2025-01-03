@@ -3,6 +3,7 @@ from functools import reduce
 from typing import Iterable, Optional, Self, Set
 import warnings
 
+from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
@@ -302,8 +303,11 @@ class PollKeypad(Command):
 # 0x19-0x1B are reserved
 
 
-class SetAtxPower(Command):
+class SetAtxPowerSwitchFunctionality(Command):
     command: int = 0x1C
+
+    def __init__(self: Self, settings: AtxPowerSwitchFunctionalitySettings) -> None:
+        raise NotImplementedError("SetAtxPowerSwitchFunctionality")
 
     def to_packet(self: Self) -> Packet:
         raise NotImplementedError("to_packet")

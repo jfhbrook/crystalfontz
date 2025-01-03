@@ -187,6 +187,12 @@ class KeypadPolled(Response):
         return f"KeypadPolled(states={self.states})"
 
 
+@code(0x5C)
+class AtxPowerSwitchFunctionalitySet(Ack):
+    def __str__(self: Self) -> str:
+        return f"AtxPowerFunctionalitySet()"
+
+
 @code(0x5E)
 class StatusRead(Response):
     def __init__(self: Self, data: bytes) -> None:

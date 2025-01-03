@@ -4,12 +4,14 @@ import random
 import time
 from typing import Iterable, Optional, Protocol, Self, Set, Type, TypeVar
 
+from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus
 from crystalfontz.keys import KeyPress
 from crystalfontz.response import (
+    AtxPowerSwitchFunctionalitySet,
     BacklightSet,
     BaudRateSet,
     BootStateStored,
@@ -77,7 +79,9 @@ class ClientProtocol(Protocol):
         self: Self, when_pressed: Set[KeyPress], when_released: Set[KeyPress]
     ) -> KeyReportingConfigured: ...
     async def poll_keypad(self: Self) -> KeypadPolled: ...
-    async def set_atx_switch_functionality(self: Self) -> None: ...
+    async def set_atx_power_switch_functionality(
+        self: Self, settings: AtxPowerSwitchFunctionalitySettings
+    ) -> AtxPowerSwitchFunctionalitySet: ...
     async def configure_watchdog(self: Self) -> None: ...
     async def read_status(self: Self) -> DeviceStatus: ...
     async def send_data(

@@ -5,6 +5,7 @@ from typing import cast, Dict, Iterable, List, Optional, Self, Set, Type, TypeVa
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
+from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.command import (
@@ -19,6 +20,7 @@ from crystalfontz.command import (
     RebootLCD,
     ResetHost,
     SendData,
+    SetAtxPowerSwitchFunctionality,
     SetBacklight,
     SetBaudRate,
     SetContrast,
@@ -39,6 +41,7 @@ from crystalfontz.keys import KeyPress
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
+    AtxPowerSwitchFunctionalitySet,
     BacklightSet,
     BaudRateSet,
     BootStateStored,
@@ -284,8 +287,12 @@ class Client(asyncio.Protocol):
     async def poll_keypad(self: Self) -> KeypadPolled:
         return await self.send_command(PollKeypad(), KeypadPolled)
 
-    async def set_atx_switch_functionality(self: Self) -> None:
-        raise NotImplementedError("set_atx_switch_functionality")
+    async def set_atx_power_switch_functionality(
+        self: Self, settings: AtxPowerSwitchFunctionalitySettings
+    ) -> AtxPowerSwitchFunctionalitySet:
+        return await self.send_command(
+            SetAtxPowerSwitchFunctionality(settings), AtxPowerSwitchFunctionalitySet
+        )
 
     async def configure_watchdog(self: Self) -> None:
         raise NotImplementedError("config_watchdog")

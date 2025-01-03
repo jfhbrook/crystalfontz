@@ -21,9 +21,9 @@
 - [-] configure key reporting
 - [-] setup temperature reporting
 - [ ] set atx power switch functionality
+- [ ] watchdoge
 - [ ] read status
   - Specific to firmware of CFA533
-- [ ] watchdoge
 
 ## Features/Improvements
 
