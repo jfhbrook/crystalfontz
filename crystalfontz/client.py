@@ -1,6 +1,6 @@
 import asyncio
 from collections import defaultdict
-from typing import cast, Dict, List, Optional, Self, Type, TypeVar
+from typing import cast, Dict, List, Optional, Self, Set, Type, TypeVar
 
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
@@ -10,6 +10,7 @@ from crystalfontz.character import SpecialCharacter
 from crystalfontz.command import (
     ClearScreen,
     Command,
+    ConfigureKeyReporting,
     GetVersions,
     Ping,
     Poke,
@@ -33,6 +34,7 @@ from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
 from crystalfontz.effects import Marquee, Screensaver
 from crystalfontz.error import ConnectionError
+from crystalfontz.keys import KeyPress
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
@@ -46,6 +48,7 @@ from crystalfontz.response import (
     DataSent,
     KeyActivityReport,
     KeypadPolled,
+    KeyReportingConfigured,
     Line1Set,
     Line2Set,
     Poked,
@@ -265,8 +268,12 @@ class Client(asyncio.Protocol):
     async def raw_command(self: Self) -> None:
         raise NotImplementedError("raw_command")
 
-    async def config_key_reporting(self: Self) -> None:
-        raise NotImplementedError("config_key_reporting")
+    async def configure_key_reporting(
+        self: Self, when_pressed: Set[KeyPress], when_released: Set[KeyPress]
+    ) -> KeyReportingConfigured:
+        return await self.send_command(
+            ConfigureKeyReporting(when_pressed, when_released), KeyReportingConfigured
+        )
 
     async def poll_keypad(self: Self) -> KeypadPolled:
         return await self.send_command(PollKeypad(), KeypadPolled)
@@ -274,7 +281,7 @@ class Client(asyncio.Protocol):
     async def set_atx_switch_functionality(self: Self) -> None:
         raise NotImplementedError("set_atx_switch_functionality")
 
-    async def config_watchdog(self: Self) -> None:
+    async def configure_watchdog(self: Self) -> None:
         raise NotImplementedError("config_watchdog")
 
     async def read_status(self: Self) -> DeviceStatus:

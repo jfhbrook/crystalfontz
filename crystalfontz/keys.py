@@ -2,12 +2,14 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Self, Type
 
-KP_UP = 0x01
-KP_ENTER = 0x02
-KP_EXIT = 0x04
-KP_LEFT = 0x08
-KP_RIGHT = 0x10
-KP_DOWN = 0x20
+KeyPress = int
+
+KP_UP: KeyPress = 0x01
+KP_ENTER: KeyPress = 0x02
+KP_EXIT: KeyPress = 0x04
+KP_LEFT: KeyPress = 0x08
+KP_RIGHT: KeyPress = 0x10
+KP_DOWN: KeyPress = 0x20
 
 
 @dataclass

@@ -18,8 +18,7 @@
 - [x] set special character data
 - [x] set baud rate
 - [x] store boot state
-- [ ] reset state?
-- [ ] configure key reporting
+- [-] configure key reporting
 - [ ] set up temperature reporting
 - [ ] set atx power switch
 - [ ] read status

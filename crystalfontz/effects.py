@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 import asyncio
 import random
 import time
-from typing import Optional, Protocol, Self, Type, TypeVar
+from typing import Optional, Protocol, Self, Set, Type, TypeVar
 
 from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus
+from crystalfontz.keys import KeyPress
 from crystalfontz.response import (
     BacklightSet,
     BaudRateSet,
@@ -18,6 +19,7 @@ from crystalfontz.response import (
     CursorStyleSet,
     DataSent,
     KeypadPolled,
+    KeyReportingConfigured,
     Line1Set,
     Line2Set,
     Poked,
@@ -68,10 +70,12 @@ class ClientProtocol(Protocol):
     async def dow_transaction(self: Self) -> None: ...
     async def setup_temperature_display(self: Self) -> None: ...
     async def raw_command(self: Self) -> None: ...
-    async def config_key_reporting(self: Self) -> None: ...
+    async def configure_key_reporting(
+        self: Self, when_pressed: Set[KeyPress], when_released: Set[KeyPress]
+    ) -> KeyReportingConfigured: ...
     async def poll_keypad(self: Self) -> KeypadPolled: ...
     async def set_atx_switch_functionality(self: Self) -> None: ...
-    async def config_watchdog(self: Self) -> None: ...
+    async def configure_watchdog(self: Self) -> None: ...
     async def read_status(self: Self) -> DeviceStatus: ...
     async def send_data(
         self: Self, row: int, column: int, data: str | bytes

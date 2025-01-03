@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Self
+from functools import reduce
+from typing import Optional, Self, Set
 import warnings
 
 from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
+from crystalfontz.keys import KeyPress
 from crystalfontz.packet import Packet
 
 SET_LINE_WARNING_TEMPLATE = (
@@ -238,7 +240,7 @@ class ReadDowInfo(Command):
         raise NotImplementedError("to_packet")
 
 
-class SetupTemperatureReport(Command):
+class SetupTemperatureReporting(Command):
     command: int = 0x13
 
     def to_packet(self: Self) -> Packet:
@@ -266,11 +268,24 @@ class RawCommand(Command):
         raise NotImplementedError("to_packet")
 
 
-class ConfigKeyReport(Command):
+def _key_mask(keypresses: Set[KeyPress]) -> int:
+    return reduce(lambda mask, keypress: mask ^ keypress, keypresses, 0x00)
+
+
+class ConfigureKeyReporting(Command):
     command: int = 0x17
 
+    def __init__(
+        self: Self, when_pressed: Set[KeyPress], when_released: Set[KeyPress]
+    ) -> None:
+        self.when_pressed: int = _key_mask(when_pressed)
+        self.when_released: int = _key_mask(when_released)
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (
+            self.command,
+            self.when_pressed.to_bytes() + self.when_released.to_bytes(),
+        )
 
 
 class PollKeypad(Command):
@@ -290,7 +305,7 @@ class SetAtxPower(Command):
         raise NotImplementedError("to_packet")
 
 
-class ConfigWatchdog(Command):
+class ConfigureWatchdog(Command):
     command: int = 0x1D
 
     def to_packet(self: Self) -> Packet:
@@ -347,7 +362,7 @@ class SetBaudRate(Command):
         return (self.command, self.baud_rate.to_bytes())
 
 
-class ConfigGpio(Command):
+class ConfigureGpio(Command):
     command: int = 0x22
 
     def to_packet(self: Self) -> Packet:

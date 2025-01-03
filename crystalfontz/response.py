@@ -7,11 +7,6 @@ from crystalfontz.keys import KeyActivity, KeyStates
 from crystalfontz.packet import Packet
 
 
-def assert_empty(data: bytes) -> None:
-    if len(data) != 0:
-        raise DecodeError("Response expected to be 0 bytes, is {len(data)} bytes")
-
-
 def assert_len(n: int, data: bytes) -> None:
     if len(data) != n:
         raise DecodeError(f"Response expected to be {n} bytes, is {len(data)} bytes")
@@ -49,6 +44,14 @@ class RawResponse(Response):
         res = cls(data)
         res.code = code
         return res
+
+
+class Ack(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        assert_len(0, data)
+
+    def __str__(self: Self) -> str:
+        return "Ack()"
 
 
 RESPONSE_CLASSES: Dict[int, Type[Response]] = {}
@@ -92,55 +95,37 @@ class Versions(Response):
 
 
 @code(0x44)
-class BootStateStored(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class BootStateStored(Ack):
     def __str__(self: Self) -> str:
         return "BootStateStored()"
 
 
 @code(0x45)
-class PowerResponse(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class PowerResponse(Ack):
     def __str__(self: Self) -> str:
         return "PowerResponse()"
 
 
 @code(0x46)
-class ClearedScreen(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class ClearedScreen(Ack):
     def __str__(self: Self) -> str:
         return "ClearedScreen()"
 
 
 @code(0x47)
-class Line1Set(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class Line1Set(Ack):
     def __str__(self: Self) -> str:
         return "Line1Set()"
 
 
 @code(0x48)
-class Line2Set(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class Line2Set(Ack):
     def __str__(self: Self) -> str:
         return "Line2Set()"
 
 
 @code(0x49)
-class SpecialCharacterDataSet(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class SpecialCharacterDataSet(Ack):
     def __str__(self: Self) -> str:
         return "SpecialCharacterDataSet()"
 
@@ -157,39 +142,33 @@ class Poked(Response):
 
 
 @code(0x4B)
-class CursorPositionSet(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class CursorPositionSet(Ack):
     def __str__(self: Self) -> str:
         return "CursorPositionSet()"
 
 
 @code(0x4C)
-class CursorStyleSet(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class CursorStyleSet(Ack):
     def __str__(self: Self) -> str:
         return "CursorStyleSet()"
 
 
 @code(0x4D)
-class ContrastSet(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class ContrastSet(Ack):
     def __str__(self: Self) -> str:
         return "ContrastSet()"
 
 
 @code(0x4E)
-class BacklightSet(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class BacklightSet(Ack):
     def __str__(self: Self) -> str:
         return "BacklightSet()"
+
+
+@code(0x57)
+class KeyReportingConfigured(Ack):
+    def __str__(self: Self) -> str:
+        return "KeyReportingConfigured()"
 
 
 @code(0x58)
@@ -212,19 +191,13 @@ class StatusRead(Response):
 
 
 @code(0x5F)
-class DataSent(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class DataSent(Ack):
     def __str__(self: Self) -> str:
         return "DataSent()"
 
 
 @code(0x61)
-class BaudRateSet(Response):
-    def __init__(self: Self, data: bytes) -> None:
-        assert_empty(data)
-
+class BaudRateSet(Ack):
     def __str__(self: Self) -> str:
         return "BaudRateSet()"
 
