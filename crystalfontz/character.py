@@ -1,5 +1,6 @@
-from typing import Dict, Self
+from typing import Dict, List, Self, Type
 
+from crystalfontz.device import Device
 from crystalfontz.error import EncodeError
 
 """
@@ -136,5 +137,39 @@ encode_chars = ROM.encode
 
 
 class SpecialCharacter:
-    def as_bytes(self: Self) -> bytes:
-        raise NotImplementedError("as_bytes")
+    def __init__(self: Self, character: List[bytes]) -> None:
+        self.character: List[bytes] = character
+
+    @classmethod
+    def from_str(cls: Type[Self], character: str) -> Self:
+
+        lines = character.split("\n")
+        if lines[0] == "":
+            lines = lines[1:]
+        if lines[-1] == "":
+            lines = lines[0:-1]
+
+        char: List[bytes] = list()
+
+        for line in lines:
+            buffer = b""
+            for c in line:
+                if c == " ":
+                    buffer += b"\x00"
+                else:
+                    buffer += b"\x01"
+            char.append(buffer)
+
+        return cls(char)
+
+    def as_bytes(self: Self, device: Device) -> bytes:
+        if len(self.character) != device.character_height:
+            raise ValueError(
+                f"Character {len(self.character)} pixels tall, should be {device.character_height}"
+            )
+        for i, row in enumerate(self.character):
+            if len(row) != device.character_width:
+                raise ValueError(
+                    f"Row {i} is {len(row)} pixels wide, should be {device.character_width}"
+                )
+        return b"".join(self.character)

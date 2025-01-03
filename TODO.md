@@ -17,7 +17,7 @@
 - [x] send data to LCD
 - [-] set baud rate
 - [-] store boot state
-- [ ] set special character data
+- [-] set special character data
 - [ ] configure key reporting
 - [ ] set up temperature reporting
 - [ ] set atx power switch

@@ -15,9 +15,10 @@ class Device(ABC):
     hardware_rev: str = "<unknown>"
     firmware_rev: str = "<unknown>"
 
-    lines = 2
-    columns = 16
-    ENHANCED_CONTRAST = False
+    lines: int = 2
+    columns: int = 16
+    character_width: int = 8
+    character_height: int = 8
 
     @abstractmethod
     def contrast(self: Self, contrast: float) -> bytes:
@@ -54,9 +55,10 @@ class CFA633(Device):
     hardware_rev: str = "h1.5c"
     firmware_rev: str = "k1.7"
 
-    lines = 2
-    columns = 16
-    ENHANCED_CONTRAST = False
+    lines: int = 2
+    columns: int = 16
+    character_width: int = 8
+    character_height: int = 8
 
     def contrast(self: Self, contrast: float) -> bytes:
         # CFA633 supports a contrast setting between 0 and 200.
@@ -82,8 +84,10 @@ class CFA533(Device):
     hardware_rev = "h1.4"
     firmware_rev = "u1v2"
 
-    lines = 2
-    columns = 16
+    lines: int = 2
+    columns: int = 16
+    character_width: int = 8
+    character_height: int = 8
 
     def contrast(self: Self, contrast: float) -> bytes:
         # CFA533 supports "enhanced contrast". The first byte is ignored and

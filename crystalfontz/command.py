@@ -133,9 +133,11 @@ class SetLine2(Command):
 class SetSpecialCharacterData(Command):
     command: int = 0x09
 
-    def __init__(self: Self, index: int, character: SpecialCharacter) -> None:
+    def __init__(
+        self: Self, index: int, character: SpecialCharacter, device: Device
+    ) -> None:
         self.index: int = index
-        self.character: bytes = character.as_bytes()
+        self.character: bytes = character.as_bytes(device)
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.index.to_bytes() + self.character)

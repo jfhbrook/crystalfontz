@@ -223,7 +223,8 @@ class Client(asyncio.Protocol):
         self: Self, index: int, character: SpecialCharacter
     ) -> SpecialCharacterDataSet:
         return await self.send_command(
-            SetSpecialCharacterData(index, character), SpecialCharacterDataSet
+            SetSpecialCharacterData(index, character, self.device),
+            SpecialCharacterDataSet,
         )
 
     async def poke(self: Self, address: int) -> Poked:
