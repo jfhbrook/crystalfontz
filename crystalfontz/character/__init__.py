@@ -10,7 +10,7 @@ from crystalfontz.character.constants import (
     x_bar,
 )
 from crystalfontz.character.rom import CharacterRom
-from crystalfontz.character.special import SpecialCharacter
+from crystalfontz.character.special import SMILEY_FACE, SpecialCharacter
 
 #
 # This ROM encoding is based on page 44 of CFA533-TMI-KU.pdf.
@@ -57,16 +57,18 @@ CHARACTER_ROM = (
 encode_chars = CHARACTER_ROM.encode
 
 __all__ = [
+    "block",
+    "CharacterRom",
+    "CHARACTER_ROM",
+    "encode_chars",
+    "hbar",
     "inverse",
     "x_bar",
-    "hbar",
-    "block",
+    "japan_comma",
+    "japan_full_stop",
     "japan_interpunct",
     "japan_lquote",
     "japan_rquote",
-    "japan_full_stop",
-    "japan_comma",
-    "CharacterRom",
+    "SMILEY_FACE",
     "SpecialCharacter",
-    "encode_chars",
 ]

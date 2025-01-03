@@ -52,3 +52,17 @@ class SpecialCharacter:
                     f"Row {i} is {len(row)} pixels wide, should be "
                     f"{device.character_width}"
                 )
+
+
+SMILEY_FACE = SpecialCharacter.from_str(
+    """
+        
+ xxxxxx 
+xx xx xx
+xx xx xx
+xxxxxxxx
+x xxxx x
+xx    xx
+ xxxxxx 
+"""
+)

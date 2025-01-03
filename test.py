@@ -1,22 +1,11 @@
 import asyncio
 import logging
 
-from crystalfontz.character import SpecialCharacter, ROM
+from crystalfontz.character import CHARACTER_ROM, SMILEY_FACE
 from crystalfontz.client import create_connection
 from crystalfontz.report import NoopReportHandler, LoggingReportHandler
 
-char = SpecialCharacter.from_str("""
-        
- xxxxxx 
-xx xx xx
-xx xx xx
-xxxxxxxx
-x xxxx x
-xx    xx
- xxxxxx 
-""")
-
-ROM.set_encoding("☺", b"\x00")
+CHARACTER_ROM.set_encoding("☺", b"\x00")
 
 async def main() -> None:
     logging.basicConfig(level=logging.INFO)
@@ -33,9 +22,9 @@ async def main() -> None:
 
     await client.clear_screen()
 
-    await client.set_special_character_data(0x00, char)
+    await client.set_special_character_data(0x00, SMILEY_FACE)
 
-    await client.send_data(0, 0, "☺")
+    # await client.send_data(0, 0, "☺")
 
     # marquee = client.marquee(0, "Josh is cool")
 
