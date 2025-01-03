@@ -31,7 +31,7 @@
 - [x] Lock when running command
 - [-] Make character ROM device specific
   - Half done, still need to implement trie
-- [ ] Trim/pad special characters
+- [x] Trim/pad special characters
 - [ ] Load special characters from image files
 - [ ] Retry a few times if packet if fails to respond within 250ms
 
