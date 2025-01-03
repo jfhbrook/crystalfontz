@@ -1,6 +1,6 @@
 # TODO
 
-### The Basics
+### Basic Commands
 
 - [x] ping
 - [x] get versions
@@ -13,9 +13,15 @@
 - [x] reboot, reset or power off
   - (only tested reboot)
 - [x] poll keypad
-- [-] store boot state
 - [x] poke
 - [x] send data to LCD
+- [-] set baud rate
+- [-] store boot state
+- [ ] set special character data
+- [ ] configure key reporting
+- [ ] set up temperature reporting
+- [ ] set atx power switch
+- [ ] read status
 
 ## Features/Improvements
 
@@ -24,15 +30,6 @@
 - [-] Lock when running command
 - [ ] Make character ROM device specific
 - [ ] Retry a few times if packet if fails to respond within 250ms
-
-### More Interesting Commands
-
-- [ ] set baud rate
-- [ ] set special character data
-- [ ] configure key reporting
-- [ ] set up temperature reporting
-- [ ] set atx power switch
-- [ ] read status
 
 ### Obscure Commands
 

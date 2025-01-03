@@ -136,6 +136,15 @@ class Line2Set(Response):
         return "Line2Set()"
 
 
+@code(0x49)
+class SpecialCharacterDataSet(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        assert_empty(data)
+
+    def __str__(self: Self) -> str:
+        return "SpecialCharacterDataSet()"
+
+
 @code(0x4A)
 class Poked(Response):
     def __init__(self: Self, data: bytes) -> None:
@@ -209,6 +218,15 @@ class DataSent(Response):
 
     def __str__(self: Self) -> str:
         return "DataSent()"
+
+
+@code(0x61)
+class BaudRateSet(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        assert_empty(data)
+
+    def __str__(self: Self) -> str:
+        return "BaudRateSet()"
 
 
 @code(0x80)

@@ -5,6 +5,8 @@ from typing import cast, Dict, List, Optional, Self, Type, TypeVar
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
+from crystalfontz.baud import BaudRate
+from crystalfontz.character import SpecialCharacter
 from crystalfontz.command import (
     ClearScreen,
     Command,
@@ -17,11 +19,13 @@ from crystalfontz.command import (
     ResetHost,
     SendData,
     SetBacklight,
+    SetBaudRate,
     SetContrast,
     SetCursorPosition,
     SetCursorStyle,
     SetLine1,
     SetLine2,
+    SetSpecialCharacterData,
     ShutdownHost,
     StoreBootState,
 )
@@ -33,6 +37,7 @@ from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
     BacklightSet,
+    BaudRateSet,
     BootStateStored,
     ClearedScreen,
     ContrastSet,
@@ -48,6 +53,7 @@ from crystalfontz.response import (
     PowerResponse,
     RawResponse,
     Response,
+    SpecialCharacterDataSet,
     StatusRead,
     TemperatureReport,
     Versions,
@@ -213,8 +219,12 @@ class Client(asyncio.Protocol):
     async def set_line_2(self: Self, line: str | bytes) -> Line2Set:
         return await self.send_command(SetLine2(line, self.device), Line2Set)
 
-    async def set_special_character_data(self: Self) -> None:
-        raise NotImplementedError("set_special_char_data")
+    async def set_special_character_data(
+        self: Self, index: int, character: SpecialCharacter
+    ) -> SpecialCharacterDataSet:
+        return await self.send_command(
+            SetSpecialCharacterData(index, character), SpecialCharacterDataSet
+        )
 
     async def poke(self: Self, address: int) -> Poked:
         return await self.send_command(Poke(address), Poked)
@@ -277,8 +287,12 @@ class Client(asyncio.Protocol):
             SendData(row, column, data, self.device), DataSent
         )
 
-    async def set_baud(self: Self) -> None:
-        raise NotImplementedError("set_baud")
+    async def set_baud_rate(self: Self, baud_rate: BaudRate) -> BaudRateSet:
+        res = await self.send_command(SetBaudRate(baud_rate), BaudRateSet)
+        if not self._transport or not self._transport.serial:
+            raise ConnectionError("Unable to set new baud rate")
+        self._transport.serial.baudrate = baud_rate
+        return res
 
     async def config_gpio(self: Self) -> None:
         raise NotImplementedError("config_gpio")

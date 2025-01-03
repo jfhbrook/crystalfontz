@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Optional, Self
 import warnings
 
-from crystalfontz.character import encode_chars
+from crystalfontz.baud import BaudRate
+from crystalfontz.character import encode_chars, SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
 from crystalfontz.packet import Packet
@@ -123,7 +124,7 @@ class SetLine2(Command):
         if len(buffer) > device.columns:
             raise ValueError(f"Line length {len(buffer)} longer than {device.columns}")
 
-        self.line = buffer.ljust(device.columns, b" ")
+        self.line: bytes = buffer.ljust(device.columns, b" ")
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.line)
@@ -132,8 +133,12 @@ class SetLine2(Command):
 class SetSpecialCharacterData(Command):
     command: int = 0x09
 
+    def __init__(self: Self, index: int, character: SpecialCharacter) -> None:
+        self.index: int = index
+        self.character: bytes = character.as_bytes()
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.index.to_bytes() + self.character)
 
 
 class Poke(Command):
@@ -317,11 +322,18 @@ class SendData(Command):
 # 0x20 is reserved for CFA631 key legends
 
 
-class SetBaud(Command):
+class SetBaudRate(Command):
     command: int = 0x21
 
+    def __init__(self: Self, rate: BaudRate) -> None:
+        self.baud_rate: int = 0
+        if rate == 115200:
+            self.baud_rate = 1
+        elif rate != 19200:
+            raise ValueError(f"Unsupported baud rate {rate}")
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.baud_rate.to_bytes())
 
 
 class ConfigGpio(Command):

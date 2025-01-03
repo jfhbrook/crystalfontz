@@ -133,3 +133,8 @@ ROM = (
 # once that is factored out in favor of a trie-like data structure, this
 # specific instance should be moved to device.py.
 encode_chars = ROM.encode
+
+
+class SpecialCharacter:
+    def as_bytes(self: Self) -> bytes:
+        raise NotImplementedError("as_bytes")
