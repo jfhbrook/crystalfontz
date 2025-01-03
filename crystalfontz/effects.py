@@ -31,6 +31,7 @@ from crystalfontz.response import (
     SpecialCharacterDataSet,
     TemperatureReportingSetUp,
     Versions,
+    WatchdogConfigured,
 )
 
 R = TypeVar("R", bound=Response)
@@ -82,7 +83,9 @@ class ClientProtocol(Protocol):
     async def set_atx_power_switch_functionality(
         self: Self, settings: AtxPowerSwitchFunctionalitySettings
     ) -> AtxPowerSwitchFunctionalitySet: ...
-    async def configure_watchdog(self: Self) -> None: ...
+    async def configure_watchdog(
+        self: Self, timeout_seconds: int
+    ) -> WatchdogConfigured: ...
     async def read_status(self: Self) -> DeviceStatus: ...
     async def send_data(
         self: Self, row: int, column: int, data: str | bytes

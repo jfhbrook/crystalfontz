@@ -21,7 +21,8 @@
 - [-] configure key reporting
 - [-] setup temperature reporting
 - [-] set atx power switch functionality
-- [ ] watchdoge
+- [-] watchdoge
+  - I can test by sending "disabled"
 - [ ] Setup live temperature display
 - [ ] read status
   - Specific to firmware of CFA533

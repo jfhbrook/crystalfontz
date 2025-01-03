@@ -12,6 +12,7 @@ from crystalfontz.command import (
     ClearScreen,
     Command,
     ConfigureKeyReporting,
+    ConfigureWatchdog,
     GetVersions,
     Ping,
     Poke,
@@ -65,6 +66,7 @@ from crystalfontz.response import (
     TemperatureReport,
     TemperatureReportingSetUp,
     Versions,
+    WatchdogConfigured,
 )
 
 R = TypeVar("R", bound=Response)
@@ -294,8 +296,12 @@ class Client(asyncio.Protocol):
             SetAtxPowerSwitchFunctionality(settings), AtxPowerSwitchFunctionalitySet
         )
 
-    async def configure_watchdog(self: Self) -> None:
-        raise NotImplementedError("config_watchdog")
+    async def configure_watchdog(
+        self: Self, timeout_seconds: int
+    ) -> WatchdogConfigured:
+        return await self.send_command(
+            ConfigureWatchdog(timeout_seconds), WatchdogConfigured
+        )
 
     async def read_status(self: Self) -> DeviceStatus:
         res = await self.send_command(ReadStatus(), StatusRead)

@@ -190,7 +190,13 @@ class KeypadPolled(Response):
 @code(0x5C)
 class AtxPowerSwitchFunctionalitySet(Ack):
     def __str__(self: Self) -> str:
-        return f"AtxPowerFunctionalitySet()"
+        return "AtxPowerFunctionalitySet()"
+
+
+@code(0x5D)
+class WatchdogConfigured(Ack):
+    def __str__(self: Self) -> str:
+        return "WatchdogConfigured()"
 
 
 @code(0x5E)

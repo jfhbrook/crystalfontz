@@ -316,8 +316,13 @@ class SetAtxPowerSwitchFunctionality(Command):
 class ConfigureWatchdog(Command):
     command: int = 0x1D
 
+    def __init__(self: Self, timeout_seconds: int) -> None:
+        if not (0 <= timeout_seconds <= 255):
+            raise ValueError("Watchdog timeout must be between 0 and 255 seconds")
+        self.timeout_seconds = timeout_seconds
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.timeout_seconds.to_bytes())
 
 
 class ReadStatus(Command):
