@@ -165,6 +165,12 @@ class BacklightSet(Ack):
         return "BacklightSet()"
 
 
+@code(0x53)
+class TemperatureReportingSetUp(Ack):
+    def __str__(self: Self) -> str:
+        return "TemperatureReportingSetUp()"
+
+
 @code(0x57)
 class KeyReportingConfigured(Ack):
     def __str__(self: Self) -> str:

@@ -1,6 +1,6 @@
 import asyncio
 from collections import defaultdict
-from typing import cast, Dict, List, Optional, Self, Set, Type, TypeVar
+from typing import cast, Dict, Iterable, List, Optional, Self, Set, Type, TypeVar
 
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
@@ -27,6 +27,7 @@ from crystalfontz.command import (
     SetLine1,
     SetLine2,
     SetSpecialCharacterData,
+    SetupTemperatureReporting,
     ShutdownHost,
     StoreBootState,
 )
@@ -59,6 +60,7 @@ from crystalfontz.response import (
     SpecialCharacterDataSet,
     StatusRead,
     TemperatureReport,
+    TemperatureReportingSetUp,
     Versions,
 )
 
@@ -256,8 +258,12 @@ class Client(asyncio.Protocol):
     async def read_dow_info(self: Self) -> None:
         raise NotImplementedError("read_dow_info")
 
-    async def setup_temperature_reporting(self: Self) -> None:
-        raise NotImplementedError("setup_temperature_reporting")
+    async def setup_temperature_reporting(
+        self: Self, enabled: Iterable[int]
+    ) -> TemperatureReportingSetUp:
+        return await self.send_command(
+            SetupTemperatureReporting(enabled, self.device), TemperatureReportingSetUp
+        )
 
     async def dow_transaction(self: Self) -> None:
         raise NotImplementedError("dow_transaction")

@@ -19,13 +19,11 @@
 - [x] set baud rate
 - [x] store boot state
 - [-] configure key reporting
-- [ ] watchdoge
+- [-] setup temperature reporting
 - [ ] set atx power switch functionality
-- [ ] setup temperature reporting
-  - [x] Code to pack/unpack temperature settings
-  - Compare to CFA555 and CFA633, likely device specific
 - [ ] read status
   - Specific to firmware of CFA533
+- [ ] watchdoge
 
 ## Features/Improvements
 
@@ -35,6 +33,7 @@
 - [-] Make character ROM device specific
   - Half done, still need to implement trie
 - [x] Trim/pad special characters
+- [ ] Compare temperature reporting to CFA555 and CFA633
 - [ ] Load special characters from image files
 - [ ] Retry a few times if packet if fails to respond within 250ms
 

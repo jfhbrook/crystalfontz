@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import asyncio
 import random
 import time
-from typing import Optional, Protocol, Self, Set, Type, TypeVar
+from typing import Iterable, Optional, Protocol, Self, Set, Type, TypeVar
 
 from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
@@ -27,6 +27,7 @@ from crystalfontz.response import (
     PowerResponse,
     Response,
     SpecialCharacterDataSet,
+    TemperatureReportingSetUp,
     Versions,
 )
 
@@ -66,7 +67,9 @@ class ClientProtocol(Protocol):
         self: Self, lcd_brightness: int, keypad_brightness: Optional[int] = None
     ) -> BacklightSet: ...
     async def read_dow_info(self: Self) -> None: ...
-    async def setup_temperature_reporting(self: Self) -> None: ...
+    async def setup_temperature_reporting(
+        self: Self, enabled: Iterable[int]
+    ) -> TemperatureReportingSetUp: ...
     async def dow_transaction(self: Self) -> None: ...
     async def setup_temperature_display(self: Self) -> None: ...
     async def raw_command(self: Self) -> None: ...

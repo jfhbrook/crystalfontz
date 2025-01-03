@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import reduce
-from typing import Optional, Self, Set
+from typing import Iterable, Optional, Self, Set
 import warnings
 
 from crystalfontz.baud import BaudRate
@@ -9,6 +9,7 @@ from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
 from crystalfontz.keys import KeyPress
 from crystalfontz.packet import Packet
+from crystalfontz.temperature import pack_temperature_settings
 
 SET_LINE_WARNING_TEMPLATE = (
     "Command {code} ({code:02x}): {name} is deprecated"
@@ -243,8 +244,11 @@ class ReadDowInfo(Command):
 class SetupTemperatureReporting(Command):
     command: int = 0x13
 
+    def __init__(self: Self, enabled: Iterable[int], device: Device) -> None:
+        self.settings = pack_temperature_settings(enabled, device)
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.settings)
 
 
 class DowTransaction(Command):
