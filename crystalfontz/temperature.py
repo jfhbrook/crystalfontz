@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable, List, Set
 
 from crystalfontz.device import Device
 
@@ -14,3 +14,16 @@ def pack_temperature_settings(enabled: Iterable[int], device: Device) -> bytes:
         bs[bytes_idx] ^= mask
 
     return bytes(bs)
+
+
+def unpack_temperature_settings(settings: bytes) -> Set[int]:
+    unpacked: Set[int] = set()
+
+    for byte_idx, byte in enumerate(settings):
+        for bit_idx in range(0, 8):
+            sensor_idx = 8 * byte_idx + (8 - bit_idx)
+            mask = 0b10000000 >> bit_idx
+            if byte & mask:
+                unpacked.add(sensor_idx)
+
+    return unpacked
