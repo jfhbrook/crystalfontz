@@ -1,6 +1,6 @@
 import pytest
 
-from crystalfontz.character import CHARACTER_ROM, encode_chars
+from crystalfontz.device import CFA533_CHARACTER_ROM
 
 # Manually encoded characters
 exc = 32 + 1
@@ -15,11 +15,11 @@ w = 112 + 7
 
 
 def test_encode_table() -> None:
-    assert CHARACTER_ROM["!"] == exc.to_bytes()
+    assert CFA533_CHARACTER_ROM["!"] == exc.to_bytes()
 
 
 @pytest.mark.parametrize(
     "input,expected", [("Hello world!", bytes([H, e, l, l, o, _, w, o, r, l, d, exc]))]
 )
-def test_encode_chars(input, expected) -> None:
-    assert encode_chars(input) == expected
+def test_encode(input, expected) -> None:
+    assert CFA533_CHARACTER_ROM.encode(input) == expected

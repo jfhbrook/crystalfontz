@@ -1,8 +1,11 @@
-from typing import List, Self, Type
+from typing import List, Protocol, Self, Type
 
 from bitstring import BitArray
 
-from crystalfontz.device import Device
+
+class DeviceProtocol(Protocol):
+    character_height: int
+    character_width: int
 
 
 class SpecialCharacter:
@@ -36,11 +39,11 @@ class SpecialCharacter:
 
         return cls(char)
 
-    def as_bytes(self: Self, device: Device) -> bytes:
+    def as_bytes(self: Self, device: DeviceProtocol) -> bytes:
         self._validate(device)
         return b"".join([row.tobytes() for row in self.character])
 
-    def _validate(self: Self, device: Device) -> None:
+    def _validate(self: Self, device: DeviceProtocol) -> None:
         if len(self.character) != device.character_height:
             raise ValueError(
                 f"Character {len(self.character)} pixels tall, should be "

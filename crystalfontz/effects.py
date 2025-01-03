@@ -5,7 +5,7 @@ import time
 from typing import Optional, Protocol, Self, Type, TypeVar
 
 from crystalfontz.baud import BaudRate
-from crystalfontz.character import encode_chars, SpecialCharacter
+from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus
 from crystalfontz.response import (
@@ -167,7 +167,7 @@ class Marquee(Effect):
         self._pause: float = pause if pause is not None else _tick
 
         self.row: int = row
-        self.text: bytes = encode_chars(text).ljust(device.columns, b" ")
+        self.text: bytes = device.character_rom.encode(text).ljust(device.columns, b" ")
         self.shift: int = 0
 
     async def start(self: Self) -> None:
@@ -200,7 +200,7 @@ class Screensaver(Effect):
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         device = client.device
-        buffer = encode_chars(text)
+        buffer = device.character_rom.encode(text)
 
         if len(buffer) >= device.columns:
             raise ValueError(

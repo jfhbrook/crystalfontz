@@ -3,7 +3,7 @@ from typing import Optional, Self
 import warnings
 
 from crystalfontz.baud import BaudRate
-from crystalfontz.character import encode_chars, SpecialCharacter
+from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
 from crystalfontz.packet import Packet
@@ -98,7 +98,9 @@ class SetLine1(Command):
             ),
             DeprecationWarning,
         )
-        buffer: bytes = encode_chars(line) if isinstance(line, str) else line
+        buffer: bytes = (
+            device.character_rom.encode(line) if isinstance(line, str) else line
+        )
 
         if len(buffer) > device.columns:
             raise ValueError(f"Line length {len(buffer)} longer than {device.columns}")
@@ -119,7 +121,9 @@ class SetLine2(Command):
             ),
             DeprecationWarning,
         )
-        buffer: bytes = encode_chars(line) if isinstance(line, str) else line
+        buffer: bytes = (
+            device.character_rom.encode(line) if isinstance(line, str) else line
+        )
 
         if len(buffer) > device.columns:
             raise ValueError(f"Line length {len(buffer)} longer than {device.columns}")
@@ -308,7 +312,9 @@ class SendData(Command):
         if not (0 <= column < device.columns):
             raise ValueError(f"{column} is not a valid column")
 
-        buffer: bytes = encode_chars(text) if isinstance(text, str) else text
+        buffer: bytes = (
+            device.character_rom.encode(text) if isinstance(text, str) else text
+        )
 
         if len(buffer) > device.columns:
             raise ValueError(f"Text length {len(buffer)} longer than {device.columns}")
