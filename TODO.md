@@ -19,9 +19,13 @@
 - [x] set baud rate
 - [x] store boot state
 - [-] configure key reporting
-- [ ] set up temperature reporting
-- [ ] set atx power switch
+- [ ] watchdoge
+- [ ] set atx power switch functionality
+- [ ] setup temperature reporting
+  - [x] Code to pack/unpack temperature settings
+  - Compare to CFA555 and CFA633, likely device specific
 - [ ] read status
+  - Specific to firmware of CFA533
 
 ## Features/Improvements
 
@@ -36,6 +40,7 @@
 
 ### Obscure Commands
 
+- CFA631 key legends
 - read user flash
 - write user flash
 - read DOW
@@ -43,6 +48,7 @@
 - send raw data to LCD
 - set gpio
 - read gpio
+
 
 ### Long Tail
 

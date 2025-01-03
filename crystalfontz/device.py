@@ -60,6 +60,7 @@ class Device(ABC):
     character_width: int = 6
     character_height: int = 8
     character_rom: CharacterRom = CFA533_CHARACTER_ROM
+    n_temperature_sensors: int = 0
 
     @abstractmethod
     def contrast(self: Self, contrast: float) -> bytes:
@@ -101,6 +102,7 @@ class CFA633(Device):
     character_width: int = 6
     character_height: int = 8
     character_rom: CharacterRom = CFA533_CHARACTER_ROM
+    n_temperature_sensors: int = 0
 
     def contrast(self: Self, contrast: float) -> bytes:
         # CFA633 supports a contrast setting between 0 and 200.
@@ -131,6 +133,7 @@ class CFA533(Device):
     character_width: int = 6
     character_height: int = 8
     character_rom: CharacterRom = CFA533_CHARACTER_ROM
+    n_temperature_sensors: int = 32
 
     def contrast(self: Self, contrast: float) -> bytes:
         # CFA533 supports "enhanced contrast". The first byte is ignored and
