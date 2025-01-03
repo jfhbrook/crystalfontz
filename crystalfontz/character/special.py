@@ -36,13 +36,13 @@ class SpecialCharacter:
         return cls(pixels)
 
     def as_bytes(self: Self, device: DeviceProtocol) -> bytes:
-        self.validate(device)
-
         character: BitArray = BitArray()
 
-        for row in self.pixels:
-            character += "0b00"
-            for pixel in row:
+        for i, row in enumerate(self.pixels):
+            if i >= device.character_height:
+                break
+            character += f"0b{'0' * (8 - device.character_width)}"
+            for pixel in row[0 : device.character_width]:
                 character += "0b1" if pixel else "0b0"
 
         return character.tobytes()

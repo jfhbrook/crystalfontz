@@ -31,7 +31,9 @@ def test_encode(input, expected) -> None:
 
 @pytest.mark.parametrize("special_character", [SMILEY_FACE])
 def test_special_character_valid(special_character):
-    encoded: bytes = special_character.as_bytes(CFA533())
+    device = CFA533()
+    special_character.validate(device)
+    encoded: bytes = special_character.as_bytes(device)
     # 0x09 takes 9 bytes of data. The first character is the index (0-7) and
     # the actual character is 8 bytes.
     assert len(encoded) == 8, "Special character should be eight bytes"
