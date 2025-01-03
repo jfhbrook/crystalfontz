@@ -30,6 +30,7 @@ from crystalfontz.command import (
     SetLine1,
     SetLine2,
     SetSpecialCharacterData,
+    SetupLiveTemperatureDisplay,
     SetupTemperatureReporting,
     ShutdownHost,
     StoreBootState,
@@ -56,6 +57,7 @@ from crystalfontz.response import (
     KeyReportingConfigured,
     Line1Set,
     Line2Set,
+    LiveTemperatureDisplaySetUp,
     Poked,
     Pong,
     PowerResponse,
@@ -68,6 +70,7 @@ from crystalfontz.response import (
     Versions,
     WatchdogConfigured,
 )
+from crystalfontz.temperature import TemperatureDisplayItem
 
 R = TypeVar("R", bound=Response)
 
@@ -273,8 +276,11 @@ class Client(asyncio.Protocol):
     async def dow_transaction(self: Self) -> None:
         raise NotImplementedError("dow_transaction")
 
-    async def setup_temperature_display(self: Self) -> None:
-        raise NotImplementedError("setup_temp_display")
+    async def setup_live_temperature_display(self: Self, slot: int, item: TemperatureDisplayItem) -> LiveTemperatureDisplaySetUp:
+        return await self.send_command(
+            SetupLiveTemperatureDisplay(slot, item, self.device),
+            LiveTemperatureDisplaySetUp
+        )
 
     async def raw_command(self: Self) -> None:
         raise NotImplementedError("raw_command")

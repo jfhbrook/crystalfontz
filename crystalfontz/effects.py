@@ -24,6 +24,7 @@ from crystalfontz.response import (
     KeyReportingConfigured,
     Line1Set,
     Line2Set,
+    LiveTemperatureDisplaySetUp,
     Poked,
     Pong,
     PowerResponse,
@@ -33,6 +34,7 @@ from crystalfontz.response import (
     Versions,
     WatchdogConfigured,
 )
+from crystalfontz.temperature import TemperatureDisplayItem
 
 R = TypeVar("R", bound=Response)
 
@@ -74,7 +76,7 @@ class ClientProtocol(Protocol):
         self: Self, enabled: Iterable[int]
     ) -> TemperatureReportingSetUp: ...
     async def dow_transaction(self: Self) -> None: ...
-    async def setup_temperature_display(self: Self) -> None: ...
+    async def setup_live_temperature_display(self: Self, slot: int, item: TemperatureDisplayItem) -> LiveTemperatureDisplaySetUp: ...
     async def raw_command(self: Self) -> None: ...
     async def configure_key_reporting(
         self: Self, when_pressed: Set[KeyPress], when_released: Set[KeyPress]

@@ -171,6 +171,12 @@ class TemperatureReportingSetUp(Ack):
         return "TemperatureReportingSetUp()"
 
 
+@code(0x54)
+class LiveTemperatureDisplaySetUp(Ack):
+    def __str__(self: Self) -> str:
+        return "LiveTemperatureDisplaySetUp"
+
+
 @code(0x57)
 class KeyReportingConfigured(Ack):
     def __str__(self: Self) -> str:

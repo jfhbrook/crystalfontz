@@ -1,6 +1,45 @@
-from typing import Iterable, List, Set
+from dataclasses import dataclass
+from enum import Enum
+from typing import Iterable, List, Literal, Optional, Self, Set, Type
 
 from crystalfontz.device import Device
+
+
+class TemperatureUnit(Enum):
+    CELSIUS = 0
+    FAHRENHEIT = 1
+
+
+@dataclass
+class TemperatureDisplayItem:
+    index: int
+    # TODO: Device specific?
+    n_digits: Literal[3] | Literal[5]
+    column: int
+    row: int
+    units: TemperatureUnit
+
+    @classmethod
+    def to_bytes(cls: Type[Self], item: Optional[Self], device: Device) -> bytes:
+        if item is None:
+            return b"\x00"
+        # TODO: Validation. The documentation suggests that sensors 32+ are
+        # actually for something else - fan speed?
+        index: bytes = item.index.to_bytes()
+        n_digits: bytes = item.n_digits.to_bytes()
+
+        if not (0 <= item.column < device.columns):
+            raise ValueError(f"Column {item.column} is invalid")
+
+        column: bytes = item.column.to_bytes()
+        
+        if not (0 <= item.row < device.lines):
+            raise ValueError(f"Row {item.row} is invalid")
+
+        row: bytes = item.row.to_bytes()
+        units: bytes = item.units.value.to_bytes()
+
+        return index + n_digits + column + row + units
 
 
 def pack_temperature_settings(enabled: Iterable[int], device: Device) -> bytes:

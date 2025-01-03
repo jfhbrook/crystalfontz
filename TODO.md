@@ -23,9 +23,10 @@
 - [-] set atx power switch functionality
 - [-] watchdoge
   - I can test by sending "disabled"
-- [ ] Setup live temperature display
+- [-] Setup live temperature display
 - [ ] read status
   - Specific to firmware of CFA533
+- [ ] read user flash
 
 ## Features/Improvements
 
@@ -42,7 +43,6 @@
 ### Obscure Commands
 
 - CFA631 key legends
-- read user flash
 - write user flash
 - read DOW
 - DOW transactions

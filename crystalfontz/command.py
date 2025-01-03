@@ -10,7 +10,7 @@ from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
 from crystalfontz.keys import KeyPress
 from crystalfontz.packet import Packet
-from crystalfontz.temperature import pack_temperature_settings
+from crystalfontz.temperature import TemperatureDisplayItem, pack_temperature_settings
 
 SET_LINE_WARNING_TEMPLATE = (
     "Command {code} ({code:02x}): {name} is deprecated"
@@ -259,11 +259,17 @@ class DowTransaction(Command):
         raise NotImplementedError("to_packet")
 
 
-class SetupTemperatureDisplay(Command):
+class SetupLiveTemperatureDisplay(Command):
     command: int = 0x15
 
+    def __init__(self: Self, slot: int, item: Optional[TemperatureDisplayItem], device: Device) -> None:
+        if not (0 <= slot < 8):
+            raise ValueError("Slot must be between 0 and 7")
+        self.slot: int = slot
+        self.item: bytes = TemperatureDisplayItem.to_bytes(item, device)
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.slot.to_bytes() + self.item)
 
 
 class RawCommand(Command):
