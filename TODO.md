@@ -15,9 +15,9 @@
 - [x] poll keypad
 - [x] poke
 - [x] send data to LCD
+- [x] set special character data
 - [-] set baud rate
 - [-] store boot state
-- [-] set special character data
 - [ ] configure key reporting
 - [ ] set up temperature reporting
 - [ ] set atx power switch
@@ -27,8 +27,11 @@
 
 - [x] Marquee and screensaver
 - [x] Set device based on version output
-- [-] Lock when running command
-- [ ] Make character ROM device specific
+- [x] Lock when running command
+- [-] Make character ROM device specific
+  - Half done, still need to implement trie
+- [ ] Trim/pad special characters
+- [ ] Load special characters from image files
 - [ ] Retry a few times if packet if fails to respond within 250ms
 
 ### Obscure Commands
