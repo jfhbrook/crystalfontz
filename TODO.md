@@ -20,8 +20,9 @@
 - [x] store boot state
 - [-] configure key reporting
 - [-] setup temperature reporting
-- [ ] set atx power switch functionality
+- [-] set atx power switch functionality
 - [ ] watchdoge
+- [ ] Setup live temperature display
 - [ ] read status
   - Specific to firmware of CFA533
 
