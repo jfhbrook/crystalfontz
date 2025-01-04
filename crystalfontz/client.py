@@ -46,7 +46,7 @@ from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
 from crystalfontz.effects import Marquee, Screensaver
 from crystalfontz.error import ConnectionError
-from crystalfontz.gpio import GpioDriveMode, GpioSettings
+from crystalfontz.gpio import GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.packet import Packet, parse_packet, serialize_packet

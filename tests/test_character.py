@@ -1,7 +1,6 @@
-from bitstring import BitArray
 import pytest
 
-from crystalfontz.character import SMILEY_FACE, SpecialCharacter
+from crystalfontz.character import SMILEY_FACE
 from crystalfontz.device import CFA533, CFA533_CHARACTER_ROM
 
 # Manually encoded characters
@@ -10,7 +9,7 @@ _ = 32 + 0
 H = 64 + 8
 d = 96 + 4
 e = 96 + 5
-l = 96 + 12
+l = 96 + 12  # noqa: E741
 o = 96 + 15
 r = 112 + 2
 w = 112 + 7

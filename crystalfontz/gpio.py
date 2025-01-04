@@ -107,7 +107,7 @@ class GpioSettings:
             else:
                 invalid()
         elif up == GpioDriveMode.HI_Z:
-            if down == None:
+            if down is None:
                 self.mode = 0b010
             elif down == GpioDriveMode.SLOW_STRONG:
                 self.mode = 0b111

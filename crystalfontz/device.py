@@ -64,7 +64,7 @@ CFA533_CHARACTER_ROM = (
   -=M]m}  ユヌ  £÷
   .>N^n→  ヨセ  ñ 
   /?O_o←  ツソ °ö█
-"""
+"""  # noqa: W291, W293
     )
     .set_special_character_range(0, 7)
     .set_encoding(inverse, 244 + 9)

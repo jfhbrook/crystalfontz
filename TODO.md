@@ -5,13 +5,12 @@
 - [ ] Manually test features
   - [ ] read user flash area
   - [ ] read GPIO
-- [ ] Linting
-- [ ] CLI tool
 - [ ] Do up documentation
 - [ ] Open source release
 
 ### Future Tickets
 
+- [ ] CLI tool
 - [ ] Test temperature reporting (configure and log)
 - [ ] Test key reporting (configure and log)
 - [ ] Retry logic for over 250ms

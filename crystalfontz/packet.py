@@ -4,11 +4,11 @@ import logging
 import struct
 from typing import Optional, Tuple
 
-logger = logging.getLogger(__name__)
-
 from crystalfontz.error import CrcError, EncodeError
 
-# See: https://github.com/crystalfontz/cfa_linux_examples/blob/master/include/cf_packet.c
+logger = logging.getLogger(__name__)
+
+# See: https://github.com/crystalfontz/cfa_linux_examples/blob/master/include/cf_packet.c  # noqa E501
 CRC_TABLE = [
     0x00000,
     0x01189,

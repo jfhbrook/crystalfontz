@@ -68,5 +68,5 @@ SMILEY_FACE = SpecialCharacter.from_str(
  x x x
  xx xx
   xxx 
-"""
+"""  # noqa: W291, W293
 )

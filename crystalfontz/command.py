@@ -431,7 +431,7 @@ class SetGpio(Command):
             raise ValueError(f"Invalid index {index}")
 
         if not (0 <= output_state <= 100):
-            raise ValueError(f"Output state should be between 0 and 100")
+            raise ValueError("Output state should be between 0 and 100")
 
         self.index: int = index
         self.output_state: int = output_state
