@@ -13,6 +13,7 @@ from crystalfontz.command import (
     Command,
     ConfigureKeyReporting,
     ConfigureWatchdog,
+    DowTransaction,
     GetVersions,
     Ping,
     Poke,
@@ -59,6 +60,7 @@ from crystalfontz.response import (
     CursorStyleSet,
     DataSent,
     DowDeviceInformation,
+    DowTransactionResult,
     KeyActivityReport,
     KeypadPolled,
     KeyReportingConfigured,
@@ -289,8 +291,12 @@ class Client(asyncio.Protocol):
             SetupTemperatureReporting(enabled, self.device), TemperatureReportingSetUp
         )
 
-    async def dow_transaction(self: Self) -> None:
-        raise NotImplementedError("dow_transaction")
+    async def dow_transaction(
+        self: Self, index: int, bytes_to_read: int, data_to_write: bytes
+    ) -> DowTransactionResult:
+        return await self.send_command(
+            DowTransaction(index, bytes_to_read, data_to_write), DowTransactionResult
+        )
 
     async def setup_live_temperature_display(
         self: Self, slot: int, item: TemperatureDisplayItem

@@ -263,8 +263,25 @@ class SetupTemperatureReporting(Command):
 class DowTransaction(Command):
     command: int = 0x14
 
+    def __init__(
+        self: Self, index: int, bytes_to_read: int, data_to_write: bytes
+    ) -> None:
+        self.index = index
+        if not (0 <= bytes_to_read <= 14):
+            raise ValueError("bytes_to_read out of range")
+        if len(data_to_write) > 14:
+            raise ValueError(
+                "data_to_write has {len(data_to_write)} bytes, but only "
+                "14 may be written"
+            )
+        self.bytes_to_read = bytes_to_read
+        self.data_to_write = data_to_write
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (
+            self.command,
+            self.index.to_bytes() + self.bytes_to_read.to_bytes() + self.data_to_write,
+        )
 
 
 class SetupLiveTemperatureDisplay(Command):

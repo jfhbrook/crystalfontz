@@ -197,6 +197,17 @@ class TemperatureReportingSetUp(Ack):
 
 
 @code(0x54)
+class DowTransactionResult(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        self.index = data[0]
+        self.data = data[1:-1]
+        self.crc = data[-1]
+
+    def __str__(self: Self) -> str:
+        return f"DowTransactionResult({self.index}, data={self.data}, crc={self.crc})"
+
+
+@code(0x55)
 class LiveTemperatureDisplaySetUp(Ack):
     def __str__(self: Self) -> str:
         return "LiveTemperatureDisplaySetUp"

@@ -23,6 +23,7 @@ from crystalfontz.response import (
     CursorStyleSet,
     DataSent,
     DowDeviceInformation,
+    DowTransactionResult,
     KeypadPolled,
     KeyReportingConfigured,
     Line1Set,
@@ -84,7 +85,9 @@ class ClientProtocol(Protocol):
     async def setup_temperature_reporting(
         self: Self, enabled: Iterable[int]
     ) -> TemperatureReportingSetUp: ...
-    async def dow_transaction(self: Self) -> None: ...
+    async def dow_transaction(
+        self: Self, index: int, bytes_to_read: int, data_to_write: bytes
+    ) -> DowTransactionResult: ...
     async def setup_live_temperature_display(
         self: Self, slot: int, item: TemperatureDisplayItem
     ) -> LiveTemperatureDisplaySetUp: ...
