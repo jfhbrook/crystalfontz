@@ -43,18 +43,21 @@ class GetVersions(Command):
         return (self.command, b"")
 
 
-class WriteUserFlash(Command):
+class WriteUserFlashArea(Command):
     command: int = 0x02
 
+    def __init__(self: Self, data: bytes) -> None:
+        self.data: bytes = data
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.data)
 
 
-class ReadUserFlash(Command):
+class ReadUserFlashArea(Command):
     command: int = 0x03
 
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, b"")
 
 
 class StoreBootState(Command):

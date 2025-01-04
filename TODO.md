@@ -25,8 +25,8 @@
   - I can test by sending "disabled"
 - [-] Setup live temperature display
 - [-] read status
-- [ ] read user flash
-- [ ] write user flash
+- [-] read user flash
+- [-] write user flash
 - [ ] send raw data to LCD
 
 ## Features/Improvements

@@ -18,6 +18,7 @@ from crystalfontz.command import (
     Poke,
     PollKeypad,
     ReadStatus,
+    ReadUserFlashArea,
     RebootLCD,
     ResetHost,
     SendData,
@@ -34,6 +35,7 @@ from crystalfontz.command import (
     SetupTemperatureReporting,
     ShutdownHost,
     StoreBootState,
+    WriteUserFlashArea,
 )
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
@@ -67,6 +69,8 @@ from crystalfontz.response import (
     StatusRead,
     TemperatureReport,
     TemperatureReportingSetUp,
+    UserFlashAreaRead,
+    UserFlashAreaWritten,
     Versions,
     WatchdogConfigured,
 )
@@ -204,11 +208,11 @@ class Client(asyncio.Protocol):
             versions.model, versions.hardware_rev, versions.firmware_rev
         )
 
-    async def write_user_flash(self: Self) -> None:
-        raise NotImplementedError("write_user_flash")
+    async def write_user_flash_area(self: Self, data: bytes) -> UserFlashAreaWritten:
+        return await self.send_command(WriteUserFlashArea(data), UserFlashAreaWritten)
 
-    async def read_user_flash(self: Self) -> None:
-        raise NotImplementedError("read_user_flash")
+    async def read_user_flash_area(self: Self) -> UserFlashAreaRead:
+        return await self.send_command(ReadUserFlashArea(), UserFlashAreaRead)
 
     async def store_boot_state(self: Self) -> BootStateStored:
         return await self.send_command(StoreBootState(), BootStateStored)

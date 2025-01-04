@@ -94,6 +94,21 @@ class Versions(Response):
         )
 
 
+@code(0x42)
+class UserFlashAreaWritten(Ack):
+    def __str__(self: Self) -> str:
+        return "UserFlashAreaWritten()"
+
+
+@code(0x43)
+class UserFlashAreaRead(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        self.data: bytes = data
+
+    def __str__(self: Self) -> str:
+        return f"UserFlashAreaRead({self.data})"
+
+
 @code(0x44)
 class BootStateStored(Ack):
     def __str__(self: Self) -> str:
