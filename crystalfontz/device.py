@@ -1,14 +1,36 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+from dataclasses import dataclass
 import logging
-from typing import Any, Optional, Self
+from typing import Any, Optional, Self, Set
 import warnings
 
+from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
 from crystalfontz.character import CharacterRom, inverse, x_bar
 from crystalfontz.error import DecodeError, DeviceLookupError
+from crystalfontz.keys import KeyStates
+from crystalfontz.temperature import unpack_temperature_settings
 
 logger = logging.getLogger(__name__)
 
+# Device status is specific to not just the model, but the hardware and
+# firmware revisions as well. Rather than forcing the user to check the
+# return type, we just make this API unsafe.
 DeviceStatus = Any
+
+
+def assert_contrast_in_range(contrast: float) -> None:
+    if contrast < 0:
+        raise ValueError(f"Contrast {contrast} < 0")
+    elif contrast > 1:
+        raise ValueError(f"Contrast {contrast} > 1")
+
+
+def assert_brightness_in_range(name: str, brightness: float) -> None:
+    if brightness < 0:
+        raise ValueError(f"{name} brightness {brightness} < 0")
+    elif brightness > 1:
+        raise ValueError(f"{name} brightness {brightness} > 1")
+
 
 #
 # This ROM encoding is based on page 44 of CFA533-TMI-KU.pdf.
@@ -62,33 +84,16 @@ class Device(ABC):
     character_rom: CharacterRom = CFA533_CHARACTER_ROM
     n_temperature_sensors: int = 0
 
-    @abstractmethod
     def contrast(self: Self, contrast: float) -> bytes:
         raise NotImplementedError("contrast")
 
-    @abstractmethod
     def brightness(
         self: Self, lcd_brightness: float, keypad_brightness: Optional[float]
     ) -> bytes:
         raise NotImplementedError("brightness")
 
-    @abstractmethod
     def status(self: Self, data: bytes) -> DeviceStatus:
         raise NotImplementedError("status")
-
-
-def assert_contrast_in_range(contrast: float) -> None:
-    if contrast < 0:
-        raise ValueError(f"Contrast {contrast} < 0")
-    elif contrast > 1:
-        raise ValueError(f"Contrast {contrast} > 1")
-
-
-def assert_brightness_in_range(name: str, brightness: float) -> None:
-    if brightness < 0:
-        raise ValueError(f"{name} brightness {brightness} < 0")
-    elif brightness > 1:
-        raise ValueError(f"{name} brightness {brightness} > 1")
 
 
 # INCOMPLETE
@@ -121,6 +126,19 @@ class CFA633(Device):
 
     def status(self: Self, data: bytes) -> DeviceStatus:
         raise NotImplementedError("status")
+
+
+@dataclass
+class CFA533Status:
+    temperature_sensors_enabled: Set[int]
+    key_states: KeyStates
+    atx_power_switch_functionality_settings: AtxPowerSwitchFunctionalitySettings
+    watchdog_counter: int
+    contrast: float
+    brightness: float
+    atx_sense_on_floppy: int
+    cfa633_contrast: float
+    lcd_brightness: float
 
 
 class CFA533(Device):
@@ -158,22 +176,28 @@ class CFA533(Device):
         if len(data) != 15:
             raise DecodeError(f"Status expected to be 15 bytes, is {len(data)} bytes")
         # data[0] is reserved
-        temp_1 = data[1]
-        temp_2 = data[2]
-        temp_3 = data[3]
-        temp_4 = data[4]
-        key_presses = data[5]
-        key_releases = data[6]
-        atx_power = data[7]
+        enabled = unpack_temperature_settings(data[1:5])
+        key_states = KeyStates.from_bytes(b"\x00" + data[5:7])
+        atx_power = AtxPowerSwitchFunctionalitySettings.from_bytes(data[7:8])
         watchdog_counter = data[8]
-        contrast_adjust = data[9]
-        backlight = data[10]
-        sense_on_floppy = data[11]
+        contrast = data[9] / 255
+        brightness = data[10] / 100
+        atx_sense_on_floppy = data[11]  # command 28
         # data[12] is reserved
-        cfa633_contrast = data[13]
-        backlight = data[14]
+        cfa633_contrast = data[13] / 50
+        lcd_brightness = data[14] / 100
 
-        raise NotImplementedError("parse_status")
+        return CFA533Status(
+            temperature_sensors_enabled=enabled,
+            key_states=key_states,
+            atx_power_switch_functionality_settings=atx_power,
+            watchdog_counter=watchdog_counter,
+            contrast=contrast,
+            brightness=brightness,
+            atx_sense_on_floppy=atx_sense_on_floppy,
+            cfa633_contrast=cfa633_contrast,
+            lcd_brightness=lcd_brightness,
+        )
 
 
 def lookup_device(

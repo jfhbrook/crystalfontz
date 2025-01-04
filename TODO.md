@@ -24,9 +24,10 @@
 - [-] watchdoge
   - I can test by sending "disabled"
 - [-] Setup live temperature display
-- [ ] read status
-  - Specific to firmware of CFA533
+- [-] read status
 - [ ] read user flash
+- [ ] write user flash
+- [ ] send raw data to LCD
 
 ## Features/Improvements
 
@@ -36,6 +37,7 @@
 - [-] Make character ROM device specific
   - Half done, still need to implement trie
 - [x] Trim/pad special characters
+- [ ] Add character encoding to ROM when adding character
 - [ ] Compare temperature reporting to CFA555 and CFA633
 - [ ] Load special characters from image files
 - [ ] Retry a few times if packet if fails to respond within 250ms
@@ -43,10 +45,8 @@
 ### Obscure Commands
 
 - CFA631 key legends
-- write user flash
 - read DOW
 - DOW transactions
-- send raw data to LCD
 - set gpio
 - read gpio
 

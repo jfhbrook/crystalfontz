@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable, Optional, Self
+from typing import Optional, Self, Set, Type
 
 AUTO_POLARITY = 0x01
 
@@ -16,9 +16,26 @@ class AtxPowerSwitchFunction(Enum):
 
 @dataclass
 class AtxPowerSwitchFunctionalitySettings:
-    functions: Iterable[AtxPowerSwitchFunction]
+    functions: Set[AtxPowerSwitchFunction]
     auto_polarity: bool = True
     power_pulse_length_seconds: Optional[float] = None
+
+    @classmethod
+    def from_bytes(cls: Type[Self], settings: bytes) -> Self:
+        functions: Set[AtxPowerSwitchFunction] = set()
+        for function in AtxPowerSwitchFunction:
+            if settings[0] & function.value:
+                functions.add(function)
+        auto_polarity: bool = bool(settings[0] & AUTO_POLARITY)
+        power_pulse_length_seconds: Optional[float] = (
+            settings[1] / 32 if len(settings) > 1 else None
+        )
+
+        return cls(
+            functions=functions,
+            auto_polarity=auto_polarity,
+            power_pulse_length_seconds=power_pulse_length_seconds,
+        )
 
     def to_bytes(self: Self) -> bytes:
         functions: int = 0

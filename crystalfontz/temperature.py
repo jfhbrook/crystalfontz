@@ -32,7 +32,7 @@ class TemperatureDisplayItem:
             raise ValueError(f"Column {item.column} is invalid")
 
         column: bytes = item.column.to_bytes()
-        
+
         if not (0 <= item.row < device.lines):
             raise ValueError(f"Row {item.row} is invalid")
 

@@ -276,10 +276,12 @@ class Client(asyncio.Protocol):
     async def dow_transaction(self: Self) -> None:
         raise NotImplementedError("dow_transaction")
 
-    async def setup_live_temperature_display(self: Self, slot: int, item: TemperatureDisplayItem) -> LiveTemperatureDisplaySetUp:
+    async def setup_live_temperature_display(
+        self: Self, slot: int, item: TemperatureDisplayItem
+    ) -> LiveTemperatureDisplaySetUp:
         return await self.send_command(
             SetupLiveTemperatureDisplay(slot, item, self.device),
-            LiveTemperatureDisplaySetUp
+            LiveTemperatureDisplaySetUp,
         )
 
     async def raw_command(self: Self) -> None:

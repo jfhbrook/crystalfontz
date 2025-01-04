@@ -211,7 +211,7 @@ class StatusRead(Response):
         self.data: bytes = data
 
     def __str__(self: Self) -> str:
-        return f"Status({self.data})"
+        return f"StatusRead({self.data})"
 
 
 @code(0x5F)
