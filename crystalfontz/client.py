@@ -415,11 +415,7 @@ async def create_connection(
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
     loop: Optional[asyncio.AbstractEventLoop] = None,
-    baudrate: int = 19200,
-    # TODO: There are hints that these are configurable??
-    bytesize=EIGHTBITS,
-    parity=PARITY_NONE,
-    stopbits=STOPBITS_ONE,
+    baudrate: BaudRate = 19200,
 ) -> Client:
     _loop = loop if loop else asyncio.get_running_loop()
 
@@ -434,9 +430,9 @@ async def create_connection(
         lambda: Client(device=device, report_handler=report_handler, loop=_loop),
         port,
         baudrate=baudrate,
-        bytesize=bytesize,
-        parity=parity,
-        stopbits=stopbits,
+        bytesize=EIGHTBITS,
+        parity=PARITY_NONE,
+        stopbits=STOPBITS_ONE,
     )
 
     await client._connection_made
