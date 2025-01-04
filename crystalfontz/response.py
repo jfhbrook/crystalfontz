@@ -3,6 +3,7 @@ import struct
 from typing import Callable, cast, Dict, Self, Type, TypeVar
 
 from crystalfontz.error import DecodeError, DeviceError, UnknownResponseError
+from crystalfontz.gpio import GpioSettings, GpioState
 from crystalfontz.keys import KeyActivity, KeyStates
 from crystalfontz.packet import Packet
 
@@ -275,9 +276,18 @@ class GpioSet(Ack):
 
 
 @code(0x63)
-class GpioState(Response):
+class GpioRead(Response):
     def __init__(self: Self, data: bytes) -> None:
-        raise NotImplementedError("GpioState")
+        self.index: int = data[0]
+        self.state: GpioState = GpioState.from_byte(data[1])
+        self.requested_level: int = data[2]
+        self.settings: GpioSettings = GpioSettings.from_bytes(data[3:])
+
+    def __str__(self: Self) -> str:
+        return (
+            f"GpioRead({self.index}, state={self.state}, "
+            f"requested_level={self.requested_level}, settings={self.settings}"
+        )
 
 
 @code(0x80)

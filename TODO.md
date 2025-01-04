@@ -4,9 +4,8 @@
 
 - [ ] Manually test features
   - [ ] read user flash area
-- [ ] Stub unimplemented commands
-  - [ ] Set GPIO
-  - [ ] Read GPIO
+  - [ ] read GPIO
+- [ ] Linting
 - [ ] CLI tool
 - [ ] Do up documentation
 - [ ] Open source release

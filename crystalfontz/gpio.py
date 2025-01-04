@@ -1,6 +1,25 @@
+from dataclasses import dataclass
 from enum import Enum
 from typing import NoReturn, Optional, Self, Type
 import warnings
+
+GPIO_HIGH = True
+GPIO_LOW = False
+
+
+@dataclass
+class GpioState:
+    state: bool
+    falling: bool
+    rising: bool
+
+    @classmethod
+    def from_byte(cls: Type[Self], data: int) -> Self:
+        return cls(
+            state=bool(data & 0b0001),
+            falling=bool(data & 0b0010),
+            rising=bool(data & 0b0100),
+        )
 
 
 class GpioFunction(Enum):

@@ -25,8 +25,8 @@ from crystalfontz.response import (
     DataSent,
     DowDeviceInformation,
     DowTransactionResult,
+    GpioRead,
     GpioSet,
-    GpioState,
     KeypadPolled,
     KeyReportingConfigured,
     Line1Set,
@@ -115,7 +115,7 @@ class ClientProtocol(Protocol):
     async def set_gpio(
         self: Self, index: int, output_state: int, settings: GpioSettings
     ) -> GpioSet: ...
-    async def read_gpio(self: Self, index: int) -> GpioState: ...
+    async def read_gpio(self: Self, index: int) -> GpioRead: ...
 
 
 class Effect(ABC):

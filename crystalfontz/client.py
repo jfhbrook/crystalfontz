@@ -64,8 +64,8 @@ from crystalfontz.response import (
     DataSent,
     DowDeviceInformation,
     DowTransactionResult,
+    GpioRead,
     GpioSet,
-    GpioState,
     KeyActivityReport,
     KeypadPolled,
     KeyReportingConfigured,
@@ -371,8 +371,8 @@ class Client(asyncio.Protocol):
     ) -> GpioSet:
         return await self.send_command(SetGpio(index, output_state, settings), GpioSet)
 
-    async def read_gpio(self: Self, index: int) -> GpioState:
-        return await self.send_command(ReadGpio(index), GpioState)
+    async def read_gpio(self: Self, index: int) -> GpioRead:
+        return await self.send_command(ReadGpio(index), GpioRead)
 
     #
     # Report handlers
