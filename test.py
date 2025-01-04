@@ -5,14 +5,16 @@ from crystalfontz.character import SMILEY_FACE
 from crystalfontz.client import create_connection
 from crystalfontz.report import NoopReportHandler, LoggingReportHandler
 
-CHARACTER_ROM.set_encoding("☺", b"\x00")
 
 async def main() -> None:
     logging.basicConfig(level=logging.INFO)
 
     client = await create_connection("/dev/ttyUSB0", report_handler=NoopReportHandler())
 
-    await client.read_status()
+
+    # client.device.character_rom.set_encoding("☺", b"\x00")
+
+    print(await client.read_status())
 
     # await client.set_backlight(0.1)
 

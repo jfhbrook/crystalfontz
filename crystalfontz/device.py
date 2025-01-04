@@ -136,7 +136,7 @@ class CFA533Status:
     watchdog_counter: int
     contrast: float
     brightness: float
-    atx_sense_on_floppy: int
+    atx_sense_on_floppy: bool
     cfa633_contrast: float
     lcd_brightness: float
 
@@ -182,7 +182,7 @@ class CFA533(Device):
         watchdog_counter = data[8]
         contrast = data[9] / 255
         brightness = data[10] / 100
-        atx_sense_on_floppy = data[11]  # command 28
+        atx_sense_on_floppy = bool(data[11])
         # data[12] is reserved
         cfa633_contrast = data[13] / 50
         lcd_brightness = data[14] / 100

@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable, List, Literal, Optional, Self, Set, Type
+from typing import Iterable, List, Literal, Optional, Protocol, Self, Set, Type
 
-from crystalfontz.device import Device
+
+class DeviceProtocol(Protocol):
+    lines: int
+    columns: int
+    n_temperature_sensors: int
 
 
 class TemperatureUnit(Enum):
@@ -20,7 +24,9 @@ class TemperatureDisplayItem:
     units: TemperatureUnit
 
     @classmethod
-    def to_bytes(cls: Type[Self], item: Optional[Self], device: Device) -> bytes:
+    def to_bytes(
+        cls: Type[Self], item: Optional[Self], device: DeviceProtocol
+    ) -> bytes:
         if item is None:
             return b"\x00"
         # TODO: Validation. The documentation suggests that sensors 32+ are
@@ -42,7 +48,7 @@ class TemperatureDisplayItem:
         return index + n_digits + column + row + units
 
 
-def pack_temperature_settings(enabled: Iterable[int], device: Device) -> bytes:
+def pack_temperature_settings(enabled: Iterable[int], device: DeviceProtocol) -> bytes:
     bs: List[int] = [0 for _ in range(0, device.n_temperature_sensors // 8)]
     for sensor in set(enabled):
         sensor_idx = sensor - 1

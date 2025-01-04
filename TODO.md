@@ -3,9 +3,7 @@
 ## Features/Improvements
 
 - [ ] Manually test features
-  - [ ] status
   - [ ] key reporting (configure and log)
-  - [ ] watchdog (set to disabled)
   - [ ] temperature reporting (configure and log)
   - [ ] live temperature display
   - [ ] read user flash area
