@@ -5,6 +5,7 @@
 - [ ] Manually test features
   - [ ] read user flash area
   - [ ] read GPIO
+- [ ] Write examples
 - [ ] Do up documentation
 - [ ] Open source release
 

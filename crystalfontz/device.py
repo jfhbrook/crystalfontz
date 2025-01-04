@@ -96,38 +96,6 @@ class Device(ABC):
         raise NotImplementedError("status")
 
 
-# INCOMPLETE
-class CFA633(Device):
-    model: str = "CFA633"
-    hardware_rev: str = "h1.5c"
-    firmware_rev: str = "k1.7"
-
-    lines: int = 2
-    columns: int = 16
-    character_width: int = 6
-    character_height: int = 8
-    character_rom: CharacterRom = CFA533_CHARACTER_ROM
-    n_temperature_sensors: int = 0
-
-    def contrast(self: Self, contrast: float) -> bytes:
-        # CFA633 supports a contrast setting between 0 and 200.
-        assert_contrast_in_range(contrast)
-        return int(contrast * 200).to_bytes()
-
-    def brightness(
-        self: Self, lcd_brightness: float, keypad_brightness: Optional[float]
-    ) -> bytes:
-        assert_brightness_in_range("LCD", lcd_brightness)
-
-        if keypad_brightness is not None:
-            warnings.warn("CFA633 does not support keypad brightness")
-
-        return int(lcd_brightness * 100).to_bytes()
-
-    def status(self: Self, data: bytes) -> DeviceStatus:
-        raise NotImplementedError("status")
-
-
 @dataclass
 class CFA533Status:
     temperature_sensors_enabled: Set[int]
@@ -200,6 +168,37 @@ class CFA533(Device):
         )
 
 
+class CFA633(Device):
+    model: str = "CFA633"
+    hardware_rev: str = "h1.5c"
+    firmware_rev: str = "k1.7"
+
+    lines: int = 2
+    columns: int = 16
+    character_width: int = 6
+    character_height: int = 8
+    character_rom: CharacterRom = CFA533_CHARACTER_ROM
+    n_temperature_sensors: int = 0
+
+    def contrast(self: Self, contrast: float) -> bytes:
+        # CFA633 supports a contrast setting between 0 and 200.
+        assert_contrast_in_range(contrast)
+        return int(contrast * 200).to_bytes()
+
+    def brightness(
+        self: Self, lcd_brightness: float, keypad_brightness: Optional[float]
+    ) -> bytes:
+        assert_brightness_in_range("LCD", lcd_brightness)
+
+        if keypad_brightness is not None:
+            warnings.warn("CFA633 does not support keypad brightness")
+
+        return int(lcd_brightness * 100).to_bytes()
+
+    def status(self: Self, data: bytes) -> DeviceStatus:
+        raise NotImplementedError("status")
+
+
 def lookup_device(
     model: str, hardware_rev: Optional[str] = None, firmware_rev: Optional[str] = None
 ) -> Device:
@@ -212,41 +211,42 @@ def lookup_device(
                 v += f", {firmware_rev}"
         return v
 
-    def selected() -> None:
-        logger.info(f"Selected model {model}")
-
-    def default(hw_rev: Optional[str] = None, fw_rev: Optional[str] = None) -> None:
+    def selected(
+        hw_rev: Optional[str] = None,
+        fw_rev: Optional[str] = None,
+        untested: bool = False,
+        dangerous: bool = False,
+    ) -> None:
         nonlocal hardware_rev
         nonlocal firmware_rev
 
-        if hw_rev is not None:
+        if hw_rev:
+            logger.info(f"Defaulting to hardware revision {hw_rev}")
             hardware_rev = hw_rev
-        if fw_rev is not None:
+        if fw_rev:
+            logger.info(f"Defaulting to firmware revison {fw_rev}")
             firmware_rev = fw_rev
 
-        logger.info(f"Defaulting to {version()}")
+        logger.info(f"Selected device {version()}")
+        if untested:
+            message = f"{version()} has not been tested and may have bugs."
+            if dangerous:
+                warnings.warn(message)
+            else:
+                logger.warning(message)
 
-    def untested(flagrant: bool = False) -> None:
-        message = f"{version()} has not been tested and may have bugs."
-        if flagrant:
-            warnings.warn(message)
-        else:
-            logger.warning(message)
-
-    if model == "CFA633":
-        selected()
-        untested(flagrant=True)
-        return CFA633()
-    elif model == "CFA533":
-        selected()
+    if model == "CFA533":
         if hardware_rev is None:
-            default("h1.4", "u1v2")
+            selected(hw_rev="h1.4", fw_rev="u1v2")
         elif hardware_rev != "h1.4":
-            untested()
+            selected(untested=True)
         elif firmware_rev is None:
-            default("h1.4", "u1v2")
+            selected(fw_rev="u1v2", untested=True)
         elif firmware_rev != "u1v2":
-            untested()
+            selected(untested=True)
         return CFA533()
+    elif model == "CFA633":
+        selected(untested=True, dangerous=True)
+        return CFA633()
     else:
         raise DeviceLookupError(f"Unknown device {version()}")
