@@ -201,17 +201,52 @@ class CFA533(Device):
 
 
 def lookup_device(
-    model: str, hardware_rev: str = "<any>", firmware_rev: str = "<any>"
+    model: str, hardware_rev: Optional[str] = None, firmware_rev: Optional[str] = None
 ) -> Device:
-    if model != "CFA533" or hardware_rev != "h1.4" or firmware_rev != "u1v2":
-        logger.warning(
-            f"{model}: {hardware_rev}, {firmware_rev} has not been "
-            "tested and may have bugs."
-        )
+
+    def version() -> str:
+        v = f"{model}"
+        if hardware_rev:
+            v += f": {hardware_rev}"
+            if firmware_rev:
+                v += f", {firmware_rev}"
+        return v
+
+    def selected() -> None:
+        logger.info(f"Selected model {model}")
+
+    def default(hw_rev: Optional[str] = None, fw_rev: Optional[str] = None) -> None:
+        nonlocal hardware_rev
+        nonlocal firmware_rev
+
+        if hw_rev is not None:
+            hardware_rev = hw_rev
+        if fw_rev is not None:
+            firmware_rev = fw_rev
+
+        logger.info(f"Defaulting to {version()}")
+
+    def untested(flagrant: bool = False) -> None:
+        message = f"{version()} has not been tested and may have bugs."
+        if flagrant:
+            warnings.warn(message)
+        else:
+            logger.warning(message)
 
     if model == "CFA633":
+        selected()
+        untested(flagrant=True)
         return CFA633()
     elif model == "CFA533":
+        selected()
+        if hardware_rev is None:
+            default("h1.4", "u1v2")
+        elif hardware_rev != "h1.4":
+            untested()
+        elif firmware_rev is None:
+            default("h1.4", "u1v2")
+        elif firmware_rev != "u1v2":
+            untested()
         return CFA533()
     else:
-        raise DeviceLookupError(f"Unknown device {model} {hardware_rev} {firmware_rev}")
+        raise DeviceLookupError(f"Unknown device {version()}")

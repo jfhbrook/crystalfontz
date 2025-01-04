@@ -410,8 +410,8 @@ class Client(asyncio.Protocol):
 async def create_connection(
     port: str,
     model: str = "CFA533",
-    hardware_rev: str = "h1.4",
-    firmware_rev: str = "u1v2",
+    hardware_rev: Optional[str] = None,
+    firmware_rev: Optional[str] = None,
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
     loop: Optional[asyncio.AbstractEventLoop] = None,
