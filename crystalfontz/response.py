@@ -192,6 +192,12 @@ class LiveTemperatureDisplaySetUp(Ack):
         return "LiveTemperatureDisplaySetUp"
 
 
+@code(0x56)
+class CommandSentToLcdController(Ack):
+    def __str__(self: Self) -> str:
+        return "CommandSentToLcdController()"
+
+
 @code(0x57)
 class KeyReportingConfigured(Ack):
     def __str__(self: Self) -> str:

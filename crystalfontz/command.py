@@ -9,6 +9,7 @@ from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
 from crystalfontz.keys import KeyPress
+from crystalfontz.lcd import LcdRegister
 from crystalfontz.packet import Packet
 from crystalfontz.temperature import pack_temperature_settings, TemperatureDisplayItem
 
@@ -277,11 +278,20 @@ class SetupLiveTemperatureDisplay(Command):
         return (self.command, self.slot.to_bytes() + self.item)
 
 
-class RawCommand(Command):
+class SendCommandToLcdController(Command):
     command: int = 0x16
 
+    def __init__(self: Self, register: LcdRegister, data: int | bytes) -> None:
+        byte: bytes = data.to_bytes() if isinstance(data, int) else data
+
+        if len(byte) != 1:
+            raise ValueError("May send one byte to LCD controller")
+
+        self.register = register
+        self.byte = byte
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.register.value.to_bytes() + self.byte)
 
 
 def _key_mask(keypresses: Set[KeyPress]) -> int:

@@ -10,12 +10,14 @@ from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus
 from crystalfontz.keys import KeyPress
+from crystalfontz.lcd import LcdRegister
 from crystalfontz.response import (
     AtxPowerSwitchFunctionalitySet,
     BacklightSet,
     BaudRateSet,
     BootStateStored,
     ClearedScreen,
+    CommandSentToLcdController,
     ContrastSet,
     CursorPositionSet,
     CursorStyleSet,
@@ -83,7 +85,9 @@ class ClientProtocol(Protocol):
     async def setup_live_temperature_display(
         self: Self, slot: int, item: TemperatureDisplayItem
     ) -> LiveTemperatureDisplaySetUp: ...
-    async def raw_command(self: Self) -> None: ...
+    async def send_command_to_lcd_controller(
+        self: Self, register: LcdRegister, data: int | bytes
+    ) -> CommandSentToLcdController: ...
     async def configure_key_reporting(
         self: Self, when_pressed: Set[KeyPress], when_released: Set[KeyPress]
     ) -> KeyReportingConfigured: ...

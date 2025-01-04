@@ -21,6 +21,7 @@ from crystalfontz.command import (
     ReadUserFlashArea,
     RebootLCD,
     ResetHost,
+    SendCommandToLcdController,
     SendData,
     SetAtxPowerSwitchFunctionality,
     SetBacklight,
@@ -42,6 +43,7 @@ from crystalfontz.device import Device, DeviceStatus, lookup_device
 from crystalfontz.effects import Marquee, Screensaver
 from crystalfontz.error import ConnectionError
 from crystalfontz.keys import KeyPress
+from crystalfontz.lcd import LcdRegister
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
 from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
@@ -50,6 +52,7 @@ from crystalfontz.response import (
     BaudRateSet,
     BootStateStored,
     ClearedScreen,
+    CommandSentToLcdController,
     ContrastSet,
     CursorPositionSet,
     CursorStyleSet,
@@ -288,8 +291,12 @@ class Client(asyncio.Protocol):
             LiveTemperatureDisplaySetUp,
         )
 
-    async def raw_command(self: Self) -> None:
-        raise NotImplementedError("raw_command")
+    async def send_command_to_lcd_controller(
+        self: Self, register: LcdRegister, data: int | bytes
+    ) -> CommandSentToLcdController:
+        return await self.send_command(
+            SendCommandToLcdController(register, data), CommandSentToLcdController
+        )
 
     async def configure_key_reporting(
         self: Self, when_pressed: Set[KeyPress], when_released: Set[KeyPress]

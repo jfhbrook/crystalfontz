@@ -1,57 +1,39 @@
 # TODO
 
-### Basic Commands
-
-- [x] ping
-- [x] get versions
-- [x] set line 1, set line 2
-- [x] clear screen
-- [x] set contrast
-- [x] set backlight
-- [x] set cursor style
-- [x] set cursor position
-- [x] reboot, reset or power off
-  - (only tested reboot)
-- [x] poll keypad
-- [x] poke
-- [x] send data to LCD
-- [x] set special character data
-- [x] set baud rate
-- [x] store boot state
-- [-] configure key reporting
-- [-] setup temperature reporting
-- [-] set atx power switch functionality
-- [-] watchdoge
-  - I can test by sending "disabled"
-- [-] Setup live temperature display
-- [-] read status
-- [-] read user flash
-- [-] write user flash
-- [ ] send raw data to LCD
-
 ## Features/Improvements
 
-- [x] Marquee and screensaver
-- [x] Set device based on version output
-- [x] Lock when running command
-- [-] Make character ROM device specific
-  - Half done, still need to implement trie
-- [x] Trim/pad special characters
+- [ ] Manually test features
+  - [ ] status
+  - [ ] key reporting (configure and log)
+  - [ ] watchdog (set to disabled)
+  - [ ] temperature reporting (configure and log)
+  - [ ] live temperature display
+  - [ ] read user flash area
+- [ ] Stub unimplemented commands
+  - [ ] Read DOW
+  - [ ] Arbitrary DOW transactions
+  - [ ] Set GPIO
+  - [ ] Read GPIO
+- [ ] Implement trie for character rom - makes general across devices
 - [ ] Add character encoding to ROM when adding character
 - [ ] Compare temperature reporting to CFA555 and CFA633
-- [ ] Load special characters from image files
 - [ ] Retry a few times if packet if fails to respond within 250ms
-
-### Obscure Commands
-
-- CFA631 key legends
-- read DOW
-- DOW transactions
-- set gpio
-- read gpio
-
-
-### Long Tail
-
+- [ ] Load special characters from image files
 - [ ] CLI tool
+- [ ] Convenience exports in `__init__.py`
+- [ ] Do up documentation
+- [ ] Open source release
+
+### Future Tickets
+
 - [ ] Awaitable for close or exception
+- [ ] Test writing to user flash area
+- [ ] Test sending commands directly to LCD controller
+- [ ] Test ATX power switch functionality
+- [ ] Test watchdog functionality
+- [ ] Read DOW
+- [ ] Arbitrary DOW transactions
+- [ ] Set gpio
+- [ ] Read gpio
+- [ ] CFA631 key legends
+- [ ] Generalize plusdeck integration test framework, write proper integration tests
