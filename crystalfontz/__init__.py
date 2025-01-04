@@ -16,7 +16,7 @@ from crystalfontz.error import (
     EncodeError,
     UnknownResponseError,
 )
-from crystalfontz.gpio import GpioFunction, GpioDriveMode, GpioSettings
+from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
 from crystalfontz.keys import (
     KeyActivity,
     KeyState,

@@ -3,8 +3,8 @@ from typing import NoReturn, Optional, Self
 
 
 class GpioFunction(Enum):
-    UNUSED = 0
-    USED = 1
+    UNUSED = 0b0000
+    USED = 0b1000
 
 
 class GpioDriveMode(Enum):
@@ -65,5 +65,8 @@ class GpioSettings:
         else:
             invalid()
 
+    def __str__(self: Self) -> str:
+        return f"GpioSettings(function={self.function}, mode={self.mode:0b}"
+
     def to_bytes(self: Self) -> bytes:
-        return ((self.function.value << 4) + self.mode).to_bytes()
+        return (self.function.value + self.mode).to_bytes()
