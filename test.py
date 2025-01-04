@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from crystalfontz.character import CHARACTER_ROM, SMILEY_FACE
+from crystalfontz.character import SMILEY_FACE
 from crystalfontz.client import create_connection
 from crystalfontz.report import NoopReportHandler, LoggingReportHandler
 
@@ -12,6 +12,8 @@ async def main() -> None:
 
     client = await create_connection("/dev/ttyUSB0", report_handler=NoopReportHandler())
 
+    await client.read_status()
+
     # await client.set_backlight(0.1)
 
     # for _ in range(10):
@@ -20,9 +22,9 @@ async def main() -> None:
 
     # print(await client.poke(0x40))
 
-    await client.clear_screen()
+    # await client.clear_screen()
 
-    await client.set_special_character_data(0x00, SMILEY_FACE)
+    # await client.set_special_character_data(0x00, SMILEY_FACE)
 
     # await client.send_data(0, 0, "☺")
 
@@ -35,7 +37,8 @@ async def main() -> None:
     # await screensaver.run()
 
 
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
-loop.create_task(main())
-loop.run_forever()
+asyncio.run(main())
+#loop = asyncio.new_event_loop()
+#asyncio.set_event_loop(loop)
+# loop.create_task(main())
+# loop.run_forever()
