@@ -16,6 +16,7 @@ from crystalfontz.error import (
     EncodeError,
     UnknownResponseError,
 )
+from crystalfontz.gpio import GpioFunction, GpioDriveMode, GpioSettings
 from crystalfontz.keys import (
     KeyActivity,
     KeyState,
@@ -92,6 +93,9 @@ __all__: List[str] = [
     "Effect",
     "EncodeError",
     "FAST_BAUD_RATE",
+    "GpioDriveMode",
+    "GpioFunction",
+    "GpioSettings",
     "KP_DOWN",
     "KP_ENTER",
     "KP_EXIT",

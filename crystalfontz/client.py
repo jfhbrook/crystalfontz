@@ -19,6 +19,7 @@ from crystalfontz.command import (
     Poke,
     PollKeypad,
     ReadDowDeviceInformation,
+    ReadGpio,
     ReadStatus,
     ReadUserFlashArea,
     RebootLCD,
@@ -31,6 +32,7 @@ from crystalfontz.command import (
     SetContrast,
     SetCursorPosition,
     SetCursorStyle,
+    SetGpio,
     SetLine1,
     SetLine2,
     SetSpecialCharacterData,
@@ -44,6 +46,7 @@ from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
 from crystalfontz.effects import Marquee, Screensaver
 from crystalfontz.error import ConnectionError
+from crystalfontz.gpio import GpioDriveMode, GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
@@ -61,6 +64,8 @@ from crystalfontz.response import (
     DataSent,
     DowDeviceInformation,
     DowTransactionResult,
+    GpioSet,
+    GpioState,
     KeyActivityReport,
     KeypadPolled,
     KeyReportingConfigured,
@@ -355,11 +360,19 @@ class Client(asyncio.Protocol):
         self._transport.serial.baudrate = baud_rate
         return res
 
-    async def config_gpio(self: Self) -> None:
-        raise NotImplementedError("config_gpio")
+    # Older versions of the CFA533 don't support GPIO, and future models might
+    # support more GPIO pins. Therefore, we don't validate the index or
+    # gatekeep based on
+    async def set_gpio(
+        self: Self,
+        index: int,
+        output_state: int,
+        settings: Optional[GpioSettings] = None,
+    ) -> GpioSet:
+        return await self.send_command(SetGpio(index, output_state, settings), GpioSet)
 
-    async def read_gpio(self: Self) -> None:
-        raise NotImplementedError("read_gpio")
+    async def read_gpio(self: Self, index: int) -> GpioState:
+        return await self.send_command(ReadGpio(index), GpioState)
 
     #
     # Report handlers

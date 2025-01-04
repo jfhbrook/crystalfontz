@@ -268,6 +268,18 @@ class BaudRateSet(Ack):
         return "BaudRateSet()"
 
 
+@code(0x62)
+class GpioSet(Ack):
+    def __str__(self: Self) -> str:
+        return "GpioSet()"
+
+
+@code(0x63)
+class GpioState(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        raise NotImplementedError("GpioState")
+
+
 @code(0x80)
 class KeyActivityReport(Response):
     """

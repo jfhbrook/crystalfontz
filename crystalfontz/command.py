@@ -8,6 +8,7 @@ from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
+from crystalfontz.gpio import GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.packet import Packet
@@ -417,15 +418,39 @@ class SetBaudRate(Command):
         return (self.command, self.baud_rate.to_bytes())
 
 
-class ConfigureGpio(Command):
+class SetGpio(Command):
     command: int = 0x22
 
+    def __init__(
+        self: Self,
+        index: int,
+        output_state: int,
+        settings: Optional[GpioSettings] = None,
+    ) -> None:
+        if not (0 <= index < 255):
+            raise ValueError(f"Invalid index {index}")
+
+        if not (0 <= output_state <= 100):
+            raise ValueError(f"Output state should be between 0 and 100")
+
+        self.index: int = index
+        self.output_state: int = output_state
+        self.settings: Optional[GpioSettings] = settings
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        data: bytes = self.index.to_bytes() + self.output_state.to_bytes()
+
+        if self.settings is not None:
+            data += self.settings.to_bytes()
+
+        return (self.command, data)
 
 
 class ReadGpio(Command):
     command: int = 0x23
 
+    def __init__(self: Self, index: int) -> None:
+        self.index: int = index
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.index.to_bytes())

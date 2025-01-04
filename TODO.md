@@ -3,7 +3,6 @@
 ## Features/Improvements
 
 - [ ] Manually test features
-  - [ ] live temperature display
   - [ ] read user flash area
 - [ ] Stub unimplemented commands
   - [ ] Set GPIO

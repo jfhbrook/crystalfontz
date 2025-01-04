@@ -9,6 +9,7 @@ from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus
+from crystalfontz.gpio import GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.response import (
@@ -24,6 +25,8 @@ from crystalfontz.response import (
     DataSent,
     DowDeviceInformation,
     DowTransactionResult,
+    GpioSet,
+    GpioState,
     KeypadPolled,
     KeyReportingConfigured,
     Line1Set,
@@ -109,8 +112,10 @@ class ClientProtocol(Protocol):
         self: Self, row: int, column: int, data: str | bytes
     ) -> DataSent: ...
     async def set_baud_rate(self: Self, baud_rate: BaudRate) -> BaudRateSet: ...
-    async def config_gpio(self: Self) -> None: ...
-    async def read_gpio(self: Self) -> None: ...
+    async def set_gpio(
+        self: Self, index: int, output_state: int, settings: GpioSettings
+    ) -> GpioSet: ...
+    async def read_gpio(self: Self, index: int) -> GpioState: ...
 
 
 class Effect(ABC):
