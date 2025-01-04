@@ -22,6 +22,7 @@ from crystalfontz.response import (
     CursorPositionSet,
     CursorStyleSet,
     DataSent,
+    DowDeviceInformation,
     KeypadPolled,
     KeyReportingConfigured,
     Line1Set,
@@ -77,7 +78,9 @@ class ClientProtocol(Protocol):
     async def set_backlight(
         self: Self, lcd_brightness: int, keypad_brightness: Optional[int] = None
     ) -> BacklightSet: ...
-    async def read_dow_info(self: Self) -> None: ...
+    async def read_dow_device_information(
+        self: Self, index: int
+    ) -> DowDeviceInformation: ...
     async def setup_temperature_reporting(
         self: Self, enabled: Iterable[int]
     ) -> TemperatureReportingSetUp: ...

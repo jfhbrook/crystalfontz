@@ -17,6 +17,7 @@ from crystalfontz.command import (
     Ping,
     Poke,
     PollKeypad,
+    ReadDowDeviceInformation,
     ReadStatus,
     ReadUserFlashArea,
     RebootLCD,
@@ -57,6 +58,7 @@ from crystalfontz.response import (
     CursorPositionSet,
     CursorStyleSet,
     DataSent,
+    DowDeviceInformation,
     KeyActivityReport,
     KeypadPolled,
     KeyReportingConfigured,
@@ -273,8 +275,12 @@ class Client(asyncio.Protocol):
             SetBacklight(lcd_brightness, keypad_brightness, self.device), BacklightSet
         )
 
-    async def read_dow_info(self: Self) -> None:
-        raise NotImplementedError("read_dow_info")
+    async def read_dow_device_information(
+        self: Self, index: int
+    ) -> DowDeviceInformation:
+        return await self.send_command(
+            ReadDowDeviceInformation(index), DowDeviceInformation
+        )
 
     async def setup_temperature_reporting(
         self: Self, enabled: Iterable[int]

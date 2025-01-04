@@ -6,7 +6,6 @@
   - [ ] live temperature display
   - [ ] read user flash area
 - [ ] Stub unimplemented commands
-  - [ ] Read DOW
   - [ ] Arbitrary DOW transactions
   - [ ] Set GPIO
   - [ ] Read GPIO

@@ -239,11 +239,15 @@ class SetBacklight(Command):
 # 0x0F-0x11 are reserved
 
 
-class ReadDowInfo(Command):
+class ReadDowDeviceInformation(Command):
     command: int = 0x12
 
+    def __init__(self: Self, index: int) -> None:
+        # TODO: CFA533 says this must be < 31.
+        self.index: int = index
+
     def to_packet(self: Self) -> Packet:
-        raise NotImplementedError("to_packet")
+        return (self.command, self.index.to_bytes())
 
 
 class SetupTemperatureReporting(Command):

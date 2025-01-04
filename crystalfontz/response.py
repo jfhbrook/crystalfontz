@@ -180,6 +180,16 @@ class BacklightSet(Ack):
         return "BacklightSet()"
 
 
+@code(0x52)
+class DowDeviceInformation(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        self.index: int = data[0]
+        self.rom_id: bytes = data[1:]
+
+    def __str__(self: Self) -> str:
+        return f"DownDeviceInformation({self.index}={self.rom_id})"
+
+
 @code(0x53)
 class TemperatureReportingSetUp(Ack):
     def __str__(self: Self) -> str:
