@@ -13,7 +13,6 @@
   - [ ] Set GPIO
   - [ ] Read GPIO
 - [ ] Implement trie for character rom - makes general across devices
-- [ ] Add character encoding to ROM when adding character
 - [ ] Compare temperature reporting to CFA555 and CFA633
 - [ ] Retry a few times if packet if fails to respond within 250ms
 - [ ] Load special characters from image files
