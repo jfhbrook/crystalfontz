@@ -16,56 +16,56 @@ def _expected(fn: GpioFunction, mode: int) -> int:
             (
                 GpioSettings(
                     fn,
-                    when_up=GpioDriveMode.FAST_STRONG,
-                    when_down=GpioDriveMode.RESISTIVE,
+                    up=GpioDriveMode.FAST_STRONG,
+                    down=GpioDriveMode.RESISTIVE,
                 ),
                 _expected(fn, 0b000),
             ),
             (
                 GpioSettings(
                     fn,
-                    when_up=GpioDriveMode.FAST_STRONG,
-                    when_down=GpioDriveMode.FAST_STRONG,
+                    up=GpioDriveMode.FAST_STRONG,
+                    down=GpioDriveMode.FAST_STRONG,
                 ),
                 _expected(fn, 0b001),
             ),
             (
                 GpioSettings(
                     fn,
-                    when_up=GpioDriveMode.HI_Z,
-                    when_down=None,
+                    up=GpioDriveMode.HI_Z,
+                    down=None,
                 ),
                 _expected(fn, 0b010),
             ),
             (
                 GpioSettings(
                     fn,
-                    when_up=GpioDriveMode.RESISTIVE,
-                    when_down=GpioDriveMode.FAST_STRONG,
+                    up=GpioDriveMode.RESISTIVE,
+                    down=GpioDriveMode.FAST_STRONG,
                 ),
                 _expected(fn, 0b011),
             ),
             (
                 GpioSettings(
                     fn,
-                    when_up=GpioDriveMode.SLOW_STRONG,
-                    when_down=GpioDriveMode.HI_Z,
+                    up=GpioDriveMode.SLOW_STRONG,
+                    down=GpioDriveMode.HI_Z,
                 ),
                 _expected(fn, 0b100),
             ),
             (
                 GpioSettings(
                     fn,
-                    when_up=GpioDriveMode.SLOW_STRONG,
-                    when_down=GpioDriveMode.SLOW_STRONG,
+                    up=GpioDriveMode.SLOW_STRONG,
+                    down=GpioDriveMode.SLOW_STRONG,
                 ),
                 _expected(fn, 0b101),
             ),
             (
                 GpioSettings(
                     fn,
-                    when_up=GpioDriveMode.HI_Z,
-                    when_down=GpioDriveMode.SLOW_STRONG,
+                    up=GpioDriveMode.HI_Z,
+                    down=GpioDriveMode.SLOW_STRONG,
                 ),
                 _expected(fn, 0b111),
             ),

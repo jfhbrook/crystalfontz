@@ -281,7 +281,7 @@ class GpioRead(Response):
         self.index: int = data[0]
         self.state: GpioState = GpioState.from_byte(data[1])
         self.requested_level: int = data[2]
-        self.settings: GpioSettings = GpioSettings.from_bytes(data[3:])
+        self.settings: GpioSettings = GpioSettings.from_byte(data[3])
 
     def __str__(self: Self) -> str:
         return (
