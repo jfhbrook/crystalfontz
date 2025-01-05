@@ -72,7 +72,7 @@ CFA533_CHARACTER_ROM = (
 """  # noqa: W291, W293
     )
     .set_special_character_range(0, 7)
-    .set_encoding(inverse, 244 + 9)
+    .set_encoding(inverse, 224 + 9)
     .set_encoding(x_bar, 240 + 8)
 )
 

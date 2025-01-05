@@ -1,6 +1,6 @@
 import pytest
 
-from crystalfontz.character import SMILEY_FACE
+from crystalfontz.character import inverse, SMILEY_FACE, x_bar
 from crystalfontz.device import CFA533, CFA533_CHARACTER_ROM
 
 # Manually encoded characters
@@ -22,7 +22,11 @@ def test_encode_table(decoded, encoded) -> None:
 
 @pytest.mark.parametrize(
     "input,expected",
-    [("Hello world!", bytes([H, e, l, l, o, _, w, o, r, l, d, exclamation]))],
+    [
+        ("Hello world!", bytes([H, e, l, l, o, _, w, o, r, l, d, exclamation])),
+        (inverse, bytes([224 + 9])),
+        (x_bar, bytes([240 + 8])),
+    ],
 )
 def test_encode(input, expected) -> None:
     assert CFA533_CHARACTER_ROM.encode(input) == expected
