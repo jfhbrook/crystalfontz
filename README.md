@@ -46,6 +46,9 @@ async def main():
         report_handler=LoggingReportHandler()
     )
 
+    # Keep the coroutine open indefinitely
+    await asyncio.get_running_loop().create_future()
+
 
 asyncio.run(main())
 ```
@@ -97,6 +100,7 @@ Commands:
   configure-watchdog              29 (0x1D): Enable/Disable and Reset...
   cursor                          Interact with the LCD cursor
   dow                             DOW (Dallas One-Wire) capabilities
+  effects                         Various effects
   gpio                            Interact with GPIO pins
   keypad                          Interact with the keypad
   listen                          Listen for reports
