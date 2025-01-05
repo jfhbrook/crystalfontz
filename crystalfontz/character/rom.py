@@ -5,10 +5,10 @@ try:
 except ImportError:
     Self = Any
 
-from crystalfontz.character.constants import inverse, super_minus, super_one, x_bar
 from crystalfontz.error import EncodeError
 
 SpecialCharacterRange = Tuple[int, int]
+MAX_UNICODE_BYTES = 4
 
 
 class CharacterRom:
@@ -45,30 +45,25 @@ class CharacterRom:
         output: bytes = b""
         i = 0
         while i < len(input):
-            char = input[i]
+            n = MAX_UNICODE_BYTES
+            char = input[i : i + n]
 
-            # TODO: This encoder uses if/else statements to handle multi-byte
-            # encodings. To make this general purpose, it needs to be
-            # refactored to use a trie-like structure.
-            if char == "x":
-                if input[i + 1] == x_bar[1] and input[i + 2] == x_bar[2]:
-                    output += self._table[x_bar]
-                    i += 2
+            while n > 0:
+                if char in self._table:
+                    output += self._table[char]
+                    break
                 else:
-                    output += self._table["x"]
-            elif char in self._table:
-                output += self._table[char]
-            elif char == super_minus:
-                if input[i + 1] == super_one:
-                    output += self._table[inverse]
-                    i += 1
-            else:
+                    n -= 1
+                    char = input[i : i + n]
+
+            if not n:
                 if errors == "strict":
                     raise EncodeError(f"Unknown character {char}")
                 else:
+                    n = 1
                     output += self._table["*"]
 
-            i += 1
+            i += n
 
         return output
 
