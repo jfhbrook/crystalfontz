@@ -1,4 +1,10 @@
-from typing import List, Protocol, Self, Type
+from typing import Any, List, Protocol, Type
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
+
 
 from bitstring import BitArray
 

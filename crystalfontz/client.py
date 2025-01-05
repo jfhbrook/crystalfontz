@@ -1,7 +1,12 @@
 import asyncio
 from collections import defaultdict
 import logging
-from typing import cast, Dict, Iterable, List, Optional, Self, Set, Type, TypeVar
+from typing import Any, cast, Dict, Iterable, List, Optional, Set, Type, TypeVar
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport

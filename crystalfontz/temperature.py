@@ -1,6 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable, List, Literal, Optional, Protocol, Self, Set, Type
+from typing import Any, Iterable, List, Literal, Optional, Protocol, Set, Type
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 
 
 class DeviceProtocol(Protocol):

@@ -1,7 +1,12 @@
 from abc import ABC, abstractmethod
 import json
 import logging
-from typing import Self
+from typing import Any
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 
 from crystalfontz.response import KeyActivityReport, TemperatureReport
 

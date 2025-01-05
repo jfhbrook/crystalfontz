@@ -1,7 +1,12 @@
 from abc import ABC
 from dataclasses import dataclass
 import logging
-from typing import Any, Optional, Self, Set
+from typing import Any, Optional, Set
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 import warnings
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
@@ -125,18 +130,20 @@ class CFA533(Device):
         # CFA533 supports "enhanced contrast". The first byte is ignored and
         # the second byte can accept the full range.
         # CFA533 also supports "legacy contrast", but with a max value of 50.
-        return int(contrast * 50).to_bytes() + int(contrast * 255).to_bytes()
+        return int(contrast * 50).to_bytes(length=1) + int(contrast * 255).to_bytes(
+            length=1
+        )
 
     def brightness(
         self: Self, lcd_brightness: float, keypad_brightness: Optional[float]
     ) -> bytes:
         assert_brightness_in_range("LCD", lcd_brightness)
-        brightness = int(lcd_brightness * 100).to_bytes()
+        brightness = int(lcd_brightness * 100).to_bytes(length=1)
 
         # CFA533 can optionally accept a second parameter for keypad brightness
         if keypad_brightness is not None:
             assert_brightness_in_range("Keypad", keypad_brightness)
-            brightness += int(keypad_brightness * 100).to_bytes()
+            brightness += int(keypad_brightness * 100).to_bytes(length=1)
 
         return brightness
 
@@ -183,7 +190,7 @@ class CFA633(Device):
     def contrast(self: Self, contrast: float) -> bytes:
         # CFA633 supports a contrast setting between 0 and 200.
         assert_contrast_in_range(contrast)
-        return int(contrast * 200).to_bytes()
+        return int(contrast * 200).to_bytes(length=1)
 
     def brightness(
         self: Self, lcd_brightness: float, keypad_brightness: Optional[float]
@@ -193,7 +200,7 @@ class CFA633(Device):
         if keypad_brightness is not None:
             warnings.warn("CFA633 does not support keypad brightness")
 
-        return int(lcd_brightness * 100).to_bytes()
+        return int(lcd_brightness * 100).to_bytes(length=1)
 
     def status(self: Self, data: bytes) -> DeviceStatus:
         raise NotImplementedError("status")

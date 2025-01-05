@@ -1,6 +1,12 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Self, Set, Type
+from typing import Any, Optional, Set, Type
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
+
 
 AUTO_POLARITY = 0x01
 
@@ -44,7 +50,7 @@ class AtxPowerSwitchFunctionalitySettings:
         if self.auto_polarity:
             functions ^= AUTO_POLARITY
 
-        packed: bytes = functions.to_bytes()
+        packed: bytes = functions.to_bytes(length=1)
 
         if self.power_pulse_length_seconds is not None:
             pulse_length = int(self.power_pulse_length_seconds * 32)
@@ -52,6 +58,6 @@ class AtxPowerSwitchFunctionalitySettings:
             if pulse_length < 1:
                 raise ValueError(f"Pulse length can not be less than {1/32}")
 
-            packed += min(pulse_length, 255).to_bytes()
+            packed += min(pulse_length, 255).to_bytes(length=1)
 
         return packed
