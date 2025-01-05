@@ -251,7 +251,12 @@ def special_character() -> None:
     raise NotImplementedError("crystalfontz special-character")
 
 
-@main.command(help="10 (0x0A): Read 8 Bytes of LCD Memory")
+@main.group(help="Interact directly with the LCD controller")
+def lcd() -> None:
+    pass
+
+
+@lcd.command(name="poke", help="10 (0x0A): Read 8 Bytes of LCD Memory")
 @click.argument("address", type=int)
 @client()
 async def read_lcd_memory(client: Client, address: int) -> None:
@@ -367,7 +372,7 @@ async def setup_live_temperature_display(
     )
 
 
-@main.command(help="22 (0x16): Send Command Directly to the LCD Controller")
+@lcd.command(name="send", help="22 (0x16): Send Command Directly to the LCD Controller")
 @click.argument("location", type=click.Choice([e.name for e in LcdRegister]))
 @click.argument("data", type=int)
 @client()

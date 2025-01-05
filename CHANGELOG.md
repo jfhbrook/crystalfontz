@@ -8,6 +8,7 @@ yyyy/mm/dd Version x.y.z
 - Support Python 3.11
 - Add PyPI classifiers
 - Support arbitrary multi-byte encodings in character ROM
+- rename `crystalfontz read-lcd-memory` and `crystalfonts send-command-to-lcd-controller` to `crystalfontz lcd poke` and `crystalfontz lcd send` respectively
 
 
 2025/01/04 Version 1.0.0
