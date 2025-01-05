@@ -1,14 +1,32 @@
+import asyncio
 from dataclasses import dataclass
+import functools
+import logging
+from typing import Callable, cast, Coroutine, Literal, Optional, Type
 
 import click
 
+from crystalfontz.baud import BaudRate, FAST_BAUD_RATE, SLOW_BAUD_RATE
+from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config, GLOBAL_FILE
+from crystalfontz.report import NoopReportHandler, ReportHandler
 
 
 @dataclass
 class Obj:
     config: Config
     global_: bool
+    port: str
+    baud_rate: BaudRate
+
+
+LogLevel = (
+    Literal["DEBUG"]
+    | Literal["INFO"]
+    | Literal["WARNING"]
+    | Literal["ERROR"]
+    | Literal["CRITICAL"]
+)
 
 
 @click.group()
@@ -18,10 +36,80 @@ class Obj:
     default=False,
     help="Load the global config file at {GLOBAL_FILE}",
 )
+@click.option(
+    "--log-level",
+    environ="CRYSTALFONTZ_LOG_LEVEL",
+    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
+    default="INFO",
+    help="Set the log level",
+)
+@click.option(
+    "--port",
+    environ="CRYSTALFONTZ_PORT",
+    help="The serial port the Crystalfontz LCD is connected to",
+)
+@click.option(
+    "--baud",
+    type=click.Choice([str(SLOW_BAUD_RATE), str(FAST_BAUD_RATE)]),
+    environ="CRYSTALFONTZ_BAUD_RATE",
+    help="The baud rate to use when connecting to the Crystalfontz LCD",
+)
 @click.pass_context
-def main(ctx: click.Context, global_: bool) -> None:
-    config: Config = Config.from_file(load_environment=True)
-    ctx.obj = Obj(config=config, global_=global_)
+def main(
+    ctx: click.Context,
+    global_: bool,
+    log_level: LogLevel,
+    port: Optional[str],
+    baud: Optional[str],
+) -> None:
+    baud_rate = cast(Optional[BaudRate], int(baud) if baud else None)
+    config: Config = Config.from_file(file=GLOBAL_FILE if global_ else None)
+    ctx.obj = Obj(
+        config=config,
+        global_=global_,
+        port=port or config.port,
+        baud_rate=baud_rate or config.baud_rate,
+    )
+
+    logging.basicConfig(level=getattr(logging, log_level))
+
+
+AsyncCommand = Callable[..., Coroutine[None, None, None]]
+WrappedAsyncCommand = Callable[..., None]
+AsyncCommandDecorator = Callable[[AsyncCommand], WrappedAsyncCommand]
+
+
+def client(
+    run_forever: bool = False,
+    report_handler_cls: Type[ReportHandler] = NoopReportHandler,
+) -> AsyncCommandDecorator:
+    def decorator(fn: AsyncCommand) -> WrappedAsyncCommand:
+        @click.pass_context
+        @functools.wraps(fn)
+        def wrapped(ctx: click.Context, *args, **kwargs) -> None:
+            port: str = ctx.obj.port
+            baud_rate: BaudRate = ctx.obj.baud_rate
+
+            async def main() -> None:
+                client: Client = await create_connection(
+                    port, report_handler=report_handler_cls(), baud_rate=baud_rate
+                )
+                await fn(client, *args, **kwargs)
+
+            try:
+                if run_forever:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    loop.create_task(main())
+                    loop.run_forever()
+                else:
+                    asyncio.run(main())
+            except KeyboardInterrupt:
+                pass
+
+        return wrapped
+
+    return decorator
 
 
 @main.command()
@@ -36,8 +124,9 @@ def listen() -> None:
 
 @main.command(help="0 (0x00): Ping command")
 @click.argument("payload")
-def ping(payload: str) -> None:
-    print(payload)
+@client()
+async def ping(client: Client, payload: str) -> None:
+    await client.ping(payload.encode("utf8"))
 
 
 @main.command()

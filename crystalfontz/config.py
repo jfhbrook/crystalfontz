@@ -7,7 +7,7 @@ from appdirs import user_config_dir
 from serial.tools.list_ports import comports
 import yaml
 
-from crystalfontz.baud import SLOW_BAUD_RATE
+from crystalfontz.baud import BaudRate, SLOW_BAUD_RATE
 
 try:
     from yaml import CDumper as Dumper
@@ -61,7 +61,7 @@ class Config:
     port: str = field(
         default_factory=default_port, metadata=_metadata(env_var="CRYSTALFONTZ_PORT")
     )
-    baud_rate: int = field(
+    baud_rate: BaudRate = field(
         default=SLOW_BAUD_RATE, metadata=_metadata(env_var="CRYSTALFONTZ_BAUD_RATE")
     )
     file: Optional[str] = None
