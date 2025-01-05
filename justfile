@@ -39,8 +39,8 @@ _upgrade:
 
 # Generate locked requirements files based on dependencies in pyproject.toml
 compile:
-  uv piptools compile --resolver=backtracking -o requirements.txt pyproject.toml
-  uv piptools compile --resolver=backtracking --extra=dev -o requirements_dev.txt pyproject.toml
+  uv pip compile -o requirements.txt pyproject.toml
+  uv pip compile --extra=dev -o requirements_dev.txt pyproject.toml
 
 _clean-compile:
   rm -f requirements.txt

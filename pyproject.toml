@@ -25,6 +25,7 @@ dependencies = [
 [project.scripts]
 crystalfontz = "crystalfontz.cli:main"
 
+# Specified for the benefit of uv
 [dependency-groups]
 dev = [
     "flake8",
@@ -33,7 +34,25 @@ dev = [
     "black",
     "isort",
     "jupyter-console",
+    "mkdocs",
+    "mkdocs-bootstrap386",
+    "mkdocstrings[python]",
     "validate-pyproject[all]",
+]
+
+# Specified for the benefit of compiling requirements-dev.txt
+[project.optional-dependencies]
+dev = [
+  "flake8",
+  "flake8-black",
+  "pytest",
+  "black",
+  "isort",
+  "jupyter-console",
+  "mkdocs",
+  "mkdocs-bootstrap386",
+  "mkdocstrings[python]",
+  "validate-pyproject[all]",
 ]
 
 [tool.uv]
