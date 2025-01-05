@@ -530,10 +530,13 @@ def effects() -> None:
 @effects.command(help="Display a marquee animation")
 @click.argument("row", type=int)
 @click.argument("text")
+@click.option("--pause", type=float)
 @click.option("--tick", type=float)
 @client()
-async def marquee(client: Client, row: int, text: str, tick: Optional[float]) -> None:
-    m = client.marquee(row, text, tick=tick)
+async def marquee(
+    client: Client, row: int, text: str, pause: Optional[float], tick: Optional[float]
+) -> None:
+    m = client.marquee(row, text, pause=pause, tick=tick)
 
     await m.run()
 
@@ -543,7 +546,6 @@ async def marquee(client: Client, row: int, text: str, tick: Optional[float]) ->
 @click.option("--tick", type=float)
 @client()
 async def screensaver(client: Client, text: str, tick: Optional[float]) -> None:
-    s = client.screensaver( text, tick=tick)
+    s = client.screensaver(text, tick=tick)
 
     await s.run()
-
