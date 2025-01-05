@@ -62,7 +62,7 @@ LogLevel = (
     "--global/--no-global",
     "global_",
     default=False,
-    help="Load the global config file at {GLOBAL_FILE}",
+    help=f"Load the global config file at {GLOBAL_FILE}",
 )
 @click.option(
     "--log-level",
@@ -329,7 +329,7 @@ async def setup_temperature_reporting(client: Client, enabled: Tuple[int]) -> No
 @dow.command(name="transaction", help="20 (0x14): Arbitrary DOW Transaction")
 @click.argument("index", type=int)
 @click.argument("bytes_to_read", type=int)
-@click.option("data_to_write")
+@click.option("--data_to_write")
 def dow_transaction() -> None:
     #
     # This command also depends on being able to receive bytes from click.
@@ -439,14 +439,14 @@ async def set_atx_power_switch_functionality(
     )
 
 
-@main.command(help="")
+@main.command(help="29 (0x1D): Enable/Disable and Reset the Watchdog")
 @click.argument("timeout_seconds", type=int)
 @client()
 async def configure_watchdog(client: Client, timeout_seconds: int) -> None:
     await client.configure_watchdog(timeout_seconds)
 
 
-@main.command()
+@main.command(help="30 (0x1E): Read Reporting & Status")
 @client()
 async def read_status(client: Client) -> None:
     status = await client.read_status()
