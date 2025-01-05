@@ -16,10 +16,14 @@ requires-python = ">=3.12"
 dependencies = [
   "appdirs",
   "bitstring",
+  "click",
   "pyserial",
   "pyserial-asyncio",
   "pyyaml",
 ]
+
+[project.scripts]
+crystalfontz = "crystalfontz.cli:main"
 
 [dependency-groups]
 dev = [
@@ -31,6 +35,9 @@ dev = [
     "jupyter-console",
     "validate-pyproject[all]",
 ]
+
+[tool.uv]
+package = true
 
 [tool.isort]
 profile = "appnexus"

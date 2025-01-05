@@ -5,6 +5,7 @@
 - [ ] Manually test features
   - [ ] read user flash area
   - [ ] read GPIO
+- [ ] rename poke to `read_lcd_memory`
 - [ ] Write examples
 - [ ] Do up documentation
 - [ ] Open source release
