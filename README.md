@@ -146,6 +146,10 @@ I have the start of an integration test framework in the [plusdeck](https://gith
 
 There is a *really* long tail of things that I'd like to tackle for this library. Most of those things are captured in [GitHub Issues](https://github.com/jfhbrook/crystalfontz/issues).
 
+## Changelog
+
+See [`CHANGELOG.md`](./CHANGELOG.md).
+
 ## License
 
-Apache-2.0, see ``LICENSE``.
+Apache-2.0, see [`LICENSE`](./LICENSE).
