@@ -2,11 +2,6 @@
 
 ## Features/Improvements
 
-- [ ] CLI tool
-  - [ ] Gracefully handle connection error
-- [ ] Manually test features
-  - [ ] read user flash area
-  - [ ] read GPIO
 - [ ] rename poke to `read_lcd_memory`
 - [ ] Write examples
 - [ ] Do up documentation
@@ -14,6 +9,16 @@
 
 ### Future Tickets
 
+- [ ] Gracefully handle CLI connection error
+- [ ] Test reading user flash area
+- [ ] Test reading GPIO
+- [ ] CLI: Handle byte arguments
+- [ ] CLI: Write User Flash Area
+- [ ] CLI: Handle printing byte results
+- [ ] CLI: Special characters support
+- [ ] CLI: DOW transactions
+- [ ] CLI: Set baud rate
+- [ ] CLI: GPIO functionality
 - [ ] Special character support in the CLI
 - [ ] Timeout parameter for CLI
 - [ ] Auto-load device version in CLI
