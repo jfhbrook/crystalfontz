@@ -2,6 +2,8 @@
 
 ## Features/Improvements
 
+- [ ] CLI tool
+  - [ ] Gracefully handle connection error
 - [ ] Manually test features
   - [ ] read user flash area
   - [ ] read GPIO
@@ -12,7 +14,9 @@
 
 ### Future Tickets
 
-- [ ] CLI tool
+- [ ] Special character support in the CLI
+- [ ] Timeout parameter for CLI
+- [ ] Auto-load device version in CLI
 - [ ] Test temperature reporting (configure and log)
 - [ ] Test key reporting (configure and log)
 - [ ] Retry logic for over 250ms

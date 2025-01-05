@@ -315,10 +315,10 @@ class Client(asyncio.Protocol):
         )
 
     async def send_command_to_lcd_controller(
-        self: Self, register: LcdRegister, data: int | bytes
+        self: Self, location: LcdRegister, data: int | bytes
     ) -> CommandSentToLcdController:
         return await self.send_command(
-            SendCommandToLcdController(register, data), CommandSentToLcdController
+            SendCommandToLcdController(location, data), CommandSentToLcdController
         )
 
     async def configure_key_reporting(

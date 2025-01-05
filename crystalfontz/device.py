@@ -103,7 +103,7 @@ class CFA533Status:
     atx_power_switch_functionality_settings: AtxPowerSwitchFunctionalitySettings
     watchdog_counter: int
     contrast: float
-    brightness: float
+    keypad_brightness: float
     atx_sense_on_floppy: bool
     cfa633_contrast: float
     lcd_brightness: float
@@ -149,7 +149,7 @@ class CFA533(Device):
         atx_power = AtxPowerSwitchFunctionalitySettings.from_bytes(data[7:8])
         watchdog_counter = data[8]
         contrast = data[9] / 255
-        brightness = data[10] / 100
+        keypad_brightness = data[10] / 100
         atx_sense_on_floppy = bool(data[11])
         # data[12] is reserved
         cfa633_contrast = data[13] / 50
@@ -161,7 +161,7 @@ class CFA533(Device):
             atx_power_switch_functionality_settings=atx_power,
             watchdog_counter=watchdog_counter,
             contrast=contrast,
-            brightness=brightness,
+            keypad_brightness=keypad_brightness,
             atx_sense_on_floppy=atx_sense_on_floppy,
             cfa633_contrast=cfa633_contrast,
             lcd_brightness=lcd_brightness,

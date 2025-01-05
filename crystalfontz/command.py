@@ -303,17 +303,17 @@ class SetupLiveTemperatureDisplay(Command):
 class SendCommandToLcdController(Command):
     command: int = 0x16
 
-    def __init__(self: Self, register: LcdRegister, data: int | bytes) -> None:
+    def __init__(self: Self, location: LcdRegister, data: int | bytes) -> None:
         byte: bytes = data.to_bytes() if isinstance(data, int) else data
 
         if len(byte) != 1:
             raise ValueError("May send one byte to LCD controller")
 
-        self.register = register
+        self.location = location
         self.byte = byte
 
     def to_packet(self: Self) -> Packet:
-        return (self.command, self.register.value.to_bytes() + self.byte)
+        return (self.command, self.location.value.to_bytes() + self.byte)
 
 
 def _key_mask(keypresses: Set[KeyPress]) -> int:

@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import List, Self, Type
+from typing import Any, Dict, List, Self, Type
 
 KeyPress = int
 
@@ -66,6 +66,9 @@ class KeyStates:
                 released_since=bool(released_since & KP_DOWN),
             ),
         )
+
+    def as_dict(self: Self) -> Dict[str, Dict[str, bool]]:
+        return {key: asdict(state) for key, state in asdict(self).items()}
 
 
 class KeyActivity(Enum):

@@ -122,7 +122,7 @@ class ClientProtocol(Protocol):
     ) -> LiveTemperatureDisplaySetUp: ...
 
     async def send_command_to_lcd_controller(
-        self: Self, register: LcdRegister, data: int | bytes
+        self: Self, location: LcdRegister, data: int | bytes
     ) -> CommandSentToLcdController: ...
 
     async def configure_key_reporting(
