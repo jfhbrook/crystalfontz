@@ -25,7 +25,6 @@ from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.keys import (
     KeyPress,
-    KeyStates,
     KP_DOWN,
     KP_ENTER,
     KP_EXIT,
@@ -256,7 +255,7 @@ def special_character() -> None:
 @click.argument("address", type=int)
 @client()
 async def read_lcd_memory(client: Client, address: int) -> None:
-    memory = await client.poke(address)
+    memory = await client.read_lcd_memory(address)
     click.echo(bytes(memory.address) + b":" + memory.data)
 
 

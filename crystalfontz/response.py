@@ -147,14 +147,14 @@ class SpecialCharacterDataSet(Ack):
 
 
 @code(0x4A)
-class Poked(Response):
+class LcdMemory(Response):
     def __init__(self: Self, data: bytes) -> None:
         assert_len(9, data)
         self.address: int = data[0]
         self.data: bytes = data[1:]
 
     def __str__(self: Self) -> str:
-        return f"Poked(0x{self.address:02X}={self.data})"
+        return f"LcdMemory(0x{self.address:02X}={self.data})"
 
 
 @code(0x4B)

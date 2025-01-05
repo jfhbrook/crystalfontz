@@ -29,10 +29,10 @@ from crystalfontz.response import (
     GpioSet,
     KeypadPolled,
     KeyReportingConfigured,
+    LcdMemory,
     Line1Set,
     Line2Set,
     LiveTemperatureDisplaySetUp,
-    Poked,
     Pong,
     PowerResponse,
     Response,
@@ -91,7 +91,7 @@ class ClientProtocol(Protocol):
         self: Self, character: str, index: int
     ) -> None: ...
 
-    async def poke(self: Self, address: int) -> Poked: ...
+    async def read_lcd_memory(self: Self, address: int) -> LcdMemory: ...
 
     async def set_cursor_position(
         self: Self, row: int, column: int

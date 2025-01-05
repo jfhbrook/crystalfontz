@@ -17,10 +17,10 @@ from crystalfontz.command import (
     DowTransaction,
     GetVersions,
     Ping,
-    Poke,
     PollKeypad,
     ReadDowDeviceInformation,
     ReadGpio,
+    ReadLcdMemory,
     ReadStatus,
     ReadUserFlashArea,
     RebootLCD,
@@ -70,10 +70,10 @@ from crystalfontz.response import (
     KeyActivityReport,
     KeypadPolled,
     KeyReportingConfigured,
+    LcdMemory,
     Line1Set,
     Line2Set,
     LiveTemperatureDisplaySetUp,
-    Poked,
     Pong,
     PowerResponse,
     RawResponse,
@@ -262,8 +262,8 @@ class Client(asyncio.Protocol):
     def set_special_character_encoding(self: Self, character: str, index: int) -> None:
         self.device.character_rom.set_encoding(character, index)
 
-    async def poke(self: Self, address: int) -> Poked:
-        return await self.send_command(Poke(address), Poked)
+    async def read_lcd_memory(self: Self, address: int) -> LcdMemory:
+        return await self.send_command(ReadLcdMemory(address), LcdMemory)
 
     async def set_cursor_position(
         self: Self, row: int, column: int

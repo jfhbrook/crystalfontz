@@ -159,7 +159,7 @@ class SetSpecialCharacterData(Command):
         return (self.command, self.index.to_bytes() + self.character)
 
 
-class Poke(Command):
+class ReadLcdMemory(Command):
     command: int = 0x0A
 
     def __init__(self: Self, address: int) -> None:
