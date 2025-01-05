@@ -178,19 +178,19 @@ class Client(asyncio.Protocol):
     # Event subscriptions
     #
 
-    def subscribe[R](self: Self, cls: Type[R]) -> asyncio.Queue[R]:
+    def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[R]:
         q: asyncio.Queue[R] = asyncio.Queue()
         self._queues[cast(Type[Response], cls)].append(cast(asyncio.Queue[Response], q))
         return q
 
-    def unsubscribe[R](self: Self, cls: Type[R], q: asyncio.Queue[R]) -> None:
+    def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[R]) -> None:
         key = cast(Type[Response], cls)
         self._queues[key] = cast(
             List[asyncio.Queue[Response]],
             [q_ for q_ in self._queues[key] if q_ != cast(asyncio.Queue[Response], q)],
         )
 
-    async def expect[R](self: Self, cls: Type[R]) -> R:
+    async def expect(self: Self, cls: Type[R]) -> R:
         q = self.subscribe(cls)
         res = await q.get()
         self.unsubscribe(cls, q)
@@ -200,7 +200,7 @@ class Client(asyncio.Protocol):
     # Commands
     #
 
-    async def send_command[R](self: Self, command: Command, response_cls: Type[R]) -> R:
+    async def send_command(self: Self, command: Command, response_cls: Type[R]) -> R:
         async with self._lock:
             self.send_packet(command.to_packet())
             return await self.expect(response_cls)

@@ -60,7 +60,7 @@ RESPONSE_CLASSES: Dict[int, Type[Response]] = {}
 R = TypeVar("R", bound=Response)
 
 
-def code[R](code: int) -> Callable[[Type[R]], Type[R]]:
+def code(code: int) -> Callable[[Type[R]], Type[R]]:
     def decorator(cls: Type[R]) -> Type[R]:
         RESPONSE_CLASSES[code] = cast(Type[Response], cls)
         return cls
