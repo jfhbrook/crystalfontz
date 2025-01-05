@@ -46,8 +46,7 @@ async def main():
         report_handler=LoggingReportHandler()
     )
 
-    # Keep the coroutine open indefinitely
-    await asyncio.get_running_loop().create_future()
+    await client.closed
 
 
 asyncio.run(main())

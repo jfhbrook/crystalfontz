@@ -114,6 +114,7 @@ class Client(asyncio.Protocol):
         self._loop: asyncio.AbstractEventLoop = loop
         self._transport: Optional[SerialTransport] = None
         self._connection_made: asyncio.Future[None] = self._loop.create_future()
+        self._closed: Optional[asyncio.Future[None]] = None
 
         self._lock: asyncio.Lock = asyncio.Lock()
         self._expect: Optional[Type[Response]] = None
@@ -146,13 +147,42 @@ class Client(asyncio.Protocol):
 
     def connection_lost(self: Self, exc: Optional[Exception]) -> None:
         self._running = False
-        if exc:
-            raise ConnectionError("Connection lost") from exc
+        try:
+            if exc:
+                raise ConnectionError("Connection lost") from exc
+        except Exception as exc:
+            self._close(exc)
+        else:
+            self._close()
 
-    def close(self: Self) -> None:
+    async def close(self: Self) -> None:
         self._running = False
         if self._transport:
             self._transport.close()
+        self._close()
+        return await self.closed()
+
+    async def closed(self: Self) -> None:
+        if not self._closed:
+            self._closed = self._loop.create_future()
+        if not self._running and not self._closed.done():
+            self._closed.set_result(None)
+        return await self._closed
+
+    def _close(self: Self, exc: Optional[Exception] = None) -> None:
+        if not self._closed:
+            if exc:
+                raise exc
+            return
+
+        if self._closed.done():
+            if exc:
+                raise exc
+        else:
+            if exc:
+                self._closed.set_exception(exc)
+            else:
+                self._closed.set_result(None)
 
     def data_received(self: Self, data: bytes) -> None:
         self._buffer += data
