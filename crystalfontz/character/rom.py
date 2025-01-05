@@ -1,4 +1,9 @@
-from typing import Dict, Self, Tuple
+from typing import Any, Dict, Tuple
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 
 from crystalfontz.character.constants import inverse, super_minus, super_one, x_bar
 from crystalfontz.error import EncodeError
@@ -21,7 +26,7 @@ class CharacterRom:
             for j, char in enumerate(row):
                 point = (16 * j) + i
                 if char != " " or point == 32:
-                    self._table[char] = point.to_bytes()
+                    self._table[char] = point.to_bytes(length=1)
 
     def __getitem__(self: Self, key: str) -> bytes:
         return self._table[key]

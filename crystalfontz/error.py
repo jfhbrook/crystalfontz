@@ -1,4 +1,9 @@
-from typing import Self, Tuple, Type
+from typing import Any, Tuple, Type
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 
 
 class CrystalfontzError(Exception):

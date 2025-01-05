@@ -1,6 +1,11 @@
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Dict, List, Self, Type
+from typing import Any, Dict, List, Type
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 
 KeyPress = int
 

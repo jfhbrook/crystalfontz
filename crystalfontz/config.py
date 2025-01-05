@@ -1,7 +1,12 @@
 from dataclasses import asdict, dataclass, field, fields, replace
 import os
 import os.path
-from typing import Any, cast, Dict, Optional, Self, Type
+from typing import Any, cast, Dict, Optional, Type
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 
 from appdirs import user_config_dir
 from serial.tools.list_ports import comports

@@ -17,7 +17,7 @@ w = 112 + 7
 
 @pytest.mark.parametrize("decoded,encoded", [("!", exclamation)])
 def test_encode_table(decoded, encoded) -> None:
-    assert CFA533_CHARACTER_ROM[decoded] == encoded.to_bytes()
+    assert CFA533_CHARACTER_ROM[decoded] == encoded.to_bytes(length=1)
 
 
 @pytest.mark.parametrize(

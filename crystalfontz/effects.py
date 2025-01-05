@@ -2,7 +2,12 @@ from abc import ABC, abstractmethod
 import asyncio
 import random
 import time
-from typing import Iterable, Optional, Protocol, Self, Set, Type, TypeVar
+from typing import Any, Iterable, Optional, Protocol, Set, Type, TypeVar
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate

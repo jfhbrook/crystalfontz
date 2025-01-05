@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
 from functools import reduce
-from typing import Iterable, Optional, Self, Set
+from typing import Any, Iterable, Optional, Set
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 import warnings
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
@@ -154,9 +159,9 @@ class SetSpecialCharacterData(Command):
         self.character: bytes = character.as_bytes(device)
 
     def to_packet(self: Self) -> Packet:
-        data = self.index.to_bytes() + self.character
+        data = self.index.to_bytes(length=1) + self.character
         assert len(data) == 9
-        return (self.command, self.index.to_bytes() + self.character)
+        return (self.command, data)
 
 
 class ReadLcdMemory(Command):
@@ -176,7 +181,7 @@ class ReadLcdMemory(Command):
         # addresses as an exercise for the user.
         if not (0 < address < 255):
             raise ValueError(f"Address {address} is invalid")
-        self.address: bytes = address.to_bytes()
+        self.address: bytes = address.to_bytes(length=1)
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.address)
@@ -199,14 +204,17 @@ class SetCursorPosition(Command):
         self.column = column
 
     def to_packet(self: Self) -> Packet:
-        return (self.command, self.column.to_bytes() + self.row.to_bytes())
+        return (
+            self.command,
+            self.column.to_bytes(length=1) + self.row.to_bytes(length=1),
+        )
 
 
 class SetCursorStyle(Command):
     command: int = 0x0C
 
     def __init__(self, style: CursorStyle) -> None:
-        self.style: bytes = style.value.to_bytes()
+        self.style: bytes = style.value.to_bytes(length=1)
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.style)
@@ -248,7 +256,7 @@ class ReadDowDeviceInformation(Command):
         self.index: int = index
 
     def to_packet(self: Self) -> Packet:
-        return (self.command, self.index.to_bytes())
+        return (self.command, self.index.to_bytes(length=1))
 
 
 class SetupTemperatureReporting(Command):
@@ -281,7 +289,9 @@ class DowTransaction(Command):
     def to_packet(self: Self) -> Packet:
         return (
             self.command,
-            self.index.to_bytes() + self.bytes_to_read.to_bytes() + self.data_to_write,
+            self.index.to_bytes(length=1)
+            + self.bytes_to_read.to_bytes(length=1)
+            + self.data_to_write,
         )
 
 

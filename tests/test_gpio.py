@@ -73,4 +73,4 @@ def _expected(fn: GpioFunction, mode: int) -> int:
     ],
 )
 def test_gpio_settings(settings: GpioSettings, encoded: int) -> None:
-    assert settings.to_bytes() == encoded.to_bytes()
+    assert settings.to_bytes() == encoded.to_bytes(length=1)
