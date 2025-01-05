@@ -487,26 +487,36 @@ async def read_status(client: Client) -> None:
             click.echo(f"  LCD Backlight Brightness: {status.lcd_brightness}")
 
 
-@main.command()
-def send() -> None:
-    pass
+@main.command(help="31 (0x1F): Send Data to LCD")
+@click.argument("row", type=int)
+@click.argument("column", type=int)
+@click.argument("data")
+@client()
+async def send(client: Client, row: int, column: int, data: str) -> None:
+    await client.send_data(row, column, data)
 
 
-@main.command()
+@main.command(help="33 (0x21): Set Baud Rate")
 def set_baud_rate() -> None:
-    pass
+    #
+    # Setting the baud rate will more or less require updating the config
+    # file. The correct behavior needs to be sussed out.
+    #
+    raise NotImplementedError("crystalfontz set-baud-rate")
 
 
-@main.group()
+@main.group(help="Interact with GPIO pins")
 def gpio() -> None:
     pass
 
 
-@gpio.command(name="set")
+@gpio.command(name="set", help="34 (0x22): Set or Set and Configure GPIO Pins")
 def set_gpio() -> None:
-    pass
+    raise NotImplementedError("crystalfontz gpio set")
 
 
-@gpio.command(name="read")
+@gpio.command(
+    name="read", help="35 (0x23): Read GPIO Pin Levels and Configuration State"
+)
 def read_gpio() -> None:
-    pass
+    raise NotImplementedError("crystalfontz gpio read")
