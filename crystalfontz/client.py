@@ -1,5 +1,6 @@
 import asyncio
 from collections import defaultdict
+import logging
 from typing import cast, Dict, Iterable, List, Optional, Self, Set, Type, TypeVar
 
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
@@ -87,6 +88,8 @@ from crystalfontz.response import (
     WatchdogConfigured,
 )
 from crystalfontz.temperature import TemperatureDisplayItem
+
+logger = logging.getLogger(__name__)
 
 R = TypeVar("R", bound=Response)
 
@@ -424,6 +427,8 @@ async def create_connection(
 
     if not report_handler:
         report_handler = NoopReportHandler()
+
+    logger.info(f"Connecting to {port} at {baud_rate} baud")
 
     _, client = await create_serial_connection(
         _loop,

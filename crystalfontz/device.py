@@ -221,10 +221,10 @@ def lookup_device(
         nonlocal firmware_rev
 
         if hw_rev:
-            logger.info(f"Defaulting to hardware revision {hw_rev}")
+            logger.debug(f"Defaulting to hardware revision {hw_rev}")
             hardware_rev = hw_rev
         if fw_rev:
-            logger.info(f"Defaulting to firmware revison {fw_rev}")
+            logger.debug(f"Defaulting to firmware revison {fw_rev}")
             firmware_rev = fw_rev
 
         logger.info(f"Selected device {version()}")

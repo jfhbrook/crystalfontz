@@ -11,6 +11,8 @@ from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.report import NoopReportHandler, ReportHandler
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class Obj:
@@ -38,20 +40,20 @@ LogLevel = (
 )
 @click.option(
     "--log-level",
-    environ="CRYSTALFONTZ_LOG_LEVEL",
+    envvar="CRYSTALFONTZ_LOG_LEVEL",
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
-    default="INFO",
+    default="WARNING",
     help="Set the log level",
 )
 @click.option(
     "--port",
-    environ="CRYSTALFONTZ_PORT",
+    envvar="CRYSTALFONTZ_PORT",
     help="The serial port the Crystalfontz LCD is connected to",
 )
 @click.option(
     "--baud",
     type=click.Choice([str(SLOW_BAUD_RATE), str(FAST_BAUD_RATE)]),
-    environ="CRYSTALFONTZ_BAUD_RATE",
+    envvar="CRYSTALFONTZ_BAUD_RATE",
     help="The baud rate to use when connecting to the Crystalfontz LCD",
 )
 @click.pass_context
@@ -126,7 +128,8 @@ def listen() -> None:
 @click.argument("payload")
 @client()
 async def ping(client: Client, payload: str) -> None:
-    await client.ping(payload.encode("utf8"))
+    pong = await client.ping(payload.encode("utf8"))
+    click.echo(pong.response)
 
 
 @main.command()

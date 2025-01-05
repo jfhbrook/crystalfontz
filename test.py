@@ -14,7 +14,7 @@ async def main() -> None:
 
     # client.device.character_rom.set_encoding("☺", b"\x00")
 
-    print(await client.read_status())
+    # print(await client.read_status())
 
     # await client.set_backlight(0.1)
 
@@ -24,7 +24,7 @@ async def main() -> None:
 
     # print(await client.poke(0x40))
 
-    # await client.clear_screen()
+    await client.clear_screen()
 
     # await client.set_special_character_data(0x00, SMILEY_FACE)
 
@@ -34,7 +34,9 @@ async def main() -> None:
 
     # await marquee.run()
 
-    # screensaver = client.screensaver("Josh!")
+    # screensaver = client.screensaver("☺")
+    marquee = client.marquee(0, "Josh is cool")
+    await marquee.run()
 
     # await screensaver.run()
 
