@@ -7,6 +7,7 @@ yyyy/mm/dd Version x.y.z
 - Add CI pipeline
 - Support Python 3.11
 - Add PyPI classifiers
+- Support arbitrary multi-byte encodings in character ROM
 
 
 2025/01/04 Version 1.0.0
