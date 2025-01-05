@@ -138,6 +138,10 @@ There *are* some unit tests in `pytest`, but they mostly target more complex cas
 
 I have the start of an integration test framework in the [plusdeck](https://github.com/jfhbrook/plusdeck) project, that I'd like to spin out into a reusable package. If I get around to that, I'll likely implement a proper integration test suite for the Crystalfontz.
 
+### Issues
+
+There is a *really* long tail of things that I'd like to tackle for this library. Most of those things are captured in [GitHub Issues](https://github.com/jfhbrook/crystalfontz/issues).
+
 ## License
 
 Apache-2.0, see ``LICENSE``.
