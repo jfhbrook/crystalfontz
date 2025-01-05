@@ -50,6 +50,14 @@ _clean-compile:
 # Development tooling - linting, formatting, etc
 #
 
+# Run a command or script
+run *argv:
+  uv run {{ argv }}
+
+# Run crystalfontz cli
+start *argv:
+  uv run -- crystalfontz {{ argv }}
+
 # Format with black and isort
 format:
   uv run  black './crystalfontz' ./tests
