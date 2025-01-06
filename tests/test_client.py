@@ -42,7 +42,7 @@ def transport() -> SerialTransport:
     return Mock(name="SerialTransport()")
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture
 async def client(
     device: Device, report_handler: ReportHandler, transport: SerialTransport
 ) -> Client:
