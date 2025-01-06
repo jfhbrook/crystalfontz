@@ -30,7 +30,7 @@ from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
-from crystalfontz.baud import BaudRate
+from crystalfontz.baud import BaudRate, SLOW_BAUD_RATE
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.command import (
     ClearScreen,
@@ -571,7 +571,7 @@ async def create_connection(
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
     loop: Optional[asyncio.AbstractEventLoop] = None,
-    baud_rate: BaudRate = 19200,
+    baud_rate: BaudRate = SLOW_BAUD_RATE,
 ) -> Client:
     _loop = loop if loop else asyncio.get_running_loop()
 
@@ -607,7 +607,7 @@ async def client(
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
     loop: Optional[asyncio.AbstractEventLoop] = None,
-    baud_rate: BaudRate = 19200,
+    baud_rate: BaudRate = SLOW_BAUD_RATE,
 ) -> AsyncGenerator[Client, None]:
     client = await create_connection(
         port,
