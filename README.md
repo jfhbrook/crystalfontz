@@ -91,37 +91,39 @@ Options:
                                   Set the log level
   --port TEXT                     The serial port the Crystalfontz LCD is
                                   connected to
+  --model [CFA533|CFA633]         The model of Crystalfontz device
+  --hardware-rev TEXT             The hardware revision of the Crystalfontz
+                                  device
+  --firmware-rev TEXT             The firmware revision of the Crystalfontz
+                                  device
   --baud [19200|115200]           The baud rate to use when connecting to the
                                   Crystalfontz LCD
   --help                          Show this message and exit.
 
 Commands:
-  clear-screen                    6 (0x06): Clear LCD Screen
-  configure-watchdog              29 (0x1D): Enable/Disable and Reset...
-  cursor                          Interact with the LCD cursor
-  dow                             DOW (Dallas One-Wire) capabilities
-  effects                         Various effects
-  gpio                            Interact with GPIO pins
-  keypad                          Interact with the keypad
-  listen                          Listen for reports
-  ping                            0 (0x00): Ping command
-  power                           5 (0x05): Reboot LCD, Reset Host,...
-  read-lcd-memory                 10 (0x0A): Read 8 Bytes of LCD Memory
-  read-status                     30 (0x1E): Read Reporting & Status
-  send                            31 (0x1F): Send Data to LCD
-  send-command-to-lcd-controler   22 (0x16): Send Command Directly to...
-  set-atx-power-switch-functionality
-                                  28 (0x1C): Set ATX Power Switch...
-  set-backlight                   14 (0x0E): Set LCD & Keypad Backlight
-  set-baud-rate                   33 (0x21): Set Baud Rate
-  set-contrast                    13 (0x0D): Set LCD Contrast
-  set-line-1                      7 (0x07): Set LCD Contents, Line 1
-  set-line-2                      8 (0x08): Set LCD Contents, Line 2
-  special-character               Commands involving special characters
-  store-boot-state                4 (0x04): Store Current State as...
-  temperature                     Temperature reporting and live display
-  user-flash-area                 Interact with the User Flash Area
-  versions                        1 (0x01): Get Hardware & Firmware...
+  atx          28 (0x1C): Set ATX Power Switch Functionality
+  backlight    14 (0x0E): Set LCD & Keypad Backlight
+  baud         33 (0x21): Set Baud Rate
+  character    Interact with special characters
+  clear        6 (0x06): Clear LCD Screen
+  contrast     13 (0x0D): Set LCD Contrast
+  cursor       Interact with the LCD cursor
+  dow          DOW (Dallas One-Wire) capabilities
+  effects      Run various effects, such as marquees
+  flash        Interact with the User Flash Area
+  gpio         Interact with GPIO pins
+  keypad       Interact with the keypad
+  lcd          Interact directly with the LCD controller
+  line         Set LCD contents for a line
+  listen       Listen for keypress and temperature reports
+  ping         0 (0x00): Ping command
+  power        5 (0x05): Reboot LCD, Reset Host, or Power Off Host
+  send         31 (0x1F): Send Data to LCD
+  status       30 (0x1E): Read Reporting & Status
+  store        4 (0x04): Store Current State as Boot State
+  temperature  Temperature reporting and live display
+  versions     1 (0x01): Get Hardware & Firmware Version
+  watchdog     29 (0x1D): Enable/Disable and Reset the Watchdog
 ```
 
 A lot of the functionality has been fleshed out. However, there are some issues:
