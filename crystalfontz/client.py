@@ -140,7 +140,7 @@ class Client(asyncio.Protocol):
         self._loop: asyncio.AbstractEventLoop = loop
         self._transport: Optional[SerialTransport] = None
         self._connection_made: asyncio.Future[None] = self._loop.create_future()
-        self._closed: Optional[asyncio.Future[None]] = None
+        self.closed: asyncio.Future[None] = self._loop.create_future()
 
         self._lock: asyncio.Lock = asyncio.Lock()
         self._expect: Optional[Type[Response]] = None
@@ -206,19 +206,6 @@ class Client(asyncio.Protocol):
             self._transport.close()
         self._close()
 
-    async def closed(self: Self) -> None:
-        """
-        Wait for the client to be closed. If the client closes because of an exception,
-        that exception will be raised here.
-        """
-        if not self._closed:
-            # If the method was called twice, reuse its exception
-            self._closed = self._loop.create_future()
-        if not self._running and not self._closed.done():
-            # If we weren't running in the first place, we're done
-            self._closed.set_result(None)
-        return await self._closed
-
     # Internal method to close the connection, potentially due to an exception.
     def _close(self: Self, exc: Optional[Exception] = None) -> None:
         self._running = False
@@ -233,13 +220,13 @@ class Client(asyncio.Protocol):
         def finish() -> None:
             # Tasks successfully closed. Resolve the future if we have it,
             # otherwise raise.
-            if not self._closed or self._closed.done():
+            if self.closed.done():
                 if exc:
                     raise exc
             elif exc:
-                self._closed.set_exception(exc)
+                self.closed.set_exception(exc)
             else:
-                self._closed.set_result(None)
+                self.closed.set_result(None)
 
         def on_tasks_done(_: asyncio.Future[Tuple[None, None]]) -> None:
             nonlocal exc
@@ -266,11 +253,7 @@ class Client(asyncio.Protocol):
 
         tasks_done.add_done_callback(on_tasks_done)
 
-        if not self._closed:
-            warnings.warn("Client closed without awaiting client.closed()")
-            if exc:
-                raise exc
-        elif self._closed.done() and exc:
+        if self.closed.done() and exc:
             raise exc
 
     def data_received(self: Self, data: bytes) -> None:
@@ -551,8 +534,8 @@ class Client(asyncio.Protocol):
 
             if exc:
                 logging.debug(f"{name} background task encountered an exception: {exc}")
-                if self._closed and not self._closed.done():
-                    self._closed.set_exception(exc)
+                if not self.closed.done():
+                    self.closed.set_exception(exc)
                 else:
                     raise exc
             elif report:
@@ -639,4 +622,4 @@ async def client(
 
     yield client
 
-    await client.closed()
+    await client.closed

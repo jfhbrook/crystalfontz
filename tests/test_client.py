@@ -57,13 +57,12 @@ async def client(
 async def test_report_handler(
     client: Client, report_handler: ReportHandler, packet: Packet, method: str
 ) -> None:
-    f = client.closed()
     client._packet_received(packet)
 
     await asyncio.sleep(0.1)
 
     client.close()
 
-    await f
+    await client.closed
 
     getattr(report_handler, method).assert_called()
