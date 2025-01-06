@@ -171,12 +171,16 @@ class Client(asyncio.Protocol):
 
         self._key_activity_task: asyncio.Task[None] = asyncio.create_task(
             self._handle_report(
-                self._key_activity_queue, self._report_handler.on_key_activity
+                "key_activity",
+                self._key_activity_queue,
+                self._report_handler.on_key_activity,
             )
         )
         self._temperature_task: asyncio.Task[None] = asyncio.create_task(
             self._handle_report(
-                self._temperature_queue, self._report_handler.on_temperature
+                "temperature",
+                self._temperature_queue,
+                self._report_handler.on_temperature,
             )
         )
 
@@ -530,20 +534,27 @@ class Client(asyncio.Protocol):
     #
 
     async def _handle_report(
-        self: Self, queue: asyncio.Queue[Result[R]], handler: ReportHandlerMethod
+        self: Self,
+        name: str,
+        queue: asyncio.Queue[Result[R]],
+        handler: ReportHandlerMethod,
     ) -> None:
         while True:
             if not self._running:
+                logging.debug(f"{name} background task exiting")
                 return
 
+            logging.debug(f"{name} background task getting a new report")
             exc, report = await queue.get()
 
             if exc:
+                logging.debug(f"{name} background task encountered an exception: {exc}")
                 if self._closed and not self._closed.done():
                     self._closed.set_exception(exc)
                 else:
                     raise exc
             elif report:
+                logging.debug(f"{name} background task is calling {handler.__name__}")
                 await handler(report)
             else:
                 raise CrystalfontzError(
