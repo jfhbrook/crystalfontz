@@ -130,7 +130,7 @@ class CFA533(Device):
         # CFA533 supports "enhanced contrast". The first byte is ignored and
         # the second byte can accept the full range.
         # CFA533 also supports "legacy contrast", but with a max value of 50.
-        return int(contrast * 50).to_bytes(length=1) + int(contrast * 255).to_bytes(
+        return int(contrast * 50).to_bytes(length=1) + int(contrast * 200).to_bytes(
             length=1
         )
 

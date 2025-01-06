@@ -73,7 +73,7 @@ class KeyStates:
         )
 
     def as_dict(self: Self) -> Dict[str, Dict[str, bool]]:
-        return {key: asdict(state) for key, state in asdict(self).items()}
+        return {key: state for key, state in asdict(self).items()}
 
 
 class KeyActivity(Enum):

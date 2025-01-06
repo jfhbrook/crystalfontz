@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -euxo pipefail
 
 CRYSTALFONTZ_LOG_LEVEL="${CRYSTALFONTZ_LOG_LEVEL:-INFO}"
 CRYSTALFONTZ_PORT="${CRYSTALFONTZ_PORT:-/dev/ttyUSB0}"
@@ -14,11 +14,11 @@ function confirm {
 }
 
 crystalfontz backlight 0.2
-crystalfontz contrast 0.9
+crystalfontz contrast 0.4
 
 confirm 'Did the backlight and contrast settings change?'
 
-crystalfontz send 1 'Hello world!'
+crystalfontz send 0 0 'Hello world!'
 
 confirm 'Did the LCD display "Hello world!"?'
 
@@ -57,6 +57,8 @@ PID=$!
 confirm 'Is the LCD showing a screensaver effect?'
 
 kill "${PID}"
+
+echo "HOORAY! All tests pass."
 
 # TODO: read user flash
 # TODO: keypad poll
