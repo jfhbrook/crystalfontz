@@ -2,7 +2,7 @@ from typing import List
 
 from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate, FAST_BAUD_RATE, SLOW_BAUD_RATE
-from crystalfontz.client import Client, create_connection
+from crystalfontz.client import client, Client, create_connection
 from crystalfontz.command import Command
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus
@@ -81,6 +81,7 @@ __all__: List[str] = [
     "BaudRateSet",
     "BootStateStored",
     "ClearedScreen",
+    "client",
     "Client",
     "Command",
     "CommandSentToLcdController",

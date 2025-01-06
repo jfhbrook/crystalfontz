@@ -1,7 +1,25 @@
 import asyncio
 from collections import defaultdict
+from contextlib import asynccontextmanager
 import logging
-from typing import Any, cast, Dict, Iterable, List, Optional, Set, Type, TypeVar
+import traceback
+from typing import (
+    Any,
+    AsyncGenerator,
+    Callable,
+    cast,
+    Coroutine,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    TypeGuard,
+    TypeVar,
+)
+import warnings
 
 try:
     from typing import Self
@@ -12,7 +30,7 @@ from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
-from crystalfontz.baud import BaudRate
+from crystalfontz.baud import BaudRate, SLOW_BAUD_RATE
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.command import (
     ClearScreen,
@@ -51,7 +69,12 @@ from crystalfontz.command import (
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
 from crystalfontz.effects import Marquee, Screensaver
-from crystalfontz.error import ConnectionError
+from crystalfontz.error import (
+    ConnectionError,
+    CrystalfontzError,
+    DeviceError,
+    ResponseDecodeError,
+)
 from crystalfontz.gpio import GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
@@ -83,6 +106,7 @@ from crystalfontz.response import (
     PowerResponse,
     RawResponse,
     Response,
+    RESPONSE_CLASSES,
     SpecialCharacterDataSet,
     StatusRead,
     TemperatureReport,
@@ -97,6 +121,8 @@ from crystalfontz.temperature import TemperatureDisplayItem
 logger = logging.getLogger(__name__)
 
 R = TypeVar("R", bound=Response)
+Result = Tuple[Exception, None] | Tuple[None, R]
+ReportHandlerMethod = Callable[[R], Coroutine[None, None, None]]
 
 
 class Client(asyncio.Protocol):
@@ -114,92 +140,200 @@ class Client(asyncio.Protocol):
         self._loop: asyncio.AbstractEventLoop = loop
         self._transport: Optional[SerialTransport] = None
         self._connection_made: asyncio.Future[None] = self._loop.create_future()
+        self.closed: asyncio.Future[None] = self._loop.create_future()
 
         self._lock: asyncio.Lock = asyncio.Lock()
         self._expect: Optional[Type[Response]] = None
-        self._queues: Dict[Type[Response], List[asyncio.Queue[Response]]] = defaultdict(
-            lambda: list()
+        self._queues: Dict[Type[Response], List[asyncio.Queue[Result[Response]]]] = (
+            defaultdict(lambda: list())
         )
 
     #
     # pyserial callbacks
     #
 
-    def connection_made(self: Self, transport) -> None:
-        if not isinstance(transport, SerialTransport):
+    def _is_serial_transport(
+        self: Self, transport: asyncio.BaseTransport
+    ) -> TypeGuard[SerialTransport]:
+        return isinstance(transport, SerialTransport)
+
+    def connection_made(self: Self, transport: asyncio.BaseTransport) -> None:
+        if not self._is_serial_transport(transport):
             raise ConnectionError("Transport is not a SerialTransport")
 
         self._transport = transport
         self._running = True
 
-        self._key_activity_queue: asyncio.Queue[KeyActivityReport] = self.subscribe(
-            KeyActivityReport
+        self._key_activity_queue: asyncio.Queue[Result[KeyActivityReport]] = (
+            self.subscribe(KeyActivityReport)
         )
-        self._temperature_queue: asyncio.Queue[TemperatureReport] = self.subscribe(
-            TemperatureReport
+        self._temperature_queue: asyncio.Queue[Result[TemperatureReport]] = (
+            self.subscribe(TemperatureReport)
         )
 
-        asyncio.create_task(self._handle_key_activity())
-        asyncio.create_task(self._handle_temperature())
+        self._key_activity_task: asyncio.Task[None] = asyncio.create_task(
+            self._handle_report(
+                "key_activity",
+                self._key_activity_queue,
+                self._report_handler.on_key_activity,
+            )
+        )
+        self._temperature_task: asyncio.Task[None] = asyncio.create_task(
+            self._handle_report(
+                "temperature",
+                self._temperature_queue,
+                self._report_handler.on_temperature,
+            )
+        )
 
         self._connection_made.set_result(None)
 
     def connection_lost(self: Self, exc: Optional[Exception]) -> None:
         self._running = False
-        if exc:
-            raise ConnectionError("Connection lost") from exc
+        try:
+            if exc:
+                raise ConnectionError("Connection lost") from exc
+        except Exception as exc:
+            self._close(exc)
+        else:
+            self._close()
 
     def close(self: Self) -> None:
-        self._running = False
+        """
+        Close the connection.
+        """
         if self._transport:
             self._transport.close()
+        self._close()
+
+    # Internal method to close the connection, potentially due to an exception.
+    def _close(self: Self, exc: Optional[Exception] = None) -> None:
+        self._running = False
+
+        # A clean exit requires that we cancel these tasks and then wait
+        # for them to finish before killing the event loop
+        self._key_activity_task.cancel()
+        self._temperature_task.cancel()
+
+        tasks_done = asyncio.gather(self._key_activity_task, self._temperature_task)
+
+        def finish() -> None:
+            # Tasks successfully closed. Resolve the future if we have it,
+            # otherwise raise.
+            if self.closed.done():
+                if exc:
+                    raise exc
+            elif exc:
+                self.closed.set_exception(exc)
+            else:
+                self.closed.set_result(None)
+
+        def on_tasks_done(_: asyncio.Future[Tuple[None, None]]) -> None:
+            nonlocal exc
+            task_exc = tasks_done.exception()
+            try:
+                # The tasks should have failed with a CancelledError
+                if task_exc:
+                    raise task_exc
+            except asyncio.CancelledError:
+                # This error is expected, wrap it up
+                finish()
+            except Exception as task_exc:
+                # An unexpected error of some kind was raised by the tasks.
+                # Do our best to handle them...
+                if exc:
+                    # We have two exceptions. We don't want to mask the
+                    # exception that actually caused us to close, so we
+                    # warn and hope for the best.
+                    warnings.warn(traceback.format_exc())
+                else:
+                    # This is our new exception.
+                    exc = task_exc
+                finish()
+
+        tasks_done.add_done_callback(on_tasks_done)
+
+        if self.closed.done() and exc:
+            raise exc
 
     def data_received(self: Self, data: bytes) -> None:
-        self._buffer += data
+        try:
+            self._buffer += data
 
-        packet, buff = parse_packet(self._buffer)
-        self._buffer = buff
-
-        while packet:
-            self._packet_received(packet)
             packet, buff = parse_packet(self._buffer)
             self._buffer = buff
 
+            while packet:
+                self._packet_received(packet)
+                packet, buff = parse_packet(self._buffer)
+                self._buffer = buff
+        except Exception as exc:
+            # Exceptions here would have come from the packet parser, not
+            # the packet handler
+            self._close(exc)
+
     def _packet_received(self: Self, packet: Packet) -> None:
-        res = Response.from_packet(packet)
-        if type(res) in self._queues:
-            for q in self._queues[type(res)]:
-                q.put_nowait(res)
+        logging.debug(f"Packet received: {packet}")
+        try:
+            res = Response.from_packet(packet)
+            raw_res = (
+                RawResponse.from_packet(packet) if RawResponse in self._queues else None
+            )
+        except ResponseDecodeError as exc:
+            # We know the intended response type, so send it to any subscribers
+            self._emit(exc.response_cls, (exc, None))
+        except DeviceError as exc:
+            if exc.expected_response in RESPONSE_CLASSES:
+                self._emit(RESPONSE_CLASSES[exc.expected_response], (exc, None))
+            else:
+                self._close(exc)
+        except Exception as exc:
+            self._close(exc)
+        else:
+            self._emit(type(res), (None, res))
+            if raw_res:
+                self._emit(RawResponse, (None, raw_res))
 
-        self._handle_raw_subscriptions(packet)
-
-    def _handle_raw_subscriptions(self: Self, packet: Packet) -> None:
-        if RawResponse in self._queues:
-            raw_res = RawResponse.from_packet(packet)
-            for q in self._queues[RawResponse]:
-                q.put_nowait(raw_res)
+    def _emit(self: Self, response_cls: Type[Response], item: Result[Response]) -> None:
+        if response_cls in self._queues:
+            for q in self._queues[response_cls]:
+                q.put_nowait(item)
+        elif item[0]:
+            # If we emit a response in a forest and nobody's around to hear it,
+            # shut it down and let close handle the exception
+            self._close(item[0])
 
     #
     # Event subscriptions
     #
 
-    def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[R]:
-        q: asyncio.Queue[R] = asyncio.Queue()
-        self._queues[cast(Type[Response], cls)].append(cast(asyncio.Queue[Response], q))
+    def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[Result[R]]:
+        q: asyncio.Queue[Result[R]] = asyncio.Queue()
+        key = cast(Type[Response], cls)
+        value = cast(asyncio.Queue[Result[Response]], q)
+        self._queues[key].append(value)
         return q
 
-    def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[R]) -> None:
+    def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[Result[R]]) -> None:
         key = cast(Type[Response], cls)
-        self._queues[key] = cast(
-            List[asyncio.Queue[Response]],
-            [q_ for q_ in self._queues[key] if q_ != cast(asyncio.Queue[Response], q)],
-        )
+        value = [
+            q_
+            for q_ in self._queues[key]
+            if q_ != cast(asyncio.Queue[Result[Response]], q)
+        ]
+        cast(List[asyncio.Queue[Result[Response]]], value)
+        self._queues[key] = cast(List[asyncio.Queue[Result[Response]]], value)
 
     async def expect(self: Self, cls: Type[R]) -> R:
         q = self.subscribe(cls)
-        res = await q.get()
+        exc, res = await q.get()
+        q.task_done()
         self.unsubscribe(cls, q)
-        return res
+        if exc:
+            raise exc
+        elif res:
+            return res
+        raise CrystalfontzError("assert: result has either exception or response")
 
     #
     # Commands
@@ -386,21 +520,36 @@ class Client(asyncio.Protocol):
     # Report handlers
     #
 
-    async def _handle_key_activity(self: Self) -> None:
+    async def _handle_report(
+        self: Self,
+        name: str,
+        queue: asyncio.Queue[Result[R]],
+        handler: ReportHandlerMethod,
+    ) -> None:
         while True:
             if not self._running:
+                logging.debug(f"{name} background task exiting")
                 return
 
-            report = await self._key_activity_queue.get()
-            await self._report_handler.on_key_activity(report)
+            logging.debug(f"{name} background task getting a new report")
+            exc, report = await queue.get()
 
-    async def _handle_temperature(self: Self) -> None:
-        while True:
-            if not self._running:
-                return
-
-            report = await self._temperature_queue.get()
-            await self._report_handler.on_temperature(report)
+            if exc:
+                logging.debug(f"{name} background task encountered an exception: {exc}")
+                if not self.closed.done():
+                    self.closed.set_exception(exc)
+                    queue.task_done()
+                else:
+                    queue.task_done()
+                    raise exc
+            elif report:
+                logging.debug(f"{name} background task is calling {handler.__name__}")
+                await handler(report)
+                queue.task_done()
+            else:
+                raise CrystalfontzError(
+                    "assert: result has either exception or response"
+                )
 
     #
     # Effects
@@ -427,7 +576,7 @@ async def create_connection(
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
     loop: Optional[asyncio.AbstractEventLoop] = None,
-    baud_rate: BaudRate = 19200,
+    baud_rate: BaudRate = SLOW_BAUD_RATE,
 ) -> Client:
     _loop = loop if loop else asyncio.get_running_loop()
 
@@ -452,3 +601,31 @@ async def create_connection(
     await client._connection_made
 
     return client
+
+
+@asynccontextmanager
+async def client(
+    port: str,
+    model: str = "CFA533",
+    hardware_rev: Optional[str] = None,
+    firmware_rev: Optional[str] = None,
+    device: Optional[Device] = None,
+    report_handler: Optional[ReportHandler] = None,
+    loop: Optional[asyncio.AbstractEventLoop] = None,
+    baud_rate: BaudRate = SLOW_BAUD_RATE,
+) -> AsyncGenerator[Client, None]:
+    client = await create_connection(
+        port,
+        model=model,
+        hardware_rev=hardware_rev,
+        firmware_rev=firmware_rev,
+        device=device,
+        report_handler=report_handler,
+        loop=loop,
+        baud_rate=baud_rate,
+    )
+
+    yield client
+
+    client.close()
+    await client.closed

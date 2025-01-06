@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import asyncio
 import random
 import time
-from typing import Any, Iterable, Optional, Protocol, Set, Type, TypeVar
+from typing import Any, Iterable, Optional, Protocol, Set, Tuple, Type, TypeVar
 
 try:
     from typing import Self
@@ -51,6 +51,7 @@ from crystalfontz.response import (
 from crystalfontz.temperature import TemperatureDisplayItem
 
 R = TypeVar("R", bound=Response)
+Result = Tuple[Exception, None] | Tuple[None, R]
 
 
 class ClientProtocol(Protocol):
@@ -60,9 +61,9 @@ class ClientProtocol(Protocol):
 
     device: Device
 
-    def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[R]: ...
+    def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[Result[R]]: ...
 
-    def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[R]) -> None: ...
+    def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[Result[R]]) -> None: ...
 
     async def ping(self: Self, payload: bytes) -> Pong: ...
 

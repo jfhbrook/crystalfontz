@@ -9,18 +9,17 @@ Here's a basic example:
 ```py
 import asyncio
 
-from crystalfontz import create_connection, SLOW_BAUD_RATE
+from crystalfontz import client, SLOW_BAUD_RATE
 
 
 async def main():
-    client = await create_connection(
+    # Will close the client on exit
+    async with client(
         "/dev/ttyUSB0",
         model="CFA533",
         baud_rate=SLOW_BAUD_RATE
-    )
-
-    await client.send_data(0, 0, "Hello world!")
-
+    ) as client:
+        await client.send_data(0, 0, "Hello world!")
 
 asyncio.run(main())
 ```
@@ -42,12 +41,12 @@ async def main():
     client = await create_connection(
         "/dev/ttyUSB0",
         model="CFA533",
-        baud_rate=SLOW_BAUD_RATE,
-        report_handler=LoggingReportHandler()
+        report_handler=LoggingReportHandler(),
+        baud_rate=SLOW_BAUD_RATE
     )
 
-    # Keep the coroutine open indefinitely
-    await asyncio.get_running_loop().create_future()
+    # Client will close if there's an error
+    await client.closed
 
 
 asyncio.run(main())

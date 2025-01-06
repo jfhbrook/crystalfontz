@@ -7,7 +7,12 @@ try:
 except ImportError:
     Self = Any
 
-from crystalfontz.error import DecodeError, DeviceError, UnknownResponseError
+from crystalfontz.error import (
+    DecodeError,
+    DeviceError,
+    ResponseDecodeError,
+    UnknownResponseError,
+)
 from crystalfontz.gpio import GpioSettings, GpioState
 from crystalfontz.keys import KeyActivity, KeyStates
 from crystalfontz.packet import Packet
@@ -31,7 +36,11 @@ class Response(ABC):
     def from_packet(cls: Type[Self], packet: Packet) -> "Response":
         code, data = packet
         if code in RESPONSE_CLASSES:
-            return RESPONSE_CLASSES[code](data)
+            res_cls = RESPONSE_CLASSES[code]
+            try:
+                return res_cls(data)
+            except Exception as exc:
+                raise ResponseDecodeError(res_cls, str(exc)) from exc
 
         if DeviceError.is_error_code(code):
             raise DeviceError(packet)
@@ -42,7 +51,7 @@ class Response(ABC):
 class RawResponse(Response):
     def __init__(self: Self, data: bytes) -> None:
         self.code: int = 0xFF
-        self.data = data
+        self.data: bytes = data
 
     @classmethod
     def from_packet(cls: Type[Self], packet: Packet) -> Self:
@@ -324,7 +333,7 @@ class TemperatureReport(Response):
         assert_len(4, data)
 
         self.idx: int = data[0]
-        value = struct.unpack(">H", data[1:2])[0]
+        value = struct.unpack(">H", data[1:3])[0]
         dow_crc_status = data[3]
 
         if dow_crc_status == 0:

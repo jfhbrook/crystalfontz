@@ -44,6 +44,7 @@ dev = [
     "flake8",
     "flake8-black",
     "pytest",
+    "pytest-asyncio",
     "black",
     "isort",
     "jupyter-console",
@@ -56,16 +57,17 @@ dev = [
 # Specified for the benefit of compiling requirements-dev.txt
 [project.optional-dependencies]
 dev = [
-  "flake8",
-  "flake8-black",
-  "pytest",
-  "black",
-  "isort",
-  "jupyter-console",
-  "mkdocs",
-  "mkdocs-bootstrap386",
-  "mkdocstrings[python]",
-  "validate-pyproject[all]",
+    "flake8",
+    "flake8-black",
+    "pytest",
+    "pytest-asyncio",
+    "black",
+    "isort",
+    "jupyter-console",
+    "mkdocs",
+    "mkdocs-bootstrap386",
+    "mkdocstrings[python]",
+    "validate-pyproject[all]",
 ]
 
 [tool.uv]
@@ -81,6 +83,9 @@ include = ["crystalfontz", "tests"]
 [tool.pytest]
 addopts = "--verbose -s"
 testpaths = [ "tests" ]
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.setuptools]
 packages = [ "crystalfontz" ]
