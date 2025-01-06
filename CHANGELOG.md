@@ -1,13 +1,12 @@
-yyyy/mm/dd Version 2.0.0
+2025/01/06 Version 2.0.0
 ------------------------
-- Updated README.md
-- Expose `pause` argument in client and CLI
-- Rename `client.poke` and `Poked` to `client.read_lcd_memory` and `LcdMemory` respectively
-- Compile `requirements.txt` and `requirements_dev.txt`
-- Add CI pipeline
-- Support Python 3.11
-- Add PyPI classifiers
-- Support arbitrary multi-byte encodings in character ROM
+- API changes:
+  - Expose `pause` argument for marquee effect in client and CLI
+  - Rename `client.poke` and `Poked` to `client.read_lcd_memory` and `LcdMemory` respectively
+- Improved control flow and error handling:
+  - Add `client.closed` future
+  - Add `client` async contextmanager that awaits `client.closed`
+  - Handle errors by surfacing them either in the command calls or through `client.closed`
 - Refactor CLI command names
   - `read-lcd-memory` -> `lcd poke`
   - `send-command-to-lcd-controller` -> `lcd send`
@@ -29,13 +28,18 @@ yyyy/mm/dd Version 2.0.0
   - `configure-watchdog` -> `watchdog`
   - `read-status` -> `status`
   - `set-baud-rate` -> `baud`
-- Byte CLI arguments are validated as being in range
-- Watchdog CLI argument allows "disable" and "disabled" values
-- Configure device model, hardware revision and firmware revison in CLI
-- Do not show stack trace on connection errors in CLI
-- Add `client.closed` future
-- Handle errors by surfacing them either in the command calls or through `client.closed`
-- Add `client` async contextmanager that awaits `client.closed`
+- CLI improvements:
+  - Byte CLI arguments are validated as being in range
+  - Watchdog CLI argument allows "disable" and "disabled" values
+  - Configure device model, hardware revision and firmware revison in CLI
+  - Do not show stack trace on connection errors in CLI
+- Support arbitrary multi-byte encodings in character ROM
+- Build, package and CI housekeeping
+  - Compile `requirements.txt` and `requirements_dev.txt`
+  - Add CI pipeline
+  - Support Python 3.11
+  - Add PyPI classifiers
+  - Updated documentation in README.md
 
 2025/01/04 Version 1.0.0
 ------------------------
