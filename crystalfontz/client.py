@@ -264,11 +264,12 @@ class Client(asyncio.Protocol):
 
         tasks_done.add_done_callback(on_tasks_done)
 
-        if not self._closed or self._closed.done():
-            # No way to resolve a future.
+        if not self._closed:
+            warnings.warn("Client closed without awaiting client.closed()")
             if exc:
                 raise exc
-            return
+        elif self._closed.done() and exc:
+            raise exc
 
     def data_received(self: Self, data: bytes) -> None:
         try:
