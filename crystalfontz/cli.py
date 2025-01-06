@@ -22,6 +22,7 @@ except ImportError:
     Self = Any
 
 import click
+from serial.serialutil import SerialException
 
 from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate, FAST_BAUD_RATE, SLOW_BAUD_RATE
@@ -174,14 +175,18 @@ def client(
             baud_rate: BaudRate = ctx.obj.baud_rate
 
             async def main() -> None:
-                client: Client = await create_connection(
-                    port,
-                    model=model,
-                    hardware_rev=hardware_rev,
-                    firmware_rev=firmware_rev,
-                    report_handler=report_handler_cls(),
-                    baud_rate=baud_rate,
-                )
+                try:
+                    client: Client = await create_connection(
+                        port,
+                        model=model,
+                        hardware_rev=hardware_rev,
+                        firmware_rev=firmware_rev,
+                        report_handler=report_handler_cls(),
+                        baud_rate=baud_rate,
+                    )
+                except SerialException as exc:
+                    click.echo(exc)
+                    return
                 await fn(client, *args, **kwargs)
 
             try:
