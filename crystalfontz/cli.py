@@ -27,7 +27,7 @@ from serial.serialutil import SerialException
 
 from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate, FAST_BAUD_RATE, SLOW_BAUD_RATE
-from crystalfontz.client import Client, create_connection
+from crystalfontz.client import client, Client
 from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.keys import (
@@ -161,7 +161,7 @@ WrappedAsyncCommand = Callable[..., None]
 AsyncCommandDecorator = Callable[[AsyncCommand], WrappedAsyncCommand]
 
 
-def client(
+def pass_client(
     run_forever: bool = False,
     report_handler_cls: Type[ReportHandler] = NoopReportHandler,
 ) -> AsyncCommandDecorator:
@@ -177,27 +177,23 @@ def client(
 
             async def main() -> None:
                 try:
-                    client: Client = await create_connection(
+                    async with client(
                         port,
                         model=model,
                         hardware_rev=hardware_rev,
                         firmware_rev=firmware_rev,
                         report_handler=report_handler_cls(),
                         baud_rate=baud_rate,
-                    )
+                    ) as c:
+                        await fn(c, *args, **kwargs)
+                        if not run_forever:
+                            c.close()
                 except SerialException as exc:
                     click.echo(exc)
                     sys.exit(1)
-                await fn(client, *args, **kwargs)
 
             try:
-                if run_forever:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    loop.create_task(main())
-                    loop.run_forever()
-                else:
-                    asyncio.run(main())
+                asyncio.run(main())
             except KeyboardInterrupt:
                 pass
 
@@ -207,7 +203,7 @@ def client(
 
 
 @main.command(help="Listen for keypress and temperature reports")
-@client(run_forever=True, report_handler_cls=JsonReportHandler)
+@pass_client(run_forever=True, report_handler_cls=JsonReportHandler)
 async def listen(client: Client) -> None:
     """
     Listen for key and temperature reports. To configure which reports to
@@ -219,14 +215,14 @@ async def listen(client: Client) -> None:
 
 @main.command(help="0 (0x00): Ping command")
 @click.argument("payload")
-@client()
+@pass_client()
 async def ping(client: Client, payload: str) -> None:
     pong = await client.ping(payload.encode("utf8"))
     click.echo(pong.response)
 
 
 @main.command(help="1 (0x01): Get Hardware & Firmware Version")
-@client()
+@pass_client()
 async def versions(client: Client) -> None:
     versions = await client.versions()
     click.echo(f"{versions.model}: {versions.hardware_rev}, {versions.firmware_rev}")
@@ -239,14 +235,14 @@ def flash() -> None:
 
 @flash.command(name="write", help="2 (0x02): Write User Flash Area")
 @click.argument("data")
-@client()
+@pass_client()
 async def write_user_flash_area(client: Client, data: str) -> None:
     # Click doesn't have a good way of receiving bytes as arguments.
     raise NotImplementedError("crystalfontz user-flash-area write")
 
 
 @flash.command(name="read", help="3 (0x03): Read User Flash Area")
-@client()
+@pass_client()
 async def read_user_flash_area(client: Client) -> None:
     flash = await client.read_user_flash_area()
     # TODO: Does this print as raw bytes?
@@ -254,7 +250,7 @@ async def read_user_flash_area(client: Client) -> None:
 
 
 @main.command(help="4 (0x04): Store Current State as Boot State")
-@client()
+@pass_client()
 async def store(client: Client) -> None:
     await client.store_boot_state()
 
@@ -265,25 +261,25 @@ def power() -> None:
 
 
 @power.command(help="Reboot the Crystalfontx LCD")
-@client()
+@pass_client()
 async def reboot_lcd(client: Client) -> None:
     await client.reboot_lcd()
 
 
 @power.command(help="Reset the host, assuming ATX control is configured")
-@client()
+@pass_client()
 async def reset_host(client: Client) -> None:
     await client.reset_host()
 
 
 @power.command(help="Turn the host's power off, assuming ATX control is configured")
-@client()
+@pass_client()
 async def shutdown_host(client: Client) -> None:
     await client.shutdown_host()
 
 
 @main.command(help="6 (0x06): Clear LCD Screen")
-@client()
+@pass_client()
 async def clear(client: Client) -> None:
     await client.clear_screen()
 
@@ -295,14 +291,14 @@ def line() -> None:
 
 @line.command(name="1", help="7 (0x07): Set LCD Contents, Line 1")
 @click.argument("line")
-@client()
+@pass_client()
 async def set_line_1(client: Client, line: str) -> None:
     await client.set_line_1(line)
 
 
 @line.command(name="2", help="8 (0x08): Set LCD Contents, Line 2")
 @click.argument("line")
-@client()
+@pass_client()
 async def set_line_2(client: Client, line: str) -> None:
     await client.set_line_2(line)
 
@@ -330,7 +326,7 @@ def lcd() -> None:
 
 @lcd.command(name="poke", help="10 (0x0A): Read 8 Bytes of LCD Memory")
 @click.argument("address", type=BYTE)
-@client()
+@pass_client()
 async def read_lcd_memory(client: Client, address: int) -> None:
     memory = await client.read_lcd_memory(address)
     click.echo(bytes(memory.address) + b":" + memory.data)
@@ -344,21 +340,21 @@ def cursor() -> None:
 @cursor.command(name="position", help="11 (0x0B): Set LCD Cursor Position")
 @click.argument("row", type=BYTE)
 @click.argument("column", type=BYTE)
-@client()
+@pass_client()
 async def set_cursor_position(client: Client, row: int, column: int) -> None:
     await client.set_cursor_position(row, column)
 
 
 @cursor.command(name="style", help="12 (0x0C): Set LCD Cursor Style")
 @click.argument("style", type=click.Choice([e.name for e in CursorStyle]))
-@client()
+@pass_client()
 async def set_cursor_style(client: Client, style: str) -> None:
     await client.set_cursor_style(CursorStyle[style])
 
 
 @main.command(help="13 (0x0D): Set LCD Contrast")
 @click.argument("contrast", type=float)
-@client()
+@pass_client()
 async def contrast(client: Client, contrast: float) -> None:
     await client.set_contrast(contrast)
 
@@ -366,7 +362,7 @@ async def contrast(client: Client, contrast: float) -> None:
 @main.command(help="14 (0x0E): Set LCD & Keypad Backlight")
 @click.argument("brightness", type=float)
 @click.option("--keypad", type=float)
-@client()
+@pass_client()
 async def backlight(client: Client, brightness: float, keypad: Optional[float]) -> None:
     await client.set_backlight(brightness, keypad)
 
@@ -378,7 +374,7 @@ def dow() -> None:
 
 @dow.command(name="info", help="18 (0x12): Read DOW Device Information")
 @click.argument("index", type=BYTE)
-@client()
+@pass_client()
 async def read_dow_device_information(client: Client, index: int) -> None:
     info = await client.read_dow_device_information(index)
     click.echo(bytes(info.index) + b":" + info.rom_id)
@@ -391,7 +387,7 @@ def temperature() -> None:
 
 @temperature.command(name="reporting", help="19 (0x13): Set Up Temperature Reporting")
 @click.argument("enabled", nargs=-1)
-@client()
+@pass_client()
 async def setup_temperature_reporting(client: Client, enabled: Tuple[int]) -> None:
     await client.setup_temperature_reporting(enabled)
 
@@ -414,7 +410,7 @@ def dow_transaction() -> None:
 @click.option("--column", "-c", type=BYTE, required=True)
 @click.option("--row", "-r", type=BYTE, required=True)
 @click.option("--units", "-U", type=click.Choice([e.name for e in TemperatureUnit]))
-@client()
+@pass_client()
 async def setup_live_temperature_display(
     client: Client,
     slot: int,
@@ -439,7 +435,7 @@ async def setup_live_temperature_display(
 @lcd.command(name="send", help="22 (0x16): Send Command Directly to the LCD Controller")
 @click.argument("location", type=click.Choice([e.name for e in LcdRegister]))
 @click.argument("data", type=BYTE)
-@client()
+@pass_client()
 async def send_command_to_lcd_controler(
     client: Client, location: str, data: int
 ) -> None:
@@ -468,7 +464,7 @@ KEYPRESSES: Dict[str, KeyPress] = dict(
 @click.option(
     "--when-released", multiple=True, type=click.Choice(list(KEYPRESSES.keys()))
 )
-@client()
+@pass_client()
 async def configure_key_reporting(
     client: Client, when_pressed: List[str], when_released: List[str]
 ) -> None:
@@ -479,7 +475,7 @@ async def configure_key_reporting(
 
 
 @keypad.command(name="poll", help="24 (0x18): Read Keypad, Polled Mode")
-@client()
+@pass_client()
 async def poll_keypad(client: Client) -> None:
     polled = await client.poll_keypad()
     click.echo(json.dumps(polled.states.as_dict(), indent=2))
@@ -491,7 +487,7 @@ async def poll_keypad(client: Client) -> None:
 )
 @click.option("--auto-polarity/--no-auto-polarity", type=bool, default=False)
 @click.option("--power-pulse-length-seconds", type=float)
-@client()
+@pass_client()
 async def atx(
     client: Client,
     function: List[str],
@@ -509,13 +505,13 @@ async def atx(
 
 @main.command(help="29 (0x1D): Enable/Disable and Reset the Watchdog")
 @click.argument("timeout_seconds", type=WATCHDOG_SETTING)
-@client()
+@pass_client()
 async def watchdog(client: Client, timeout_seconds: int) -> None:
     await client.configure_watchdog(timeout_seconds)
 
 
 @main.command(help="30 (0x1E): Read Reporting & Status")
-@client()
+@pass_client()
 async def status(client: Client) -> None:
     status = await client.read_status()
 
@@ -559,7 +555,7 @@ async def status(client: Client) -> None:
 @click.argument("row", type=int)
 @click.argument("column", type=int)
 @click.argument("data")
-@client()
+@pass_client()
 async def send(client: Client, row: int, column: int, data: str) -> None:
     await client.send_data(row, column, data)
 
@@ -600,7 +596,7 @@ def effects() -> None:
 @click.argument("text")
 @click.option("--pause", type=float)
 @click.option("--tick", type=float)
-@client()
+@pass_client()
 async def marquee(
     client: Client, row: int, text: str, pause: Optional[float], tick: Optional[float]
 ) -> None:
@@ -612,7 +608,7 @@ async def marquee(
 @effects.command(help="Display a screensaver-like effect")
 @click.argument("text")
 @click.option("--tick", type=float)
-@client()
+@pass_client()
 async def screensaver(client: Client, text: str, tick: Optional[float]) -> None:
     s = client.screensaver(text, tick=tick)
 
