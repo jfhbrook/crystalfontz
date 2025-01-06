@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import functools
 import json
 import logging
+import sys
 from typing import (
     Any,
     Callable,
@@ -186,7 +187,7 @@ def client(
                     )
                 except SerialException as exc:
                     click.echo(exc)
-                    return
+                    sys.exit(1)
                 await fn(client, *args, **kwargs)
 
             try:
