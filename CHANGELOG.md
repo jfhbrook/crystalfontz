@@ -8,8 +8,27 @@ yyyy/mm/dd Version x.y.z
 - Support Python 3.11
 - Add PyPI classifiers
 - Support arbitrary multi-byte encodings in character ROM
-- rename `crystalfontz read-lcd-memory` and `crystalfonts send-command-to-lcd-controller` to `crystalfontz lcd poke` and `crystalfontz lcd send` respectively
-
+- Refactor CLI command names
+  - `read-lcd-memory` -> `lcd poke`
+  - `send-command-to-lcd-controller` -> `lcd send`
+  - `user-flash-area` -> `flash`
+  - `store-boot-state` -> `store`
+  - `clear-screen` -> `clear`
+  - `set-line-1` -> `line 1`
+  - `set-line-2` -> `line 2`
+  - `special-character` -> `character`
+  - `cursor set-position` -> `cursor position`
+  - `cursor set-style` -> `cursor style`
+  - `set-contrast` -> `constrast`
+  - `set-backlight` -> `backlight`
+  - `dow read-device-information` -> `dow info`
+  - `temperature setup-reporting` -> `temperature reporting`
+  - `temperature setup-live-display` -> `temperature display`
+  - `keypad configure-reporting` -> `keypad reporting`
+  - `set-atx-power-switch-functionality` -> `atx`
+  - `configure-watchdog` -> `watchdog`
+  - `read-status` -> `status`
+  - `set-baud-rate` -> `baud`
 
 2025/01/04 Version 1.0.0
 ------------------------
