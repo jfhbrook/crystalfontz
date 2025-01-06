@@ -5,6 +5,9 @@ set -euo pipefail
 CRYSTALFONTZ_LOG_LEVEL="${CRYSTALFONTZ_LOG_LEVEL:-INFO}"
 CRYSTALFONTZ_PORT="${CRYSTALFONTZ_PORT:-/dev/ttyUSB0}"
 
+export CRYSTALFONTZ_LOG_LEVEL
+export CRYSTALFONTZ_PORT
+
 function confirm {
   read -p "${1} " -n 1 -r
   [[ "${REPLY}" =~ ^[Yy]$ ]]
