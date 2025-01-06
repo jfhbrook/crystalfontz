@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -9,6 +10,8 @@ from crystalfontz.client import Client
 from crystalfontz.device import CFA533, Device
 from crystalfontz.packet import Packet
 from crystalfontz.report import ReportHandler
+
+logging.basicConfig(level="DEBUG")
 
 
 @pytest.fixture
@@ -47,8 +50,7 @@ async def client(
     "packet,method",
     [
         ((0x80, b"\x01"), "on_key_activity"),
-        # TODO: This case is failing.
-        # ((0x82, b"\x01\x01\x00\xff"), "on_temperature"),
+        ((0x82, b"\x01\x01\x00\xff"), "on_temperature"),
     ],
 )
 @pytest.mark.asyncio
