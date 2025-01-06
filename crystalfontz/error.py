@@ -1,4 +1,4 @@
-from typing import Any, Tuple, Type
+from typing import Any, Optional, Tuple, Type
 
 try:
     from typing import Self
@@ -38,6 +38,16 @@ class DecodeError(CrystalfontzError):
     pass
 
 
+class ResponseDecodeError(DecodeError):
+    """
+    An error while decoding a response.
+    """
+
+    def __init__(self: Self, code: int, message: str) -> None:
+        super().__init__(message)
+        self.code: int = code
+
+
 class EncodeError(CrystalfontzError):
     """
     An error while encoding outgoing data.
@@ -62,7 +72,8 @@ class UnknownResponseError(DecodeError):
     def __init__(self: Self, packet: Tuple[int, bytes]) -> None:
         code, payload = packet
 
-        self.code = code
+        self.code: int = code
+        self.command_code: Optional[int] = code - 0x40 if code < 0x80 else None
         self.payload = payload
 
         super().__init__(f"Unknown response (0x{code:02X}, {payload})")
@@ -82,6 +93,9 @@ class DeviceError(CrystalfontzError):
         code, payload = packet
         # The six bits following the 0b11 correspond to the command
         self.command = code & 0o77
+        # The expected response code, so we can match this error with the
+        # expected success response
+        self.expected = self.command + 0x40
         self.payload = payload
         message = f"Error executing command 0x{self.command:02X}"
 

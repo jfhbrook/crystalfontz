@@ -7,7 +7,12 @@ try:
 except ImportError:
     Self = Any
 
-from crystalfontz.error import DecodeError, DeviceError, UnknownResponseError
+from crystalfontz.error import (
+    DecodeError,
+    DeviceError,
+    ResponseDecodeError,
+    UnknownResponseError,
+)
 from crystalfontz.gpio import GpioSettings, GpioState
 from crystalfontz.keys import KeyActivity, KeyStates
 from crystalfontz.packet import Packet
@@ -31,7 +36,10 @@ class Response(ABC):
     def from_packet(cls: Type[Self], packet: Packet) -> "Response":
         code, data = packet
         if code in RESPONSE_CLASSES:
-            return RESPONSE_CLASSES[code](data)
+            try:
+                return RESPONSE_CLASSES[code](data)
+            except Exception as exc:
+                raise ResponseDecodeError(code, str(exc)) from exc
 
         if DeviceError.is_error_code(code):
             raise DeviceError(packet)
@@ -42,7 +50,7 @@ class Response(ABC):
 class RawResponse(Response):
     def __init__(self: Self, data: bytes) -> None:
         self.code: int = 0xFF
-        self.data = data
+        self.data: bytes = data
 
     @classmethod
     def from_packet(cls: Type[Self], packet: Packet) -> Self:
