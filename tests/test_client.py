@@ -128,6 +128,21 @@ async def test_device_error_no_sub(client: Client) -> None:
 
 
 @pytest.mark.asyncio
+async def test_arbitrary_error_no_sub(client: Client, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "crystalfontz.response.Response.from_packet",
+        Mock(name="Response.from_packet()", side_effect=Exception("oops!")),
+    )
+
+    client._packet_received((0x40, b"ping!"))
+
+    await asyncio.sleep(0.1)
+
+    with pytest.raises(Exception):
+        await client.closed
+
+
+@pytest.mark.asyncio
 async def test_response_decode_error(client: Client) -> None:
     q = client.subscribe(BrokenResponse)
     client._packet_received((0x64, b"oops!"))
