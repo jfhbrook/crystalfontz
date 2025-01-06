@@ -1,6 +1,12 @@
 import asyncio
 import logging
+from typing import Any
 from unittest.mock import AsyncMock, Mock
+
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
 
 import pytest
 import pytest_asyncio
@@ -11,7 +17,7 @@ from crystalfontz.device import CFA533, Device
 from crystalfontz.error import DeviceError, ResponseDecodeError, UnknownResponseError
 from crystalfontz.packet import Packet
 from crystalfontz.report import ReportHandler
-from crystalfontz.response import KeyActivityReport, Pong
+from crystalfontz.response import code, KeyActivityReport, Pong, Response
 
 logging.basicConfig(level="DEBUG")
 
@@ -46,6 +52,12 @@ async def client(
     client._is_serial_transport = Mock(return_value=True)
     client.connection_made(transport)
     return client
+
+
+@code(0x64)
+class BrokenResponse(Response):
+    def __init__(self: Self, data: bytes) -> None:
+        raise Exception("oops!")
 
 
 @pytest.mark.asyncio
@@ -98,6 +110,25 @@ async def test_device_error(client: Client) -> None:
     assert isinstance(exc, DeviceError)
     assert exc.command == 0x00
     assert exc.expected == 0x40
+    assert res is None
+
+    client.close()
+
+    await client.closed
+
+
+@pytest.mark.asyncio
+async def test_response_decode_error(client: Client) -> None:
+    q = client.subscribe(BrokenResponse)
+    client._packet_received((0x64, b"oops!"))
+
+    async with asyncio.timeout(0.2):
+        exc, res = await q.get()
+
+    client.unsubscribe(BrokenResponse, q)
+
+    assert isinstance(exc, ResponseDecodeError)
+    assert exc.response_cls is BrokenResponse
     assert res is None
 
     client.close()
