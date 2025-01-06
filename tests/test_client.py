@@ -7,11 +7,12 @@ import pytest_asyncio
 from serial_asyncio import SerialTransport
 
 from crystalfontz.client import Client
+from crystalfontz.command import Ping
 from crystalfontz.device import CFA533, Device
 from crystalfontz.error import DeviceError, ResponseDecodeError
 from crystalfontz.packet import Packet
 from crystalfontz.report import ReportHandler
-from crystalfontz.response import KeyActivityReport
+from crystalfontz.response import KeyActivityReport, Pong
 
 logging.basicConfig(level="DEBUG")
 
@@ -46,6 +47,38 @@ async def client(
     client._is_serial_transport = Mock(return_value=True)
     client.connection_made(transport)
     return client
+
+
+@pytest.mark.asyncio
+async def test_close_success(client: Client) -> None:
+    client._close()
+
+    await client.closed
+
+
+@pytest.mark.asyncio
+async def test_close_exc(client: Client) -> None:
+    client._close(Exception("ponyyy"))
+
+    with pytest.raises(Exception):
+        await client.closed
+
+
+@pytest.mark.asyncio
+async def test_ping_success(client: Client) -> None:
+    q = client.subscribe(Pong)
+    client._packet_received((0x00, b"ping!"))
+    async with asyncio.timeout(0.2):
+        exc, res = await q.get()
+    client.unsubscribe(Pong, q)
+
+    assert exc is None
+    assert isinstance(res, Pong)
+    assert res.response == b"ping!"
+
+    client.close()
+
+    await client.closed
 
 
 @pytest.mark.parametrize(
