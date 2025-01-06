@@ -228,15 +228,20 @@ class Client(asyncio.Protocol):
             self._closed.set_result(None)
 
     def data_received(self: Self, data: bytes) -> None:
-        self._buffer += data
+        try:
+            self._buffer += data
 
-        packet, buff = parse_packet(self._buffer)
-        self._buffer = buff
-
-        while packet:
-            self._packet_received(packet)
             packet, buff = parse_packet(self._buffer)
             self._buffer = buff
+
+            while packet:
+                self._packet_received(packet)
+                packet, buff = parse_packet(self._buffer)
+                self._buffer = buff
+        except Exception as exc:
+            # Exceptions here would have come from the packet parser, not
+            # the packet handler
+            self._close(exc)
 
     def _packet_received(self: Self, packet: Packet) -> None:
         try:
