@@ -46,7 +46,7 @@ async def main():
         report_handler=LoggingReportHandler()
     )
 
-    await client.closed
+    await client.closed()
 
 
 asyncio.run(main())
