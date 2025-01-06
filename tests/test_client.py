@@ -67,13 +67,38 @@ async def test_close_exc(client: Client) -> None:
 async def test_ping_success(client: Client) -> None:
     q = client.subscribe(Pong)
     client._packet_received((0x40, b"ping!"))
+
+    # TODO: On an unknown response error, this will time out and we won't
+    # know about the error until we close. Should we emit the error on the
+    # first active non-reporting queue instead?
     async with asyncio.timeout(0.2):
         exc, res = await q.get()
+
     client.unsubscribe(Pong, q)
 
     assert exc is None
     assert isinstance(res, Pong)
     assert res.response == b"ping!"
+
+    client.close()
+
+    await client.closed
+
+
+@pytest.mark.asyncio
+async def test_device_error(client: Client) -> None:
+    q = client.subscribe(Pong)
+    client._packet_received((0b11000000, b"ping!"))
+
+    async with asyncio.timeout(0.2):
+        exc, res = await q.get()
+
+    client.unsubscribe(Pong, q)
+
+    assert isinstance(exc, DeviceError)
+    assert exc.command == 0x00
+    assert exc.expected == 0x40
+    assert res is None
 
     client.close()
 
