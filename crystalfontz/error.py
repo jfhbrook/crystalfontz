@@ -95,7 +95,7 @@ class DeviceError(CrystalfontzError):
         self.command = code & 0o77
         # The expected response code, so we can match this error with the
         # expected success response
-        self.expected = self.command + 0x40
+        self.expected_response = self.command + 0x40
         self.payload = payload
         message = f"Error executing command 0x{self.command:02X}"
 

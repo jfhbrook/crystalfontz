@@ -283,8 +283,8 @@ class Client(asyncio.Protocol):
             # We know the intended response type, so send it to any subscribers
             self._emit(exc.response_cls, (exc, None))
         except DeviceError as exc:
-            if exc.expected in RESPONSE_CLASSES:
-                self._emit(RESPONSE_CLASSES[exc.expected], (exc, None))
+            if exc.expected_response in RESPONSE_CLASSES:
+                self._emit(RESPONSE_CLASSES[exc.expected_response], (exc, None))
             else:
                 self._close(exc)
         except Exception as exc:

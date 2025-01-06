@@ -109,7 +109,7 @@ async def test_device_error(client: Client) -> None:
 
     assert isinstance(exc, DeviceError)
     assert exc.command == 0x00
-    assert exc.expected == 0x40
+    assert exc.expected_response == 0x40
     assert res is None
 
     client.close()
