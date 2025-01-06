@@ -27,7 +27,7 @@ from serial.serialutil import SerialException
 
 from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate, FAST_BAUD_RATE, SLOW_BAUD_RATE
-from crystalfontz.client import client, Client
+from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.keys import (
@@ -177,23 +177,30 @@ def pass_client(
 
             async def main() -> None:
                 try:
-                    async with client(
+                    client: Client = await create_connection(
                         port,
                         model=model,
                         hardware_rev=hardware_rev,
                         firmware_rev=firmware_rev,
                         report_handler=report_handler_cls(),
                         baud_rate=baud_rate,
-                    ) as c:
-                        await fn(c, *args, **kwargs)
-                        if not run_forever:
-                            c.close()
+                    )
                 except SerialException as exc:
                     click.echo(exc)
                     sys.exit(1)
+                await fn(client, *args, **kwargs)
+                if not run_forever:
+                    client.close()
+                await client.closed
 
             try:
-                asyncio.run(main())
+                if run_forever:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    loop.create_task(main())
+                    loop.run_forever()
+                else:
+                    asyncio.run(main())
             except KeyboardInterrupt:
                 pass
 

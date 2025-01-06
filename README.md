@@ -13,13 +13,13 @@ from crystalfontz import client, SLOW_BAUD_RATE
 
 
 async def main():
+    # Will close the client on exit
     async with client(
         "/dev/ttyUSB0",
         model="CFA533",
         baud_rate=SLOW_BAUD_RATE
     ) as client:
         await client.send_data(0, 0, "Hello world!")
-        client.close()
 
 asyncio.run(main())
 ```
@@ -38,13 +38,15 @@ import asyncio
 from crystalfontz import create_connection, LoggingReportHandler, SLOW_BAUD_RATE
 
 async def main():
-    async with client(
+    client = await create_connection(
         "/dev/ttyUSB0",
         model="CFA533",
         report_handler=LoggingReportHandler(),
         baud_rate=SLOW_BAUD_RATE
-    ) as client:
-        pass
+    )
+
+    # Client will close if there's an error
+    await client.closed
 
 
 asyncio.run(main())

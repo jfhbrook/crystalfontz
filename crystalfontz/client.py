@@ -627,4 +627,5 @@ async def client(
 
     yield client
 
+    client.close()
     await client.closed
