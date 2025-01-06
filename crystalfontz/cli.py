@@ -139,13 +139,13 @@ def client(
     return decorator
 
 
-@main.command(help="Listen for reports")
+@main.command(help="Listen for keypress and temperature reports")
 @client(run_forever=True, report_handler_cls=JsonReportHandler)
 async def listen(client: Client) -> None:
     """
     Listen for key and temperature reports. To configure which reports to
-    receive, use 'crystalfontz keypad configure-reporting' and
-    'crystalfontz temperature setup-reporting' respectively.
+    receive, use 'crystalfontz keypad reporting' and
+    'crystalfontz temperature reporting' respectively.
     """
     pass
 
@@ -166,11 +166,11 @@ async def versions(client: Client) -> None:
 
 
 @main.group(help="Interact with the User Flash Area")
-def user_flash_area() -> None:
+def flash() -> None:
     pass
 
 
-@user_flash_area.command(name="write", help="2 (0x02): Write User Flash Area")
+@flash.command(name="write", help="2 (0x02): Write User Flash Area")
 @click.argument("data")
 @client()
 async def write_user_flash_area(client: Client, data: str) -> None:
@@ -178,7 +178,7 @@ async def write_user_flash_area(client: Client, data: str) -> None:
     raise NotImplementedError("crystalfontz user-flash-area write")
 
 
-@user_flash_area.command(name="read", help="3 (0x03): Read User Flash Area")
+@flash.command(name="read", help="3 (0x03): Read User Flash Area")
 @client()
 async def read_user_flash_area(client: Client) -> None:
     flash = await client.read_user_flash_area()
@@ -188,7 +188,7 @@ async def read_user_flash_area(client: Client) -> None:
 
 @main.command(help="4 (0x04): Store Current State as Boot State")
 @client()
-async def store_boot_state(client: Client) -> None:
+async def store(client: Client) -> None:
     await client.store_boot_state()
 
 
@@ -217,26 +217,31 @@ async def shutdown_host(client: Client) -> None:
 
 @main.command(help="6 (0x06): Clear LCD Screen")
 @client()
-async def clear_screen(client: Client) -> None:
+async def clear(client: Client) -> None:
     await client.clear_screen()
 
 
-@main.command(help="7 (0x07): Set LCD Contents, Line 1")
+@main.group(help="Set LCD contents for a line")
+def line() -> None:
+    pass
+
+
+@line.command(name="1", help="7 (0x07): Set LCD Contents, Line 1")
 @click.argument("line")
 @client()
 async def set_line_1(client: Client, line: str) -> None:
     await client.set_line_1(line)
 
 
-@main.command(help="8 (0x08): Set LCD Contents, Line 2")
+@line.command(name="2", help="8 (0x08): Set LCD Contents, Line 2")
 @click.argument("line")
 @client()
 async def set_line_2(client: Client, line: str) -> None:
     await client.set_line_2(line)
 
 
-@main.command(help="Commands involving special characters")
-def special_character() -> None:
+@main.command(help="Interact with special characters")
+def character() -> None:
     #
     # Two functions are intended to be implemented under this namespace, both of which
     # have missing semantics:
@@ -269,7 +274,7 @@ def cursor() -> None:
     pass
 
 
-@cursor.command(name="set-position", help="11 (0x0B): Set LCD Cursor Position")
+@cursor.command(name="position", help="11 (0x0B): Set LCD Cursor Position")
 @click.argument("row", type=int)
 @click.argument("column", type=int)
 @client()
@@ -277,7 +282,7 @@ async def set_cursor_position(client: Client, row: int, column: int) -> None:
     await client.set_cursor_position(row, column)
 
 
-@cursor.command(name="set-style")
+@cursor.command(name="style", help="12 (0x0C): Set LCD Cursor Style")
 @click.argument("style", type=click.Choice([e.name for e in CursorStyle]))
 @client()
 async def set_cursor_style(client: Client, style: str) -> None:
@@ -287,7 +292,7 @@ async def set_cursor_style(client: Client, style: str) -> None:
 @main.command(help="13 (0x0D): Set LCD Contrast")
 @click.argument("contrast", type=float)
 @client()
-async def set_contrast(client: Client, contrast: float) -> None:
+async def contrast(client: Client, contrast: float) -> None:
     await client.set_contrast(contrast)
 
 
@@ -295,9 +300,7 @@ async def set_contrast(client: Client, contrast: float) -> None:
 @click.argument("brightness", type=float)
 @click.option("--keypad", type=float)
 @client()
-async def set_backlight(
-    client: Client, brightness: float, keypad: Optional[float]
-) -> None:
+async def backlight(client: Client, brightness: float, keypad: Optional[float]) -> None:
     await client.set_backlight(brightness, keypad)
 
 
@@ -306,9 +309,7 @@ def dow() -> None:
     pass
 
 
-@dow.command(
-    name="read-device-information", help="18 (0x12): Read DOW Device Information"
-)
+@dow.command(name="info", help="18 (0x12): Read DOW Device Information")
 @click.argument("index", type=int)
 @client()
 async def read_dow_device_information(client: Client, index: int) -> None:
@@ -321,9 +322,7 @@ def temperature() -> None:
     pass
 
 
-@temperature.command(
-    name="setup-reporting", help="19 (0x13): Set Up Temperature Reporting"
-)
+@temperature.command(name="reporting", help="19 (0x13): Set Up Temperature Reporting")
 @click.argument("enabled", nargs=-1)
 @client()
 async def setup_temperature_reporting(client: Client, enabled: Tuple[int]) -> None:
@@ -341,9 +340,7 @@ def dow_transaction() -> None:
     raise NotImplementedError("crystalfontz dow transaction")
 
 
-@temperature.command(
-    name="setup-live-display", help="21 (0x15): Set Up Live Temperature Display"
-)
+@temperature.command(name="display", help="21 (0x15): Set Up Live Temperature Display")
 @click.argument("slot", type=int)
 @click.argument("index", type=int)
 @click.option("--n-digits", "-n", type=click.Choice(["3", "5"]), required=True)
@@ -397,7 +394,7 @@ KEYPRESSES: Dict[str, KeyPress] = dict(
 )
 
 
-@keypad.command(name="configure-reporting", help="23 (0x17): Configure Key Reporting")
+@keypad.command(name="reporting", help="23 (0x17): Configure Key Reporting")
 @click.option(
     "--when-pressed", multiple=True, type=click.Choice(list(KEYPRESSES.keys()))
 )
@@ -428,7 +425,7 @@ async def poll_keypad(client: Client) -> None:
 @click.option("--auto-polarity/--no-auto-polarity", type=bool, default=False)
 @click.option("--power-pulse-length-seconds", type=float)
 @client()
-async def set_atx_power_switch_functionality(
+async def atx(
     client: Client,
     function: List[str],
     auto_polarity: bool,
@@ -446,13 +443,13 @@ async def set_atx_power_switch_functionality(
 @main.command(help="29 (0x1D): Enable/Disable and Reset the Watchdog")
 @click.argument("timeout_seconds", type=int)
 @client()
-async def configure_watchdog(client: Client, timeout_seconds: int) -> None:
+async def watchdog(client: Client, timeout_seconds: int) -> None:
     await client.configure_watchdog(timeout_seconds)
 
 
 @main.command(help="30 (0x1E): Read Reporting & Status")
 @client()
-async def read_status(client: Client) -> None:
+async def status(client: Client) -> None:
     status = await client.read_status()
 
     if hasattr(status, "temperature_sensors_enabled"):
@@ -501,12 +498,12 @@ async def send(client: Client, row: int, column: int, data: str) -> None:
 
 
 @main.command(help="33 (0x21): Set Baud Rate")
-def set_baud_rate() -> None:
+def baud() -> None:
     #
     # Setting the baud rate will more or less require updating the config
     # file. The correct behavior needs to be sussed out.
     #
-    raise NotImplementedError("crystalfontz set-baud-rate")
+    raise NotImplementedError("crystalfontz baud")
 
 
 @main.group(help="Interact with GPIO pins")
@@ -526,12 +523,12 @@ def read_gpio() -> None:
     raise NotImplementedError("crystalfontz gpio read")
 
 
-@main.group(help="Various effects")
+@main.group(help="Run various effects, such as marquees")
 def effects() -> None:
     pass
 
 
-@effects.command(help="Display a marquee animation")
+@effects.command(help="Display a marquee effect")
 @click.argument("row", type=int)
 @click.argument("text")
 @click.option("--pause", type=float)
@@ -545,7 +542,7 @@ async def marquee(
     await m.run()
 
 
-@effects.command(help="Display a screensaver-like animation")
+@effects.command(help="Display a screensaver-like effect")
 @click.argument("text")
 @click.option("--tick", type=float)
 @client()
