@@ -327,6 +327,7 @@ class Client(asyncio.Protocol):
     async def expect(self: Self, cls: Type[R]) -> R:
         q = self.subscribe(cls)
         exc, res = await q.get()
+        q.task_done()
         self.unsubscribe(cls, q)
         if exc:
             raise exc
@@ -537,11 +538,14 @@ class Client(asyncio.Protocol):
                 logging.debug(f"{name} background task encountered an exception: {exc}")
                 if not self.closed.done():
                     self.closed.set_exception(exc)
+                    queue.task_done()
                 else:
+                    queue.task_done()
                     raise exc
             elif report:
                 logging.debug(f"{name} background task is calling {handler.__name__}")
                 await handler(report)
+                queue.task_done()
             else:
                 raise CrystalfontzError(
                     "assert: result has either exception or response"
