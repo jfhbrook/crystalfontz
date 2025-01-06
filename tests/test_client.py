@@ -124,8 +124,6 @@ async def test_device_error_no_sub(client: Client) -> None:
     await asyncio.sleep(0.1)
 
     with pytest.raises(DeviceError):
-        client.close()
-
         await client.closed
 
 
@@ -146,6 +144,16 @@ async def test_response_decode_error(client: Client) -> None:
     client.close()
 
     await client.closed
+
+
+@pytest.mark.asyncio
+async def test_response_decode_error_no_sub(client: Client) -> None:
+    client._packet_received((0x64, b"oops!"))
+
+    await asyncio.sleep(0.1)
+
+    with pytest.raises(ResponseDecodeError):
+        await client.closed
 
 
 @pytest.mark.asyncio
