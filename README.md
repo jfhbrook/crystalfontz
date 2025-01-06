@@ -19,6 +19,7 @@ async def main():
         baud_rate=SLOW_BAUD_RATE
     ) as client:
         await client.send_data(0, 0, "Hello world!")
+        client.close()
 
 asyncio.run(main())
 ```
