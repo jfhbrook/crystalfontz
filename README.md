@@ -139,9 +139,7 @@ A lot of the functionality has been fleshed out. However, there are some issues:
 
 I use `uv` for managing dependencies, but also compile `requirements.txt` and `requirements_dev.txt` files that one can use instead. I also use `just` for task running, but if you don't have it installed you can run the commands manually.
 
-There *are* some unit tests in `pytest`, but they mostly target more complex cases of marshalling/unmarshalling and calculating packet CRCs. The bulk of testing involves setting up `crystalfontz` on the computer that has the CFA533, running an ad-hoc script, and seeing what it does.
-
-I have the start of an integration test framework in the [plusdeck](https://github.com/jfhbrook/plusdeck) project, that I'd like to spin out into a reusable package. If I get around to that, I'll likely implement a proper integration test suite for the Crystalfontz.
+There *are* some unit tests in `pytest`, but they mostly target more complex cases of marshalling/unmarshalling and calculating packet CRCs. The bulk of testing involves setting up `crystalfontz` on the computer that has the CFA533, running the `./tests/integration.sh` script, and seeing what it does.
 
 ### Issues
 
