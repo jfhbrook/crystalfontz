@@ -196,14 +196,13 @@ class Client(asyncio.Protocol):
         else:
             self._close()
 
-    async def close(self: Self) -> None:
+    def close(self: Self) -> None:
         """
         Close the connection.
         """
         if self._transport:
             self._transport.close()
         self._close()
-        return await self.closed()
 
     async def closed(self: Self) -> None:
         """

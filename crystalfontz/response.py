@@ -333,9 +333,7 @@ class TemperatureReport(Response):
         assert_len(4, data)
 
         self.idx: int = data[0]
-        # TODO: This should be data[1:3], but it's triggering an error case
-        # I want to fix graceful handling for first
-        value = struct.unpack(">H", data[1:2])[0]
+        value = struct.unpack(">H", data[1:3])[0]
         dow_crc_status = data[3]
 
         if dow_crc_status == 0:
