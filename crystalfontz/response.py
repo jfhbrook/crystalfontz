@@ -36,10 +36,11 @@ class Response(ABC):
     def from_packet(cls: Type[Self], packet: Packet) -> "Response":
         code, data = packet
         if code in RESPONSE_CLASSES:
+            res_cls = RESPONSE_CLASSES[code]
             try:
-                return RESPONSE_CLASSES[code](data)
+                return res_cls(data)
             except Exception as exc:
-                raise ResponseDecodeError(code, str(exc)) from exc
+                raise ResponseDecodeError(res_cls, str(exc)) from exc
 
         if DeviceError.is_error_code(code):
             raise DeviceError(packet)

@@ -43,9 +43,9 @@ class ResponseDecodeError(DecodeError):
     An error while decoding a response.
     """
 
-    def __init__(self: Self, code: int, message: str) -> None:
+    def __init__(self: Self, response_cls: Type[Any], message: str) -> None:
         super().__init__(message)
-        self.code: int = code
+        self.response_cls: Type[Any] = response_cls
 
 
 class EncodeError(CrystalfontzError):

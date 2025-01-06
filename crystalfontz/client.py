@@ -1,7 +1,20 @@
 import asyncio
 from collections import defaultdict
 import logging
-from typing import Any, cast, Dict, Iterable, List, Optional, Set, Type, TypeVar
+from typing import (
+    Any,
+    Callable,
+    cast,
+    Coroutine,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
 try:
     from typing import Self
@@ -51,7 +64,7 @@ from crystalfontz.command import (
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
 from crystalfontz.effects import Marquee, Screensaver
-from crystalfontz.error import ConnectionError
+from crystalfontz.error import ConnectionError, CrystalfontzError, ResponseDecodeError
 from crystalfontz.gpio import GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
@@ -97,6 +110,8 @@ from crystalfontz.temperature import TemperatureDisplayItem
 logger = logging.getLogger(__name__)
 
 R = TypeVar("R", bound=Response)
+Result = Tuple[Exception, None] | Tuple[None, R]
+ReportHandlerMethod = Callable[[R], Coroutine[None, None, None]]
 
 
 class Client(asyncio.Protocol):
@@ -118,8 +133,8 @@ class Client(asyncio.Protocol):
 
         self._lock: asyncio.Lock = asyncio.Lock()
         self._expect: Optional[Type[Response]] = None
-        self._queues: Dict[Type[Response], List[asyncio.Queue[Response]]] = defaultdict(
-            lambda: list()
+        self._queues: Dict[Type[Response], List[asyncio.Queue[Result[Response]]]] = (
+            defaultdict(lambda: list())
         )
 
     #
@@ -133,15 +148,23 @@ class Client(asyncio.Protocol):
         self._transport = transport
         self._running = True
 
-        self._key_activity_queue: asyncio.Queue[KeyActivityReport] = self.subscribe(
-            KeyActivityReport
+        self._key_activity_queue: asyncio.Queue[Result[KeyActivityReport]] = (
+            self.subscribe(KeyActivityReport)
         )
-        self._temperature_queue: asyncio.Queue[TemperatureReport] = self.subscribe(
-            TemperatureReport
+        self._temperature_queue: asyncio.Queue[Result[TemperatureReport]] = (
+            self.subscribe(TemperatureReport)
         )
 
-        asyncio.create_task(self._handle_key_activity())
-        asyncio.create_task(self._handle_temperature())
+        asyncio.create_task(
+            self._handle_report(
+                self._key_activity_queue, self._report_handler.on_key_activity
+            )
+        )
+        asyncio.create_task(
+            self._handle_report(
+                self._temperature_queue, self._report_handler.on_temperature
+            )
+        )
 
         self._connection_made.set_result(None)
 
@@ -156,33 +179,47 @@ class Client(asyncio.Protocol):
             self._close()
 
     async def close(self: Self) -> None:
-        self._running = False
+        """
+        Close the connection.
+        """
         if self._transport:
             self._transport.close()
         self._close()
         return await self.closed()
 
     async def closed(self: Self) -> None:
+        """
+        Wait for the client to be closed. If the client closes because of an exception,
+        that exception will be raised here.
+        """
         if not self._closed:
+            # If the method was called twice, reuse its exception
             self._closed = self._loop.create_future()
         if not self._running and not self._closed.done():
+            # If we weren't running in the first place, we're done
             self._closed.set_result(None)
         return await self._closed
 
+    # Internal method to close the connection, potentially due to an exception.
     def _close(self: Self, exc: Optional[Exception] = None) -> None:
+        self._running = False
         if not self._closed:
+            # If we didn't call self.closed(), then we have to shrug, raise any
+            # exception and call it a day.
             if exc:
                 raise exc
             return
 
         if self._closed.done():
+            # If we already resolved and this event fired in post, shrug similarly.
             if exc:
                 raise exc
+        elif exc:
+            # Set the exception so it raises when awaiting self.closed()
+            self._closed.set_exception(exc)
         else:
-            if exc:
-                self._closed.set_exception(exc)
-            else:
-                self._closed.set_result(None)
+            # We closed successfully, gj
+            self._closed.set_result(None)
 
     def data_received(self: Self, data: bytes) -> None:
         self._buffer += data
@@ -196,40 +233,60 @@ class Client(asyncio.Protocol):
             self._buffer = buff
 
     def _packet_received(self: Self, packet: Packet) -> None:
-        res = Response.from_packet(packet)
-        if type(res) in self._queues:
-            for q in self._queues[type(res)]:
-                q.put_nowait(res)
+        try:
+            res = Response.from_packet(packet)
+            raw_res = (
+                RawResponse.from_packet(packet) if RawResponse in self._queues else None
+            )
+        except ResponseDecodeError as exc:
+            # We know the intended response type, so send it to any subscribers
+            self._emit(exc.response_cls, (exc, None))
+        except Exception as exc:
+            self._close(exc)
+        else:
+            self._emit(type(res), (None, res))
+            if raw_res:
+                self._emit(RawResponse, (None, raw_res))
 
-        self._handle_raw_subscriptions(packet)
-
-    def _handle_raw_subscriptions(self: Self, packet: Packet) -> None:
-        if RawResponse in self._queues:
-            raw_res = RawResponse.from_packet(packet)
-            for q in self._queues[RawResponse]:
-                q.put_nowait(raw_res)
+    def _emit(self: Self, response_cls: Type[Response], item: Result[Response]) -> None:
+        if response_cls in self._queues:
+            for q in self._queues[response_cls]:
+                q.put_nowait(item)
+        elif item[0]:
+            # If we emit a response in a forest and nobody's around to hear it,
+            # shut it down and let close handle the exception
+            self._close(item[0])
 
     #
     # Event subscriptions
     #
 
-    def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[R]:
-        q: asyncio.Queue[R] = asyncio.Queue()
-        self._queues[cast(Type[Response], cls)].append(cast(asyncio.Queue[Response], q))
+    def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[Result[R]]:
+        q: asyncio.Queue[Result[R]] = asyncio.Queue()
+        key = cast(Type[Response], cls)
+        value = cast(asyncio.Queue[Result[Response]], q)
+        self._queues[key].append(value)
         return q
 
-    def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[R]) -> None:
+    def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[Result[R]]) -> None:
         key = cast(Type[Response], cls)
-        self._queues[key] = cast(
-            List[asyncio.Queue[Response]],
-            [q_ for q_ in self._queues[key] if q_ != cast(asyncio.Queue[Response], q)],
-        )
+        value = [
+            q_
+            for q_ in self._queues[key]
+            if q_ != cast(asyncio.Queue[Result[Response]], q)
+        ]
+        cast(List[asyncio.Queue[Result[Response]]], value)
+        self._queues[key] = cast(List[asyncio.Queue[Result[Response]]], value)
 
     async def expect(self: Self, cls: Type[R]) -> R:
         q = self.subscribe(cls)
-        res = await q.get()
+        exc, res = await q.get()
         self.unsubscribe(cls, q)
-        return res
+        if exc:
+            raise exc
+        elif res:
+            return res
+        raise CrystalfontzError("assert: result has either exception or response")
 
     #
     # Commands
@@ -416,21 +473,26 @@ class Client(asyncio.Protocol):
     # Report handlers
     #
 
-    async def _handle_key_activity(self: Self) -> None:
+    async def _handle_report(
+        self: Self, queue: asyncio.Queue[Result[R]], handler: ReportHandlerMethod
+    ) -> None:
         while True:
             if not self._running:
                 return
 
-            report = await self._key_activity_queue.get()
-            await self._report_handler.on_key_activity(report)
+            exc, report = await queue.get()
 
-    async def _handle_temperature(self: Self) -> None:
-        while True:
-            if not self._running:
-                return
-
-            report = await self._temperature_queue.get()
-            await self._report_handler.on_temperature(report)
+            if exc:
+                if self._closed and not self._closed.done():
+                    self._closed.set_exception(exc)
+                else:
+                    raise exc
+            elif report:
+                await handler(report)
+            else:
+                raise CrystalfontzError(
+                    "assert: result has either exception or response"
+                )
 
     #
     # Effects
