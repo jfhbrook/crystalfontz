@@ -7,9 +7,8 @@ import pytest_asyncio
 from serial_asyncio import SerialTransport
 
 from crystalfontz.client import Client
-from crystalfontz.command import Ping
 from crystalfontz.device import CFA533, Device
-from crystalfontz.error import DeviceError, ResponseDecodeError
+from crystalfontz.error import DeviceError, ResponseDecodeError, UnknownResponseError
 from crystalfontz.packet import Packet
 from crystalfontz.report import ReportHandler
 from crystalfontz.response import KeyActivityReport, Pong
@@ -79,6 +78,14 @@ async def test_ping_success(client: Client) -> None:
     client.close()
 
     await client.closed
+
+
+@pytest.mark.asyncio
+async def test_unknown_response(client: Client) -> None:
+    client._packet_received((0x00, b"wat"))
+
+    with pytest.raises(UnknownResponseError):
+        await client.closed
 
 
 @pytest.mark.parametrize(
