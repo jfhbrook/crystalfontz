@@ -44,6 +44,7 @@ dev = [
     "flake8",
     "flake8-black",
     "pytest",
+    "pytest-asyncio",
     "black",
     "isort",
     "jupyter-console",
@@ -56,16 +57,17 @@ dev = [
 # Specified for the benefit of compiling requirements-dev.txt
 [project.optional-dependencies]
 dev = [
-  "flake8",
-  "flake8-black",
-  "pytest",
-  "black",
-  "isort",
-  "jupyter-console",
-  "mkdocs",
-  "mkdocs-bootstrap386",
-  "mkdocstrings[python]",
-  "validate-pyproject[all]",
+    "flake8",
+    "flake8-black",
+    "pytest",
+    "pytest-asyncio",
+    "black",
+    "isort",
+    "jupyter-console",
+    "mkdocs",
+    "mkdocs-bootstrap386",
+    "mkdocstrings[python]",
+    "validate-pyproject[all]",
 ]
 
 [tool.uv]
