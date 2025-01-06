@@ -1,6 +1,7 @@
 import asyncio
 from collections import defaultdict
 import logging
+import traceback
 from typing import (
     Any,
     Callable,
@@ -13,8 +14,10 @@ from typing import (
     Set,
     Tuple,
     Type,
+    TypeGuard,
     TypeVar,
 )
+import warnings
 
 try:
     from typing import Self
@@ -147,8 +150,13 @@ class Client(asyncio.Protocol):
     # pyserial callbacks
     #
 
-    def connection_made(self: Self, transport) -> None:
-        if not isinstance(transport, SerialTransport):
+    def _is_serial_transport(
+        self: Self, transport: asyncio.BaseTransport
+    ) -> TypeGuard[SerialTransport]:
+        return isinstance(transport, SerialTransport)
+
+    def connection_made(self: Self, transport: asyncio.BaseTransport) -> None:
+        if not self._is_serial_transport(transport):
             raise ConnectionError("Transport is not a SerialTransport")
 
         self._transport = transport
@@ -161,12 +169,12 @@ class Client(asyncio.Protocol):
             self.subscribe(TemperatureReport)
         )
 
-        asyncio.create_task(
+        self._key_activity_task: asyncio.Task[None] = asyncio.create_task(
             self._handle_report(
                 self._key_activity_queue, self._report_handler.on_key_activity
             )
         )
-        asyncio.create_task(
+        self._temperature_task: asyncio.Task[None] = asyncio.create_task(
             self._handle_report(
                 self._temperature_queue, self._report_handler.on_temperature
             )
@@ -209,23 +217,55 @@ class Client(asyncio.Protocol):
     # Internal method to close the connection, potentially due to an exception.
     def _close(self: Self, exc: Optional[Exception] = None) -> None:
         self._running = False
-        if not self._closed:
-            # If we didn't call self.closed(), then we have to shrug, raise any
-            # exception and call it a day.
+
+        # A clean exit requires that we cancel these tasks and then wait
+        # for them to finish before killing the event loop
+        self._key_activity_task.cancel()
+        self._temperature_task.cancel()
+
+        tasks_done = asyncio.gather(self._key_activity_task, self._temperature_task)
+
+        def finish() -> None:
+            # Tasks successfully closed. Resolve the future if we have it,
+            # otherwise raise.
+            if not self._closed or self._closed.done():
+                if exc:
+                    raise exc
+            elif exc:
+                self._closed.set_exception(exc)
+            else:
+                self._closed.set_result(None)
+
+        def on_tasks_done(_: asyncio.Future[Tuple[None, None]]) -> None:
+            nonlocal exc
+            task_exc = tasks_done.exception()
+            try:
+                # The tasks should have failed with a CancelledError
+                if task_exc:
+                    raise task_exc
+            except asyncio.CancelledError:
+                # This error is expected, wrap it up
+                finish()
+            except Exception as task_exc:
+                # An unexpected error of some kind was raised by the tasks.
+                # Do our best to handle them...
+                if exc:
+                    # We have two exceptions. We don't want to mask the
+                    # exception that actually caused us to close, so we
+                    # warn and hope for the best.
+                    warnings.warn(traceback.format_exc())
+                else:
+                    # This is our new exception.
+                    exc = task_exc
+                finish()
+
+        tasks_done.add_done_callback(on_tasks_done)
+
+        if not self._closed or self._closed.done():
+            # No way to resolve a future.
             if exc:
                 raise exc
             return
-
-        if self._closed.done():
-            # If we already resolved and this event fired in post, shrug similarly.
-            if exc:
-                raise exc
-        elif exc:
-            # Set the exception so it raises when awaiting self.closed()
-            self._closed.set_exception(exc)
-        else:
-            # We closed successfully, gj
-            self._closed.set_result(None)
 
     def data_received(self: Self, data: bytes) -> None:
         try:
