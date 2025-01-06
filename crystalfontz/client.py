@@ -1,9 +1,11 @@
 import asyncio
 from collections import defaultdict
+from contextlib import asynccontextmanager
 import logging
 import traceback
 from typing import (
     Any,
+    AsyncGenerator,
     Callable,
     cast,
     Coroutine,
@@ -611,3 +613,30 @@ async def create_connection(
     await client._connection_made
 
     return client
+
+
+@asynccontextmanager
+async def client(
+    port: str,
+    model: str = "CFA533",
+    hardware_rev: Optional[str] = None,
+    firmware_rev: Optional[str] = None,
+    device: Optional[Device] = None,
+    report_handler: Optional[ReportHandler] = None,
+    loop: Optional[asyncio.AbstractEventLoop] = None,
+    baud_rate: BaudRate = 19200,
+) -> AsyncGenerator[Client, None]:
+    client = await create_connection(
+        port,
+        model=model,
+        hardware_rev=hardware_rev,
+        firmware_rev=firmware_rev,
+        device=device,
+        report_handler=report_handler,
+        loop=loop,
+        baud_rate=baud_rate,
+    )
+
+    yield client
+
+    await client.closed()

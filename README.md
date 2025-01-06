@@ -9,18 +9,16 @@ Here's a basic example:
 ```py
 import asyncio
 
-from crystalfontz import create_connection, SLOW_BAUD_RATE
+from crystalfontz import client, SLOW_BAUD_RATE
 
 
 async def main():
-    client = await create_connection(
+    async with client(
         "/dev/ttyUSB0",
         model="CFA533",
         baud_rate=SLOW_BAUD_RATE
-    )
-
-    await client.send_data(0, 0, "Hello world!")
-
+    ) as client:
+        await client.send_data(0, 0, "Hello world!")
 
 asyncio.run(main())
 ```
@@ -39,14 +37,13 @@ import asyncio
 from crystalfontz import create_connection, LoggingReportHandler, SLOW_BAUD_RATE
 
 async def main():
-    client = await create_connection(
+    async with client(
         "/dev/ttyUSB0",
         model="CFA533",
-        baud_rate=SLOW_BAUD_RATE,
-        report_handler=LoggingReportHandler()
-    )
-
-    await client.closed()
+        report_handler=LoggingReportHandler(),
+        baud_rate=SLOW_BAUD_RATE
+    ) as client:
+        pass
 
 
 asyncio.run(main())
