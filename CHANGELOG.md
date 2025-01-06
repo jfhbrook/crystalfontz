@@ -33,8 +33,9 @@ yyyy/mm/dd Version 2.0.0
 - Watchdog CLI argument allows "disable" and "disabled" values
 - Configure device model, hardware revision and firmware revison in CLI
 - Do not show stack trace on connection errors in CLI
-- Add `client.closed()`
-- Handle errors by surfacing them either in the command calls or through `client.closed()`
+- Add `client.closed` future
+- Handle errors by surfacing them either in the command calls or through `client.closed`
+- Add `client` async contextmanager that awaits `client.closed`
 
 2025/01/04 Version 1.0.0
 ------------------------
