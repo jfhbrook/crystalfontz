@@ -8,8 +8,10 @@ from serial_asyncio import SerialTransport
 
 from crystalfontz.client import Client
 from crystalfontz.device import CFA533, Device
+from crystalfontz.error import DeviceError, ResponseDecodeError
 from crystalfontz.packet import Packet
 from crystalfontz.report import ReportHandler
+from crystalfontz.response import KeyActivityReport
 
 logging.basicConfig(level="DEBUG")
 
@@ -66,3 +68,20 @@ async def test_report_handler(
     await client.closed
 
     getattr(report_handler, method).assert_called()
+
+
+@pytest.mark.parametrize(
+    "exc",
+    [
+        DeviceError(packet=(0b11000000 ^ 0x80, b"")),
+        ResponseDecodeError(response_cls=KeyActivityReport, message="oops!"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_report_handler_exception(
+    client: Client, report_handler: ReportHandler, exc: Exception
+) -> None:
+    client._emit(KeyActivityReport, (exc, None))
+
+    with pytest.raises(exc.__class__):
+        await client.closed
