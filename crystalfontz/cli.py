@@ -49,6 +49,9 @@ class Obj:
     config: Config
     global_: bool
     port: str
+    model: str
+    hardware_rev: Optional[str]
+    firmware_rev: Optional[str]
     baud_rate: BaudRate
 
 
@@ -103,6 +106,23 @@ WATCHDOG_SETTING = WatchdogSetting()
     help="The serial port the Crystalfontz LCD is connected to",
 )
 @click.option(
+    "--model",
+    envvar="CRYSTALFONTZ_MODEL",
+    help="The model of Crystalfontz device",
+    type=click.Choice(["CFA533", "CFA633"]),
+    default="CFA533",
+)
+@click.option(
+    "--hardware-rev",
+    envvar="CRYSTALFONTZ_HARDWARE_REV",
+    help="The hardware revision of the Crystalfontz device",
+)
+@click.option(
+    "--firmware-rev",
+    envvar="CRYSTALFONTZ_FIRMWARE_REV",
+    help="The firmware revision of the Crystalfontz device",
+)
+@click.option(
     "--baud",
     type=click.Choice([str(SLOW_BAUD_RATE), str(FAST_BAUD_RATE)]),
     envvar="CRYSTALFONTZ_BAUD_RATE",
@@ -114,6 +134,9 @@ def main(
     global_: bool,
     log_level: LogLevel,
     port: Optional[str],
+    model: str,
+    hardware_rev: Optional[str],
+    firmware_rev: Optional[str],
     baud: Optional[str],
 ) -> None:
     baud_rate = cast(Optional[BaudRate], int(baud) if baud else None)
@@ -122,6 +145,9 @@ def main(
         config=config,
         global_=global_,
         port=port or config.port,
+        model=model or config.model,
+        hardware_rev=hardware_rev or config.hardware_rev,
+        firmware_rev=firmware_rev or config.firmware_rev,
         baud_rate=baud_rate or config.baud_rate,
     )
 
@@ -142,11 +168,19 @@ def client(
         @functools.wraps(fn)
         def wrapped(ctx: click.Context, *args, **kwargs) -> None:
             port: str = ctx.obj.port
+            model = ctx.obj.model
+            hardware_rev = ctx.obj.hardware_rev
+            firmware_rev = ctx.obj.firmware_rev
             baud_rate: BaudRate = ctx.obj.baud_rate
 
             async def main() -> None:
                 client: Client = await create_connection(
-                    port, report_handler=report_handler_cls(), baud_rate=baud_rate
+                    port,
+                    model=model,
+                    hardware_rev=hardware_rev,
+                    firmware_rev=firmware_rev,
+                    report_handler=report_handler_cls(),
+                    baud_rate=baud_rate,
                 )
                 await fn(client, *args, **kwargs)
 

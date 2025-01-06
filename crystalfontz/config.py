@@ -66,6 +66,13 @@ class Config:
     port: str = field(
         default_factory=default_port, metadata=_metadata(env_var="CRYSTALFONTZ_PORT")
     )
+    model: str = field(default="CFA533", metadata=_metadata("CRYSTALFONTZ_MODEL"))
+    hardware_rev: Optional[str] = field(
+        default=None, metadata=_metadata(env_var="CRYSTALFONTZ_HARDWARE_REV")
+    )
+    firmware_rev: Optional[str] = field(
+        default=None, metadata=_metadata(env_var="CRYSTALFONTZ_FIRMWARE_REV")
+    )
     baud_rate: BaudRate = field(
         default=SLOW_BAUD_RATE, metadata=_metadata(env_var="CRYSTALFONTZ_BAUD_RATE")
     )
