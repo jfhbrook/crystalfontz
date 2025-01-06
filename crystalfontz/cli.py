@@ -16,6 +16,11 @@ from typing import (
     Type,
 )
 
+try:
+    from typing import Self
+except ImportError:
+    Self = Any
+
 import click
 
 from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
@@ -54,6 +59,28 @@ LogLevel = (
     | Literal["ERROR"]
     | Literal["CRITICAL"]
 )
+
+
+class Byte(click.IntRange):
+    name = "byte"
+
+    def __init__(self: Self) -> None:
+        super().__init__(min=0, max=255)
+
+
+class WatchdogSetting(Byte):
+    name = "watchdog_setting"
+
+    def convert(
+        self, value: str, param: Optional[click.Parameter], ctx: Optional[click.Context]
+    ) -> int:
+        if value == "disable" or value == "disabled":
+            return 0
+        return super().convert(value, param, ctx)
+
+
+BYTE = Byte()
+WATCHDOG_SETTING = WatchdogSetting()
 
 
 @click.group(help="Control your Crystalfontz LCD")
@@ -262,7 +289,7 @@ def lcd() -> None:
 
 
 @lcd.command(name="poke", help="10 (0x0A): Read 8 Bytes of LCD Memory")
-@click.argument("address", type=int)
+@click.argument("address", type=BYTE)
 @client()
 async def read_lcd_memory(client: Client, address: int) -> None:
     memory = await client.read_lcd_memory(address)
@@ -275,8 +302,8 @@ def cursor() -> None:
 
 
 @cursor.command(name="position", help="11 (0x0B): Set LCD Cursor Position")
-@click.argument("row", type=int)
-@click.argument("column", type=int)
+@click.argument("row", type=BYTE)
+@click.argument("column", type=BYTE)
 @client()
 async def set_cursor_position(client: Client, row: int, column: int) -> None:
     await client.set_cursor_position(row, column)
@@ -310,7 +337,7 @@ def dow() -> None:
 
 
 @dow.command(name="info", help="18 (0x12): Read DOW Device Information")
-@click.argument("index", type=int)
+@click.argument("index", type=BYTE)
 @client()
 async def read_dow_device_information(client: Client, index: int) -> None:
     info = await client.read_dow_device_information(index)
@@ -330,8 +357,8 @@ async def setup_temperature_reporting(client: Client, enabled: Tuple[int]) -> No
 
 
 @dow.command(name="transaction", help="20 (0x14): Arbitrary DOW Transaction")
-@click.argument("index", type=int)
-@click.argument("bytes_to_read", type=int)
+@click.argument("index", type=BYTE)
+@click.argument("bytes_to_read", type=BYTE)
 @click.option("--data_to_write")
 def dow_transaction() -> None:
     #
@@ -341,11 +368,11 @@ def dow_transaction() -> None:
 
 
 @temperature.command(name="display", help="21 (0x15): Set Up Live Temperature Display")
-@click.argument("slot", type=int)
-@click.argument("index", type=int)
+@click.argument("slot", type=BYTE)
+@click.argument("index", type=BYTE)
 @click.option("--n-digits", "-n", type=click.Choice(["3", "5"]), required=True)
-@click.option("--column", "-c", type=int, required=True)
-@click.option("--row", "-r", type=int, required=True)
+@click.option("--column", "-c", type=BYTE, required=True)
+@click.option("--row", "-r", type=BYTE, required=True)
 @click.option("--units", "-U", type=click.Choice([e.name for e in TemperatureUnit]))
 @client()
 async def setup_live_temperature_display(
@@ -371,7 +398,7 @@ async def setup_live_temperature_display(
 
 @lcd.command(name="send", help="22 (0x16): Send Command Directly to the LCD Controller")
 @click.argument("location", type=click.Choice([e.name for e in LcdRegister]))
-@click.argument("data", type=int)
+@click.argument("data", type=BYTE)
 @client()
 async def send_command_to_lcd_controler(
     client: Client, location: str, data: int
@@ -441,7 +468,7 @@ async def atx(
 
 
 @main.command(help="29 (0x1D): Enable/Disable and Reset the Watchdog")
-@click.argument("timeout_seconds", type=int)
+@click.argument("timeout_seconds", type=WATCHDOG_SETTING)
 @client()
 async def watchdog(client: Client, timeout_seconds: int) -> None:
     await client.configure_watchdog(timeout_seconds)
