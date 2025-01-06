@@ -64,7 +64,12 @@ from crystalfontz.command import (
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
 from crystalfontz.effects import Marquee, Screensaver
-from crystalfontz.error import ConnectionError, CrystalfontzError, ResponseDecodeError
+from crystalfontz.error import (
+    ConnectionError,
+    CrystalfontzError,
+    DeviceError,
+    ResponseDecodeError,
+)
 from crystalfontz.gpio import GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
@@ -96,6 +101,7 @@ from crystalfontz.response import (
     PowerResponse,
     RawResponse,
     Response,
+    RESPONSE_CLASSES,
     SpecialCharacterDataSet,
     StatusRead,
     TemperatureReport,
@@ -241,6 +247,11 @@ class Client(asyncio.Protocol):
         except ResponseDecodeError as exc:
             # We know the intended response type, so send it to any subscribers
             self._emit(exc.response_cls, (exc, None))
+        except DeviceError as exc:
+            if exc.expected in RESPONSE_CLASSES:
+                self._emit(RESPONSE_CLASSES[exc.expected], (exc, None))
+            else:
+                self._close(exc)
         except Exception as exc:
             self._close(exc)
         else:
