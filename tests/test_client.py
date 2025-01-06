@@ -67,7 +67,7 @@ async def test_close_exc(client: Client) -> None:
 @pytest.mark.asyncio
 async def test_ping_success(client: Client) -> None:
     q = client.subscribe(Pong)
-    client._packet_received((0x00, b"ping!"))
+    client._packet_received((0x40, b"ping!"))
     async with asyncio.timeout(0.2):
         exc, res = await q.get()
     client.unsubscribe(Pong, q)

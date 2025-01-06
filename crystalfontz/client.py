@@ -273,6 +273,7 @@ class Client(asyncio.Protocol):
             self._close(exc)
 
     def _packet_received(self: Self, packet: Packet) -> None:
+        logging.debug(f"Packet received: {packet}")
         try:
             res = Response.from_packet(packet)
             raw_res = (
