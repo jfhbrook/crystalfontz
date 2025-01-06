@@ -118,6 +118,18 @@ async def test_device_error(client: Client) -> None:
 
 
 @pytest.mark.asyncio
+async def test_device_error_no_sub(client: Client) -> None:
+    client._packet_received((0b11000000, b"ping!"))
+
+    await asyncio.sleep(0.1)
+
+    with pytest.raises(DeviceError):
+        client.close()
+
+        await client.closed
+
+
+@pytest.mark.asyncio
 async def test_response_decode_error(client: Client) -> None:
     q = client.subscribe(BrokenResponse)
     client._packet_received((0x64, b"oops!"))
