@@ -1,4 +1,4 @@
-yyyy/mm/dd Version x.y.z
+yyyy/mm/dd Version 2.0.0
 ------------------------
 - Updated README.md
 - Expose `pause` argument in client and CLI
@@ -29,6 +29,8 @@ yyyy/mm/dd Version x.y.z
   - `configure-watchdog` -> `watchdog`
   - `read-status` -> `status`
   - `set-baud-rate` -> `baud`
+- Byte CLI arguments are validated as being in range
+- Watchdog CLI argument allows "disable" and "disabled" values
 
 2025/01/04 Version 1.0.0
 ------------------------
