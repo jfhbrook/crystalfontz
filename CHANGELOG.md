@@ -31,6 +31,7 @@ yyyy/mm/dd Version 2.0.0
   - `set-baud-rate` -> `baud`
 - Byte CLI arguments are validated as being in range
 - Watchdog CLI argument allows "disable" and "disabled" values
+- Configure device model, hardware revision and firmware revison in CLI
 
 2025/01/04 Version 1.0.0
 ------------------------
