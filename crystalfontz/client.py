@@ -121,10 +121,14 @@ from crystalfontz.temperature import TemperatureDisplayItem
 
 logger = logging.getLogger(__name__)
 
-# 250ms, as per the docs. We could add more to account for Linux and Python
-# overhead, but the Python overhead is on the order of fractions of a
-# millisecond so I'm not worried.
+# 250ms, as per the CFA533 docs. We could add more to account for Linux and Python
+# overhead, but the Python overhead is on the order of fractions of a millisecond
+# so I'm not worried.
 DEFAULT_TIMEOUT = 0.250
+
+# The CFA533 docs suggest retrying, but don't prescribe a particular amount. In
+# practice, the CFA533 has proven *very* reliable, so I don't retrying by default
+# is necessary.
 DEFAULT_RETRY_TIMES = 0
 
 R = TypeVar("R", bound=Response)
