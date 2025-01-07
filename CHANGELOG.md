@@ -1,3 +1,9 @@
+yyyy/mm/dd Version x.y.z
+------------------------
+
+- Add response `timeout` option with 250ms default and per-method overrides
+- Add response `retry_times` option with 0 default and per-method overrides
+
 2025/01/06 Version 2.0.0
 ------------------------
 - API changes:
