@@ -532,19 +532,23 @@ async def poll_keypad(client: Client) -> None:
     default=False,
     help="Whether or not to automatically detect polarity for reset and power",
 )
-@click.option("--power-pulse-length-seconds", type=float)
+@click.option(
+    "--power-pulse-length",
+    type=float,
+    help="Length of power on and off pulses in seconds",
+)
 @pass_client()
 async def atx(
     client: Client,
     function: List[str],
     auto_polarity: bool,
-    power_pulse_length_seconds: Optional[float],
+    power_pulse_length: Optional[float],
 ) -> None:
     await client.set_atx_power_switch_functionality(
         AtxPowerSwitchFunctionalitySettings(
             functions={AtxPowerSwitchFunction[name] for name in function},
             auto_polarity=auto_polarity,
-            power_pulse_length_seconds=power_pulse_length_seconds,
+            power_pulse_length_seconds=power_pulse_length,
         )
     )
 
