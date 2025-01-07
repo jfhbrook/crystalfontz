@@ -125,6 +125,7 @@ logger = logging.getLogger(__name__)
 # overhead, but the Python overhead is on the order of fractions of a
 # millisecond so I'm not worried.
 DEFAULT_TIMEOUT = 0.250
+DEFAULT_RETRY_TIMES = 0
 
 R = TypeVar("R", bound=Response)
 Result = Tuple[Exception, None] | Tuple[None, R]
@@ -880,7 +881,7 @@ async def create_connection(
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
     timeout: float = DEFAULT_TIMEOUT,
-    retry_times: int = 0,
+    retry_times: int = DEFAULT_RETRY_TIMES,
     loop: Optional[asyncio.AbstractEventLoop] = None,
     baud_rate: BaudRate = SLOW_BAUD_RATE,
 ) -> Client:
@@ -924,7 +925,7 @@ async def client(
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
     timeout: float = DEFAULT_TIMEOUT,
-    retry_times: int = 0,
+    retry_times: int = DEFAULT_RETRY_TIMES,
     loop: Optional[asyncio.AbstractEventLoop] = None,
     baud_rate: BaudRate = SLOW_BAUD_RATE,
 ) -> AsyncGenerator[Client, None]:

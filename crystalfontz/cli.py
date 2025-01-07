@@ -54,6 +54,8 @@ class Obj:
     model: str
     hardware_rev: Optional[str]
     firmware_rev: Optional[str]
+    timeout: Optional[float]
+    retry_times: Optional[int]
     baud_rate: BaudRate
 
 
@@ -88,7 +90,7 @@ BYTE = Byte()
 WATCHDOG_SETTING = WatchdogSetting()
 
 
-@click.group(help="Control your Crystalfontz LCD")
+@click.group(help="Control your Crystalfontz device")
 @click.option(
     "--global/--no-global",
     "global_",
@@ -105,7 +107,7 @@ WATCHDOG_SETTING = WatchdogSetting()
 @click.option(
     "--port",
     envvar="CRYSTALFONTZ_PORT",
-    help="The serial port the Crystalfontz LCD is connected to",
+    help="The serial port the Crystalfontz device is connected to",
 )
 @click.option(
     "--model",
@@ -125,6 +127,18 @@ WATCHDOG_SETTING = WatchdogSetting()
     help="The firmware revision of the Crystalfontz device",
 )
 @click.option(
+    "--timeout",
+    type=float,
+    envvar="CRYSTALFONTZ_TIMEOUT",
+    help="How long to wait for a response from the device before timing out",
+)
+@click.option(
+    "--retry-times",
+    type=int,
+    envvar="CRYSTALFONTZ_RETRY_TIMES",
+    help="How many times to retry a command if a response times out",
+)
+@click.option(
     "--baud",
     type=click.Choice([str(SLOW_BAUD_RATE), str(FAST_BAUD_RATE)]),
     envvar="CRYSTALFONTZ_BAUD_RATE",
@@ -139,6 +153,8 @@ def main(
     model: str,
     hardware_rev: Optional[str],
     firmware_rev: Optional[str],
+    timeout: Optional[float],
+    retry_times: Optional[int],
     baud: Optional[str],
 ) -> None:
     baud_rate = cast(Optional[BaudRate], int(baud) if baud else None)
@@ -150,6 +166,8 @@ def main(
         model=model or config.model,
         hardware_rev=hardware_rev or config.hardware_rev,
         firmware_rev=firmware_rev or config.firmware_rev,
+        timeout=timeout or config.timeout,
+        retry_times=retry_times if retry_times is not None else config.retry_times,
         baud_rate=baud_rate or config.baud_rate,
     )
 
@@ -173,6 +191,8 @@ def pass_client(
             model = ctx.obj.model
             hardware_rev = ctx.obj.hardware_rev
             firmware_rev = ctx.obj.firmware_rev
+            timeout = ctx.obj.timeout
+            retry_times = ctx.obj.retry_times
             baud_rate: BaudRate = ctx.obj.baud_rate
 
             async def main() -> None:
@@ -183,6 +203,8 @@ def pass_client(
                         hardware_rev=hardware_rev,
                         firmware_rev=firmware_rev,
                         report_handler=report_handler_cls(),
+                        timeout=timeout,
+                        retry_times=retry_times,
                         baud_rate=baud_rate,
                     )
                 except SerialException as exc:
