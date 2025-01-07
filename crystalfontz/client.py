@@ -207,14 +207,14 @@ class Client(asyncio.Protocol):
             self.subscribe(TemperatureReport)
         )
 
-        self._key_activity_task: asyncio.Task[None] = asyncio.create_task(
+        self._key_activity_task: asyncio.Task[None] = self._loop.create_task(
             self._handle_report(
                 "key_activity",
                 self._key_activity_queue,
                 self._report_handler.on_key_activity,
             )
         )
-        self._temperature_task: asyncio.Task[None] = asyncio.create_task(
+        self._temperature_task: asyncio.Task[None] = self._loop.create_task(
             self._handle_report(
                 "temperature",
                 self._temperature_queue,
