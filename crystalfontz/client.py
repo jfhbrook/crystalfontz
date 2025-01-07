@@ -376,10 +376,18 @@ class Client(asyncio.Protocol):
     # Commands
     #
 
-    async def send_command(self: Self, command: Command, response_cls: Type[R]) -> R:
+    async def send_command(
+        self: Self,
+        command: Command,
+        response_cls: Type[R],
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> R:
         async with self._lock:
             self.send_packet(command.to_packet())
-            return await self.expect(response_cls)
+            return await self.expect(
+                response_cls, timeout=timeout, retry_times=retry_times
+            )
 
     def send_packet(self: Self, packet: Packet) -> None:
         if not self._transport:
@@ -387,153 +395,374 @@ class Client(asyncio.Protocol):
         buff = serialize_packet(packet)
         self._transport.write(buff)
 
-    async def ping(self: Self, payload: bytes) -> Pong:
-        return await self.send_command(Ping(payload), Pong)
+    async def ping(
+        self: Self,
+        payload: bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> Pong:
+        return await self.send_command(
+            Ping(payload), Pong, timeout=timeout, retry_times=retry_times
+        )
 
-    async def versions(self: Self) -> Versions:
-        return await self.send_command(GetVersions(), Versions)
+    async def versions(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> Versions:
+        return await self.send_command(
+            GetVersions(), Versions, timeout=timeout, retry_times=retry_times
+        )
 
-    async def load_device(self: Self) -> None:
-        versions = await self.versions()
+    async def load_device(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> None:
+        versions = await self.versions(timeout=timeout, retry_times=retry_times)
         self.device = lookup_device(
             versions.model, versions.hardware_rev, versions.firmware_rev
         )
 
-    async def write_user_flash_area(self: Self, data: bytes) -> UserFlashAreaWritten:
-        return await self.send_command(WriteUserFlashArea(data), UserFlashAreaWritten)
+    async def write_user_flash_area(
+        self: Self,
+        data: bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> UserFlashAreaWritten:
+        return await self.send_command(
+            WriteUserFlashArea(data),
+            UserFlashAreaWritten,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
 
-    async def read_user_flash_area(self: Self) -> UserFlashAreaRead:
-        return await self.send_command(ReadUserFlashArea(), UserFlashAreaRead)
+    async def read_user_flash_area(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> UserFlashAreaRead:
+        return await self.send_command(
+            ReadUserFlashArea(),
+            UserFlashAreaRead,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
 
-    async def store_boot_state(self: Self) -> BootStateStored:
-        return await self.send_command(StoreBootState(), BootStateStored)
+    async def store_boot_state(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> BootStateStored:
+        return await self.send_command(
+            StoreBootState(), BootStateStored, timeout=timeout, retry_times=retry_times
+        )
 
-    async def reboot_lcd(self: Self) -> PowerResponse:
-        return await self.send_command(RebootLCD(), PowerResponse)
+    async def reboot_lcd(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> PowerResponse:
+        return await self.send_command(
+            RebootLCD(), PowerResponse, timeout=timeout, retry_times=retry_times
+        )
 
-    async def reset_host(self: Self) -> PowerResponse:
+    async def reset_host(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> PowerResponse:
         await self.send_command(ResetHost(), PowerResponse)
-        return await self.expect(PowerResponse)
+        return await self.expect(
+            PowerResponse, timeout=timeout, retry_times=retry_times
+        )
 
-    async def shutdown_host(self: Self) -> PowerResponse:
-        return await self.send_command(ShutdownHost(), PowerResponse)
+    async def shutdown_host(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> PowerResponse:
+        return await self.send_command(
+            ShutdownHost(), PowerResponse, timeout=timeout, retry_times=retry_times
+        )
 
-    async def clear_screen(self: Self) -> ClearedScreen:
-        return await self.send_command(ClearScreen(), ClearedScreen)
+    async def clear_screen(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> ClearedScreen:
+        return await self.send_command(
+            ClearScreen(), ClearedScreen, timeout=timeout, retry_times=retry_times
+        )
 
-    async def set_line_1(self: Self, line: str | bytes) -> Line1Set:
-        return await self.send_command(SetLine1(line, self.device), Line1Set)
+    async def set_line_1(
+        self: Self,
+        line: str | bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> Line1Set:
+        return await self.send_command(
+            SetLine1(line, self.device),
+            Line1Set,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
 
-    async def set_line_2(self: Self, line: str | bytes) -> Line2Set:
-        return await self.send_command(SetLine2(line, self.device), Line2Set)
+    async def set_line_2(
+        self: Self,
+        line: str | bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> Line2Set:
+        return await self.send_command(
+            SetLine2(line, self.device),
+            Line2Set,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
 
     async def set_special_character_data(
-        self: Self, index: int, character: SpecialCharacter, as_: Optional[str] = None
+        self: Self,
+        index: int,
+        character: SpecialCharacter,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> SpecialCharacterDataSet:
         return await self.send_command(
             SetSpecialCharacterData(index, character, self.device),
             SpecialCharacterDataSet,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
-    def set_special_character_encoding(self: Self, character: str, index: int) -> None:
+    def set_special_character_encoding(
+        self: Self,
+        character: str,
+        index: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> None:
         self.device.character_rom.set_encoding(character, index)
 
-    async def read_lcd_memory(self: Self, address: int) -> LcdMemory:
-        return await self.send_command(ReadLcdMemory(address), LcdMemory)
-
-    async def set_cursor_position(
-        self: Self, row: int, column: int
-    ) -> CursorPositionSet:
+    async def read_lcd_memory(
+        self: Self,
+        address: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> LcdMemory:
         return await self.send_command(
-            SetCursorPosition(row, column, self.device), CursorPositionSet
+            ReadLcdMemory(address), LcdMemory, timeout=timeout, retry_times=retry_times
         )
 
-    async def set_cursor_style(self: Self, style: CursorStyle) -> CursorStyleSet:
-        return await self.send_command(SetCursorStyle(style), CursorStyleSet)
+    async def set_cursor_position(
+        self: Self,
+        row: int,
+        column: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> CursorPositionSet:
+        return await self.send_command(
+            SetCursorPosition(row, column, self.device),
+            CursorPositionSet,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
 
-    async def set_contrast(self: Self, contrast: float) -> ContrastSet:
-        return await self.send_command(SetContrast(contrast, self.device), ContrastSet)
+    async def set_cursor_style(
+        self: Self,
+        style: CursorStyle,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> CursorStyleSet:
+        return await self.send_command(
+            SetCursorStyle(style),
+            CursorStyleSet,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
+
+    async def set_contrast(
+        self: Self,
+        contrast: float,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> ContrastSet:
+        return await self.send_command(
+            SetContrast(contrast, self.device),
+            ContrastSet,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
 
     async def set_backlight(
-        self: Self, lcd_brightness: float, keypad_brightness: Optional[float] = None
+        self: Self,
+        lcd_brightness: float,
+        keypad_brightness: Optional[float] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> BacklightSet:
         return await self.send_command(
-            SetBacklight(lcd_brightness, keypad_brightness, self.device), BacklightSet
+            SetBacklight(lcd_brightness, keypad_brightness, self.device),
+            BacklightSet,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
     async def read_dow_device_information(
-        self: Self, index: int
+        self: Self,
+        index: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> DowDeviceInformation:
         return await self.send_command(
-            ReadDowDeviceInformation(index), DowDeviceInformation
+            ReadDowDeviceInformation(index),
+            DowDeviceInformation,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
     async def setup_temperature_reporting(
-        self: Self, enabled: Iterable[int]
+        self: Self,
+        enabled: Iterable[int],
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> TemperatureReportingSetUp:
         return await self.send_command(
-            SetupTemperatureReporting(enabled, self.device), TemperatureReportingSetUp
+            SetupTemperatureReporting(enabled, self.device),
+            TemperatureReportingSetUp,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
     async def dow_transaction(
-        self: Self, index: int, bytes_to_read: int, data_to_write: bytes
+        self: Self,
+        index: int,
+        bytes_to_read: int,
+        data_to_write: bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> DowTransactionResult:
         return await self.send_command(
-            DowTransaction(index, bytes_to_read, data_to_write), DowTransactionResult
+            DowTransaction(index, bytes_to_read, data_to_write),
+            DowTransactionResult,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
     async def setup_live_temperature_display(
-        self: Self, slot: int, item: TemperatureDisplayItem
+        self: Self,
+        slot: int,
+        item: TemperatureDisplayItem,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> LiveTemperatureDisplaySetUp:
         return await self.send_command(
             SetupLiveTemperatureDisplay(slot, item, self.device),
             LiveTemperatureDisplaySetUp,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
     async def send_command_to_lcd_controller(
-        self: Self, location: LcdRegister, data: int | bytes
+        self: Self,
+        location: LcdRegister,
+        data: int | bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> CommandSentToLcdController:
         return await self.send_command(
-            SendCommandToLcdController(location, data), CommandSentToLcdController
+            SendCommandToLcdController(location, data),
+            CommandSentToLcdController,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
     async def configure_key_reporting(
-        self: Self, when_pressed: Set[KeyPress], when_released: Set[KeyPress]
+        self: Self,
+        when_pressed: Set[KeyPress],
+        when_released: Set[KeyPress],
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> KeyReportingConfigured:
         return await self.send_command(
-            ConfigureKeyReporting(when_pressed, when_released), KeyReportingConfigured
+            ConfigureKeyReporting(when_pressed, when_released),
+            KeyReportingConfigured,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
-    async def poll_keypad(self: Self) -> KeypadPolled:
-        return await self.send_command(PollKeypad(), KeypadPolled)
+    async def poll_keypad(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> KeypadPolled:
+        return await self.send_command(
+            PollKeypad(), KeypadPolled, timeout=timeout, retry_times=retry_times
+        )
 
     async def set_atx_power_switch_functionality(
-        self: Self, settings: AtxPowerSwitchFunctionalitySettings
+        self: Self,
+        settings: AtxPowerSwitchFunctionalitySettings,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> AtxPowerSwitchFunctionalitySet:
         return await self.send_command(
-            SetAtxPowerSwitchFunctionality(settings), AtxPowerSwitchFunctionalitySet
+            SetAtxPowerSwitchFunctionality(settings),
+            AtxPowerSwitchFunctionalitySet,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
     async def configure_watchdog(
-        self: Self, timeout_seconds: int
+        self: Self,
+        timeout_seconds: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> WatchdogConfigured:
         return await self.send_command(
-            ConfigureWatchdog(timeout_seconds), WatchdogConfigured
+            ConfigureWatchdog(timeout_seconds),
+            WatchdogConfigured,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
-    async def read_status(self: Self) -> DeviceStatus:
-        res = await self.send_command(ReadStatus(), StatusRead)
+    async def read_status(
+        self: Self,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> DeviceStatus:
+        res = await self.send_command(
+            ReadStatus(), StatusRead, timeout=timeout, retry_times=retry_times
+        )
         return self.device.status(res.data)
 
     async def send_data(
-        self: Self, row: int, column: int, data: str | bytes
+        self: Self,
+        row: int,
+        column: int,
+        data: str | bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> DataSent:
         return await self.send_command(
-            SendData(row, column, data, self.device), DataSent
+            SendData(row, column, data, self.device),
+            DataSent,
+            timeout=timeout,
+            retry_times=retry_times,
         )
 
-    async def set_baud_rate(self: Self, baud_rate: BaudRate) -> BaudRateSet:
-        res = await self.send_command(SetBaudRate(baud_rate), BaudRateSet)
+    async def set_baud_rate(
+        self: Self,
+        baud_rate: BaudRate,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> BaudRateSet:
+        res = await self.send_command(
+            SetBaudRate(baud_rate),
+            BaudRateSet,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
         if not self._transport or not self._transport.serial:
             raise ConnectionError("Unable to set new baud rate")
         self._transport.serial.baudrate = baud_rate
@@ -547,11 +776,25 @@ class Client(asyncio.Protocol):
         index: int,
         output_state: int,
         settings: Optional[GpioSettings] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> GpioSet:
-        return await self.send_command(SetGpio(index, output_state, settings), GpioSet)
+        return await self.send_command(
+            SetGpio(index, output_state, settings),
+            GpioSet,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
 
-    async def read_gpio(self: Self, index: int) -> GpioRead:
-        return await self.send_command(ReadGpio(index), GpioRead)
+    async def read_gpio(
+        self: Self,
+        index: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> GpioRead:
+        return await self.send_command(
+            ReadGpio(index), GpioRead, timeout=timeout, retry_times=retry_times
+        )
 
     #
     # Report handlers
@@ -598,11 +841,35 @@ class Client(asyncio.Protocol):
         text: str,
         pause: Optional[float] = None,
         tick: Optional[float] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> Marquee:
-        return Marquee(row, text, client=self, pause=pause, tick=tick, loop=self._loop)
+        return Marquee(
+            row,
+            text,
+            client=self,
+            pause=pause,
+            tick=tick,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=self._loop,
+        )
 
-    def screensaver(self: Self, text: str, tick: Optional[float] = None) -> Screensaver:
-        return Screensaver(text, client=self, tick=tick, loop=self._loop)
+    def screensaver(
+        self: Self,
+        text: str,
+        tick: Optional[float] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> Screensaver:
+        return Screensaver(
+            text,
+            client=self,
+            tick=tick,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=self._loop,
+        )
 
 
 async def create_connection(
