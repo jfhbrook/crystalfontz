@@ -124,26 +124,25 @@ logger = logging.getLogger(__name__)
 R = TypeVar("R", bound=Response)
 Result = Tuple[Exception, None] | Tuple[None, R]
 ReportHandlerMethod = Callable[[R], Coroutine[None, None, None]]
-V = TypeVar(name="V")
+T = TypeVar(name="T")
 
 
 def retry(
-    fn: Callable[..., Coroutine[None, None, R]]
-) -> Callable[..., Coroutine[None, None, R]]:
+    fn: Callable[..., Coroutine[None, None, T]]
+) -> Callable[..., Coroutine[None, None, T]]:
     @functools.wraps(fn)
-    async def wrapper(self: "Client", *args, **kwargs) -> R:
+    async def wrapper(self: Any, *args, **kwargs) -> T:
         timeout: float = kwargs.get("timeout", self._default_timeout)
-        retry_times: int = kwargs.get("retry_times", self._default_retry_times)
-        n = retry_times
-        while n > 0:
+        times: int = kwargs.get("retry_times", self._default_retry_times)
+        while True:
             try:
                 async with asyncio.timeout(timeout):
-                    return await fn(*args, **kwargs)
-            except TimeoutError:
+                    return await fn(self, *args, **kwargs)
+            except TimeoutError as exc:
+                if not times:
+                    raise exc
+                times -= 1
                 continue
-
-        async with asyncio.timeout(timeout):
-            return await fn(*args, **kwargs)
 
     return wrapper
 
