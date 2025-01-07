@@ -16,6 +16,7 @@ from typing import (
     Tuple,
     Type,
 )
+import warnings
 
 try:
     from typing import Self
@@ -97,6 +98,7 @@ WATCHDOG_SETTING = WatchdogSetting()
     default=False,
     help=f"Load the global config file at {GLOBAL_FILE}",
 )
+@click.option("--config-file", "-C", type=click.Path(), help="A path to a config file")
 @click.option(
     "--log-level",
     envvar="CRYSTALFONTZ_LOG_LEVEL",
@@ -148,6 +150,7 @@ WATCHDOG_SETTING = WatchdogSetting()
 def main(
     ctx: click.Context,
     global_: bool,
+    config_file: Optional[str],
     log_level: LogLevel,
     port: Optional[str],
     model: str,
@@ -158,7 +161,16 @@ def main(
     baud: Optional[str],
 ) -> None:
     baud_rate = cast(Optional[BaudRate], int(baud) if baud else None)
-    config: Config = Config.from_file(file=GLOBAL_FILE if global_ else None)
+    file = None
+    if config_file:
+        if global_:
+            warnings.warn(
+                "--config-file is specified, so --global flag will be ignored."
+            )
+        file = config_file
+    elif global_:
+        file = GLOBAL_FILE
+    config: Config = Config.from_file(file=file)
     ctx.obj = Obj(
         config=config,
         global_=global_,
