@@ -109,24 +109,24 @@ WATCHDOG_SETTING = WatchdogSetting()
 @click.option(
     "--port",
     envvar="CRYSTALFONTZ_PORT",
-    help="The serial port the Crystalfontz device is connected to",
+    help="The serial port the device is connected to",
 )
 @click.option(
     "--model",
     envvar="CRYSTALFONTZ_MODEL",
-    help="The model of Crystalfontz device",
+    help="The model of the device",
     type=click.Choice(["CFA533", "CFA633"]),
     default="CFA533",
 )
 @click.option(
     "--hardware-rev",
     envvar="CRYSTALFONTZ_HARDWARE_REV",
-    help="The hardware revision of the Crystalfontz device",
+    help="The hardware revision of the device",
 )
 @click.option(
     "--firmware-rev",
     envvar="CRYSTALFONTZ_FIRMWARE_REV",
-    help="The firmware revision of the Crystalfontz device",
+    help="The firmware revision of the device",
 )
 @click.option(
     "--timeout",
@@ -144,7 +144,7 @@ WATCHDOG_SETTING = WatchdogSetting()
     "--baud",
     type=click.Choice([str(SLOW_BAUD_RATE), str(FAST_BAUD_RATE)]),
     envvar="CRYSTALFONTZ_BAUD_RATE",
-    help="The baud rate to use when connecting to the Crystalfontz LCD",
+    help="The baud rate to use when connecting to the device",
 )
 @click.pass_context
 def main(
@@ -526,7 +526,12 @@ async def poll_keypad(client: Client) -> None:
 @click.argument(
     "function", nargs=-1, type=click.Choice([e.name for e in AtxPowerSwitchFunction])
 )
-@click.option("--auto-polarity/--no-auto-polarity", type=bool, default=False)
+@click.option(
+    "--auto-polarity/--no-auto-polarity",
+    type=bool,
+    default=False,
+    help="Whether or not to automatically detect polarity for reset and power",
+)
 @click.option("--power-pulse-length-seconds", type=float)
 @pass_client()
 async def atx(
