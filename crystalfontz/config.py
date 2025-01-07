@@ -9,7 +9,6 @@ except ImportError:
     Self = Any
 
 from appdirs import user_config_dir
-from serial.tools.list_ports import comports
 import yaml
 
 from crystalfontz.baud import BaudRate, SLOW_BAUD_RATE
@@ -37,10 +36,7 @@ def default_file() -> str:
     return os.path.join(user_config_dir(APP_NAME), f"{APP_NAME}.yaml")
 
 
-def default_port() -> str:
-    """Get a default serial port."""
-
-    return comports(include_links=True)[0].device
+DEFAULT_PORT = "/dev/ttyUSB0"
 
 
 def _metadata(env_var: Optional[str] = None) -> Dict[str, Any]:
@@ -64,7 +60,7 @@ class Config:
     """
 
     port: str = field(
-        default_factory=default_port, metadata=_metadata(env_var="CRYSTALFONTZ_PORT")
+        default=DEFAULT_PORT, metadata=_metadata(env_var="CRYSTALFONTZ_PORT")
     )
     model: str = field(default="CFA533", metadata=_metadata("CRYSTALFONTZ_MODEL"))
     hardware_rev: Optional[str] = field(
