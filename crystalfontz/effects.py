@@ -60,104 +60,220 @@ class ClientProtocol(Protocol):
     """
 
     device: Device
+    _default_timeout: float
+    _default_retry_times: int
 
     def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[Result[R]]: ...
 
     def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[Result[R]]) -> None: ...
 
-    async def ping(self: Self, payload: bytes) -> Pong: ...
+    async def ping(
+        self: Self,
+        payload: bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> Pong: ...
 
-    async def versions(self: Self) -> Versions: ...
+    async def versions(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> Versions: ...
 
     async def write_user_flash_area(
-        self: Self, data: bytes
+        self: Self,
+        data: bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> UserFlashAreaWritten: ...
 
-    async def read_user_flash_area(self: Self) -> UserFlashAreaRead: ...
+    async def read_user_flash_area(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> UserFlashAreaRead: ...
 
-    async def store_boot_state(self: Self) -> BootStateStored: ...
+    async def store_boot_state(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> BootStateStored: ...
 
-    async def reboot_lcd(self: Self) -> PowerResponse: ...
+    async def reboot_lcd(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> PowerResponse: ...
 
-    async def reset_host(self: Self) -> PowerResponse: ...
+    async def reset_host(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> PowerResponse: ...
 
-    async def shutdown_host(self: Self) -> PowerResponse: ...
+    async def shutdown_host(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> PowerResponse: ...
 
-    async def clear_screen(self: Self) -> ClearedScreen: ...
+    async def clear_screen(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> ClearedScreen: ...
 
-    async def set_line_1(self: Self, line: str | bytes) -> Line1Set: ...
+    async def set_line_1(
+        self: Self,
+        line: str | bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> Line1Set: ...
 
-    async def set_line_2(self: Self, line: str | bytes) -> Line2Set: ...
+    async def set_line_2(
+        self: Self,
+        line: str | bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> Line2Set: ...
 
     async def set_special_character_data(
-        self: Self, index: int, character: SpecialCharacter
+        self: Self,
+        index: int,
+        character: SpecialCharacter,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> SpecialCharacterDataSet: ...
 
     def set_special_character_encoding(
-        self: Self, character: str, index: int
+        self: Self,
+        character: str,
+        index: int,
     ) -> None: ...
 
-    async def read_lcd_memory(self: Self, address: int) -> LcdMemory: ...
+    async def read_lcd_memory(
+        self: Self,
+        address: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> LcdMemory: ...
 
     async def set_cursor_position(
-        self: Self, row: int, column: int
+        self: Self,
+        row: int,
+        column: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> CursorPositionSet: ...
 
-    async def set_cursor_style(self: Self, style: CursorStyle) -> CursorStyleSet: ...
+    async def set_cursor_style(
+        self: Self,
+        style: CursorStyle,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> CursorStyleSet: ...
 
-    async def set_contrast(self: Self, contrast: float) -> ContrastSet: ...
+    async def set_contrast(
+        self: Self,
+        contrast: float,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> ContrastSet: ...
 
     async def set_backlight(
-        self: Self, lcd_brightness: int, keypad_brightness: Optional[int] = None
+        self: Self,
+        lcd_brightness: int,
+        keypad_brightness: Optional[int] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> BacklightSet: ...
 
     async def read_dow_device_information(
-        self: Self, index: int
+        self: Self,
+        index: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> DowDeviceInformation: ...
 
     async def setup_temperature_reporting(
-        self: Self, enabled: Iterable[int]
+        self: Self,
+        enabled: Iterable[int],
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> TemperatureReportingSetUp: ...
 
     async def dow_transaction(
-        self: Self, index: int, bytes_to_read: int, data_to_write: bytes
+        self: Self,
+        index: int,
+        bytes_to_read: int,
+        data_to_write: bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> DowTransactionResult: ...
 
     async def setup_live_temperature_display(
-        self: Self, slot: int, item: TemperatureDisplayItem
+        self: Self,
+        slot: int,
+        item: TemperatureDisplayItem,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> LiveTemperatureDisplaySetUp: ...
 
     async def send_command_to_lcd_controller(
-        self: Self, location: LcdRegister, data: int | bytes
+        self: Self,
+        location: LcdRegister,
+        data: int | bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> CommandSentToLcdController: ...
 
     async def configure_key_reporting(
-        self: Self, when_pressed: Set[KeyPress], when_released: Set[KeyPress]
+        self: Self,
+        when_pressed: Set[KeyPress],
+        when_released: Set[KeyPress],
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> KeyReportingConfigured: ...
 
-    async def poll_keypad(self: Self) -> KeypadPolled: ...
+    async def poll_keypad(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> KeypadPolled: ...
 
     async def set_atx_power_switch_functionality(
-        self: Self, settings: AtxPowerSwitchFunctionalitySettings
+        self: Self,
+        settings: AtxPowerSwitchFunctionalitySettings,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> AtxPowerSwitchFunctionalitySet: ...
 
     async def configure_watchdog(
-        self: Self, timeout_seconds: int
+        self: Self,
+        timeout_seconds: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> WatchdogConfigured: ...
 
-    async def read_status(self: Self) -> DeviceStatus: ...
+    async def read_status(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> DeviceStatus: ...
 
     async def send_data(
-        self: Self, row: int, column: int, data: str | bytes
+        self: Self,
+        row: int,
+        column: int,
+        data: str | bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> DataSent: ...
 
-    async def set_baud_rate(self: Self, baud_rate: BaudRate) -> BaudRateSet: ...
+    async def set_baud_rate(
+        self: Self,
+        baud_rate: BaudRate,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> BaudRateSet: ...
 
     async def set_gpio(
-        self: Self, index: int, output_state: int, settings: GpioSettings
+        self: Self,
+        index: int,
+        output_state: int,
+        settings: GpioSettings,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
     ) -> GpioSet: ...
 
-    async def read_gpio(self: Self, index: int) -> GpioRead: ...
+    async def read_gpio(
+        self: Self,
+        index: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> GpioRead: ...
 
 
 class Effect(ABC):
@@ -170,10 +286,15 @@ class Effect(ABC):
         self: Self,
         client: ClientProtocol,
         tick: float = 1.0,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         _loop = loop if loop else asyncio.get_running_loop()
         self._event_loop: asyncio.AbstractEventLoop = _loop
+
+        self.timeout: Optional[float] = timeout
+        self.retry_times: Optional[int] = retry_times
 
         self.client: ClientProtocol = client
         self._running: bool = False
@@ -234,15 +355,23 @@ class Marquee(Effect):
         client: ClientProtocol,
         pause: Optional[float] = None,
         tick: Optional[float] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         device = client.device
+
         if not (0 <= row < device.lines):
             raise ValueError(f"Invalid row: {row}")
-
         _tick = tick if tick is not None else 0.3
 
-        super().__init__(client=client, tick=_tick, loop=loop)
+        super().__init__(
+            client=client,
+            tick=_tick,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=loop,
+        )
         self._pause: float = pause if pause is not None else _tick
 
         self.row: int = row
@@ -256,7 +385,9 @@ class Marquee(Effect):
     async def render(self: Self) -> None:
         device = self.client.device
         buffer = self._line()
-        await self.client.send_data(self.row, 0, buffer)
+        await self.client.send_data(
+            self.row, 0, buffer, timeout=self.timeout, retry_times=self.retry_times
+        )
         self.shift += 1
         if self.shift >= device.columns:
             self.shift = 0
@@ -276,6 +407,8 @@ class Screensaver(Effect):
         text: str,
         client: ClientProtocol,
         tick: Optional[float] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         device = client.device
@@ -288,7 +421,11 @@ class Screensaver(Effect):
             )
 
         super().__init__(
-            client=client, tick=tick if tick is not None else 3.0, loop=loop
+            client=client,
+            tick=tick if tick is not None else 3.0,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=loop,
         )
 
         self.text: bytes = buffer
@@ -296,9 +433,13 @@ class Screensaver(Effect):
     async def render(self: Self) -> None:
         device = self.client.device
 
-        await self.client.clear_screen()
+        await self.client.clear_screen(
+            timeout=self.timeout, retry_times=self.retry_times
+        )
 
         row = random.randrange(0, device.lines)
         column = random.randrange(0, device.columns - len(self.text))
 
-        await self.client.send_data(row, column, self.text)
+        await self.client.send_data(
+            row, column, self.text, timeout=self.timeout, retry_times=self.retry_times
+        )

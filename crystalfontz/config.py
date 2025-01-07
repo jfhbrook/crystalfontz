@@ -76,6 +76,12 @@ class Config:
     baud_rate: BaudRate = field(
         default=SLOW_BAUD_RATE, metadata=_metadata(env_var="CRYSTALFONTZ_BAUD_RATE")
     )
+    timeout: Optional[float] = field(
+        default=None, metadata=_metadata(env_var="CRYSTALFONTZ_TIMEOUT")
+    )
+    retry_times: Optional[int] = field(
+        default=None, metadata=_metadata(env_var="CRYSTALFONTZ_RETRY_TIMES")
+    )
     file: Optional[str] = None
 
     @classmethod
