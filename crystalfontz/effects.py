@@ -293,6 +293,9 @@ class Effect(ABC):
         _loop = loop if loop else asyncio.get_running_loop()
         self._event_loop: asyncio.AbstractEventLoop = _loop
 
+        self.timeout: Optional[float] = timeout
+        self.retry_times: Optional[int] = retry_times
+
         self.client: ClientProtocol = client
         self._running: bool = False
         self._tick: float = tick
@@ -360,15 +363,15 @@ class Marquee(Effect):
 
         if not (0 <= row < device.lines):
             raise ValueError(f"Invalid row: {row}")
-
-        self._timeout = timeout if timeout is not None else client._default_timeout
-        self._retry_times = (
-            retry_times if retry_times is not None else client._default_retry_times
-        )
-
         _tick = tick if tick is not None else 0.3
 
-        super().__init__(client=client, tick=_tick, loop=loop)
+        super().__init__(
+            client=client,
+            tick=_tick,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=loop,
+        )
         self._pause: float = pause if pause is not None else _tick
 
         self.row: int = row
@@ -382,7 +385,9 @@ class Marquee(Effect):
     async def render(self: Self) -> None:
         device = self.client.device
         buffer = self._line()
-        await self.client.send_data(self.row, 0, buffer)
+        await self.client.send_data(
+            self.row, 0, buffer, timeout=self.timeout, retry_times=self.retry_times
+        )
         self.shift += 1
         if self.shift >= device.columns:
             self.shift = 0
@@ -416,7 +421,11 @@ class Screensaver(Effect):
             )
 
         super().__init__(
-            client=client, tick=tick if tick is not None else 3.0, loop=loop
+            client=client,
+            tick=tick if tick is not None else 3.0,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=loop,
         )
 
         self.text: bytes = buffer
@@ -424,9 +433,13 @@ class Screensaver(Effect):
     async def render(self: Self) -> None:
         device = self.client.device
 
-        await self.client.clear_screen()
+        await self.client.clear_screen(
+            timeout=self.timeout, retry_times=self.retry_times
+        )
 
         row = random.randrange(0, device.lines)
         column = random.randrange(0, device.columns - len(self.text))
 
-        await self.client.send_data(row, column, self.text)
+        await self.client.send_data(
+            row, column, self.text, timeout=self.timeout, retry_times=self.retry_times
+        )
