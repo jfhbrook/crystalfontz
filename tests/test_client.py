@@ -47,7 +47,11 @@ async def client(
     device: Device, report_handler: ReportHandler, transport: SerialTransport
 ) -> Client:
     client = Client(
-        device=device, report_handler=report_handler, loop=asyncio.get_running_loop()
+        device=device,
+        report_handler=report_handler,
+        timeout=0.1,
+        retry_times=0,
+        loop=asyncio.get_running_loop(),
     )
     client._is_serial_transport = Mock(return_value=True)
     client.connection_made(transport)

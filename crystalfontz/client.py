@@ -1,7 +1,6 @@
 import asyncio
 from collections import defaultdict
 from contextlib import asynccontextmanager
-import functools
 import logging
 import traceback
 from typing import (
@@ -125,27 +124,6 @@ R = TypeVar("R", bound=Response)
 Result = Tuple[Exception, None] | Tuple[None, R]
 ReportHandlerMethod = Callable[[R], Coroutine[None, None, None]]
 V = TypeVar(name="V")
-
-
-def retry(
-    fn: Callable[..., Coroutine[None, None, R]]
-) -> Callable[..., Coroutine[None, None, R]]:
-    @functools.wraps(fn)
-    async def wrapper(self: "Client", *args, **kwargs) -> R:
-        timeout: float = kwargs.get("timeout", self._default_timeout)
-        retry_times: int = kwargs.get("retry_times", self._default_retry_times)
-        n = retry_times
-        while n > 0:
-            try:
-                async with asyncio.timeout(timeout):
-                    return await fn(*args, **kwargs)
-            except TimeoutError:
-                continue
-
-        async with asyncio.timeout(timeout):
-            return await fn(*args, **kwargs)
-
-    return wrapper
 
 
 class Client(asyncio.Protocol):
@@ -351,15 +329,28 @@ class Client(asyncio.Protocol):
         cast(List[asyncio.Queue[Result[Response]]], value)
         self._queues[key] = cast(List[asyncio.Queue[Result[Response]]], value)
 
-    @retry
     async def expect(
         self: Self,
         cls: Type[R],
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> R:
+        to = timeout if timeout is not None else self._default_timeout
+        times = retry_times if retry_times is not None else self._default_retry_times
+
         q = self.subscribe(cls)
-        exc, res = await q.get()
+
+        exc: Optional[Exception] = None
+        res: Optional[R] = None
+        while times >= 0:
+            try:
+                async with asyncio.timeout(to):
+                    exc, res = await q.get()
+                    break
+            except TimeoutError as e:
+                if not times:
+                    raise e
+                times -= 1
         q.task_done()
         self.unsubscribe(cls, q)
         if exc:
