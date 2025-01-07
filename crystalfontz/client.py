@@ -121,6 +121,11 @@ from crystalfontz.temperature import TemperatureDisplayItem
 
 logger = logging.getLogger(__name__)
 
+# 250ms, as per the docs. We could add more to account for Linux and Python
+# overhead, but the Python overhead is on the order of fractions of a
+# millisecond so I'm not worried.
+DEFAULT_TIMEOUT = 0.250
+
 R = TypeVar("R", bound=Response)
 Result = Tuple[Exception, None] | Tuple[None, R]
 ReportHandlerMethod = Callable[[R], Coroutine[None, None, None]]
@@ -607,7 +612,7 @@ async def create_connection(
     firmware_rev: Optional[str] = None,
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
-    timeout: float = float("inf"),
+    timeout: float = DEFAULT_TIMEOUT,
     retry_times: int = 0,
     loop: Optional[asyncio.AbstractEventLoop] = None,
     baud_rate: BaudRate = SLOW_BAUD_RATE,
@@ -651,7 +656,7 @@ async def client(
     firmware_rev: Optional[str] = None,
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
-    timeout: float = float("inf"),
+    timeout: float = DEFAULT_TIMEOUT,
     retry_times: int = 0,
     loop: Optional[asyncio.AbstractEventLoop] = None,
     baud_rate: BaudRate = SLOW_BAUD_RATE,
