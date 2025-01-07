@@ -1,6 +1,7 @@
 import asyncio
 from collections import defaultdict
 from contextlib import asynccontextmanager
+import functools
 import logging
 import traceback
 from typing import (
@@ -123,6 +124,28 @@ logger = logging.getLogger(__name__)
 R = TypeVar("R", bound=Response)
 Result = Tuple[Exception, None] | Tuple[None, R]
 ReportHandlerMethod = Callable[[R], Coroutine[None, None, None]]
+V = TypeVar(name="V")
+
+
+def retry(
+    fn: Callable[..., Coroutine[None, None, R]]
+) -> Callable[..., Coroutine[None, None, R]]:
+    @functools.wraps(fn)
+    async def wrapper(self: "Client", *args, **kwargs) -> R:
+        timeout: float = kwargs.get("timeout", self._default_timeout)
+        retry_times: int = kwargs.get("retry_times", self._default_retry_times)
+        n = retry_times
+        while n > 0:
+            try:
+                async with asyncio.timeout(timeout):
+                    return await fn(*args, **kwargs)
+            except TimeoutError:
+                continue
+
+        async with asyncio.timeout(timeout):
+            return await fn(*args, **kwargs)
+
+    return wrapper
 
 
 class Client(asyncio.Protocol):
@@ -130,11 +153,15 @@ class Client(asyncio.Protocol):
         self: Self,
         device: Device,
         report_handler: ReportHandler,
+        timeout: float,
+        retry_times: int,
         loop: asyncio.AbstractEventLoop,
     ) -> None:
 
         self.device: Device = device
         self._report_handler: ReportHandler = report_handler
+        self._default_timeout: float = timeout
+        self._default_retry_times: int = retry_times
 
         self._buffer: bytes = b""
         self._loop: asyncio.AbstractEventLoop = loop
@@ -324,7 +351,13 @@ class Client(asyncio.Protocol):
         cast(List[asyncio.Queue[Result[Response]]], value)
         self._queues[key] = cast(List[asyncio.Queue[Result[Response]]], value)
 
-    async def expect(self: Self, cls: Type[R]) -> R:
+    @retry
+    async def expect(
+        self: Self,
+        cls: Type[R],
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> R:
         q = self.subscribe(cls)
         exc, res = await q.get()
         q.task_done()
@@ -575,6 +608,8 @@ async def create_connection(
     firmware_rev: Optional[str] = None,
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
+    timeout: float = float("inf"),
+    retry_times: int = 0,
     loop: Optional[asyncio.AbstractEventLoop] = None,
     baud_rate: BaudRate = SLOW_BAUD_RATE,
 ) -> Client:
@@ -590,7 +625,13 @@ async def create_connection(
 
     _, client = await create_serial_connection(
         _loop,
-        lambda: Client(device=device, report_handler=report_handler, loop=_loop),
+        lambda: Client(
+            device=device,
+            report_handler=report_handler,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=_loop,
+        ),
         port,
         baudrate=baud_rate,
         bytesize=EIGHTBITS,
@@ -611,6 +652,8 @@ async def client(
     firmware_rev: Optional[str] = None,
     device: Optional[Device] = None,
     report_handler: Optional[ReportHandler] = None,
+    timeout: float = float("inf"),
+    retry_times: int = 0,
     loop: Optional[asyncio.AbstractEventLoop] = None,
     baud_rate: BaudRate = SLOW_BAUD_RATE,
 ) -> AsyncGenerator[Client, None]:
@@ -621,6 +664,8 @@ async def client(
         firmware_rev=firmware_rev,
         device=device,
         report_handler=report_handler,
+        timeout=timeout,
+        retry_times=retry_times,
         loop=loop,
         baud_rate=baud_rate,
     )
