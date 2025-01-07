@@ -173,10 +173,10 @@ class Client(asyncio.Protocol):
         self._default_retry_times: int = retry_times
 
         self._buffer: bytes = b""
-        self._loop: asyncio.AbstractEventLoop = loop
+        self.loop: asyncio.AbstractEventLoop = loop
         self._transport: Optional[SerialTransport] = None
-        self._connection_made: asyncio.Future[None] = self._loop.create_future()
-        self.closed: asyncio.Future[None] = self._loop.create_future()
+        self._connection_made: asyncio.Future[None] = self.loop.create_future()
+        self.closed: asyncio.Future[None] = self.loop.create_future()
 
         self._lock: asyncio.Lock = asyncio.Lock()
         self._expect: Optional[Type[Response]] = None
@@ -207,14 +207,14 @@ class Client(asyncio.Protocol):
             self.subscribe(TemperatureReport)
         )
 
-        self._key_activity_task: asyncio.Task[None] = self._loop.create_task(
+        self._key_activity_task: asyncio.Task[None] = self.loop.create_task(
             self._handle_report(
                 "key_activity",
                 self._key_activity_queue,
                 self._report_handler.on_key_activity,
             )
         )
-        self._temperature_task: asyncio.Task[None] = self._loop.create_task(
+        self._temperature_task: asyncio.Task[None] = self.loop.create_task(
             self._handle_report(
                 "temperature",
                 self._temperature_queue,
@@ -857,7 +857,7 @@ class Client(asyncio.Protocol):
             tick=tick,
             timeout=timeout,
             retry_times=retry_times,
-            loop=self._loop,
+            loop=self.loop,
         )
 
     def screensaver(
@@ -873,7 +873,7 @@ class Client(asyncio.Protocol):
             tick=tick,
             timeout=timeout,
             retry_times=retry_times,
-            loop=self._loop,
+            loop=self.loop,
         )
 
 

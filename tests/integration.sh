@@ -44,6 +44,12 @@ crystalfontz power reboot-lcd
 
 confirm 'Did the LCD reboot?'
 
+crystalfontz listen &
+PID=$!
+
+confirm 'Mash some buttons. Are events showing up?'
+kill "${PID}"
+
 crystalfontz effects marquee 1 'Josh is cool' &
 PID=$!
 
@@ -55,6 +61,10 @@ crystalfontz effects screensaver 'Josh!' &
 PID=$!
 
 confirm 'Is the LCD showing a screensaver effect?'
+
+crystalfontz listen --for 1.0
+crystalfontz effects marquee 1 'Josh is cool' --for 1.0
+crystalfontz effects screensaver 'Josh!' --for 1.0
 
 kill "${PID}"
 
