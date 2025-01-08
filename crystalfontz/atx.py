@@ -9,11 +9,17 @@ except ImportError:
 
 
 AUTO_POLARITY = 0x01
+RESET_INVERT = 0x02
+POWER_INVERT = 0x04
 
 
 class AtxPowerSwitchFunction(Enum):
-    RESET_INVERT = 0x02
-    POWER_INVERT = 0x04
+    """
+    An ATX power switch function.
+
+    Refer to your device's datasheet for the effects of each of these functions.
+    """
+
     LCD_OFF_IF_HOST_IS_OFF = 0x10
     KEYPAD_RESET = 0x20
     KEYPAD_POWER_ON = 0x40
@@ -24,7 +30,24 @@ class AtxPowerSwitchFunction(Enum):
 class AtxPowerSwitchFunctionalitySettings:
     functions: Set[AtxPowerSwitchFunction]
     auto_polarity: bool = True
+    reset_invert: bool = False
+    power_invert: bool = False
     power_pulse_length_seconds: Optional[float] = None
+
+    """
+    Settings for command 28 (0x1C): Set ATX Power Switch Functionality.
+
+    Parameters:
+        functions: A set of enabled power switch functions.
+        auto_polarity: When True, automatically detects polarity for reset and/or
+                       power (recommended)
+        reset_invert: When True, the reset pin drives high instead of low
+        power_invert: When True, the power pin drives high instead of low
+        power_pulse_length_seconds:  Length of power on and off pulses in seconds.
+                                     When set to 8 seconds or higher, asserts power
+                                     control line until host power state changes.
+
+    """
 
     @classmethod
     def from_bytes(cls: Type[Self], settings: bytes) -> Self:
@@ -49,6 +72,10 @@ class AtxPowerSwitchFunctionalitySettings:
             functions ^= function.value
         if self.auto_polarity:
             functions ^= AUTO_POLARITY
+        if self.reset_invert:
+            functions ^= RESET_INVERT
+        if self.power_invert:
+            functions ^= POWER_INVERT
 
         packed: bytes = functions.to_bytes(length=1)
 
