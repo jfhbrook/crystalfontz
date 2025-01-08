@@ -31,6 +31,7 @@ from crystalfontz.baud import BaudRate, FAST_BAUD_RATE, SLOW_BAUD_RATE
 from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
+from crystalfontz.effects import Effect
 from crystalfontz.keys import (
     KeyPress,
     KP_DOWN,
@@ -48,6 +49,12 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
+class EffectOptions:
+    tick: Optional[float]
+    for_: Optional[float]
+
+
+@dataclass
 class Obj:
     config: Config
     global_: bool
@@ -58,6 +65,7 @@ class Obj:
     timeout: Optional[float]
     retry_times: Optional[int]
     baud_rate: BaudRate
+    effect_options: Optional[EffectOptions] = None
 
 
 LogLevel = (
@@ -228,13 +236,7 @@ def pass_client(
                 await client.closed
 
             try:
-                if run_forever:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    loop.create_task(main())
-                    loop.run_forever()
-                else:
-                    asyncio.run(main())
+                asyncio.run(main())
             except KeyboardInterrupt:
                 pass
 
@@ -244,14 +246,17 @@ def pass_client(
 
 
 @main.command(help="Listen for keypress and temperature reports")
+@click.option("--for", "for_", type=float, help="Amount of time to run the effect for")
 @pass_client(run_forever=True, report_handler_cls=JsonReportHandler)
-async def listen(client: Client) -> None:
+async def listen(client: Client, for_: Optional[float]) -> None:
     """
     Listen for key and temperature reports. To configure which reports to
     receive, use 'crystalfontz keypad reporting' and
     'crystalfontz temperature reporting' respectively.
     """
-    pass
+    if for_ is not None:
+        await asyncio.sleep(for_)
+        client.close()
 
 
 @main.command(help="0 (0x00): Ping command")
@@ -637,29 +642,49 @@ def read_gpio() -> None:
 
 
 @main.group(help="Run various effects, such as marquees")
-def effects() -> None:
-    pass
+@click.option("--tick", type=float, help="How often to update the effect")
+@click.option("--for", "for_", type=float, help="Amount of time to run the effect for")
+@click.pass_context
+def effects(ctx: click.Context, tick: Optional[float], for_: Optional[float]) -> None:
+    ctx.obj.effect_options = EffectOptions(tick=tick, for_=for_)
+
+
+async def run_effect(
+    effect: Effect, loop: asyncio.AbstractEventLoop, for_: Optional[float]
+) -> None:
+    f = loop.create_task(effect.run())
+    if for_ is not None:
+        await asyncio.sleep(for_)
+        effect.stop()
+
+    await f
 
 
 @effects.command(help="Display a marquee effect")
 @click.argument("row", type=int)
 @click.argument("text")
-@click.option("--pause", type=float)
-@click.option("--tick", type=float)
+@click.option(
+    "--pause", type=float, help="An amount of time to pause before starting the effect"
+)
 @pass_client()
+@click.pass_context
 async def marquee(
-    client: Client, row: int, text: str, pause: Optional[float], tick: Optional[float]
+    ctx: click.Context, client: Client, row: int, text: str, pause: Optional[float]
 ) -> None:
+    tick = ctx.obj.effect_options.tick
+    for_ = ctx.obj.effect_options.for_
     m = client.marquee(row, text, pause=pause, tick=tick)
 
-    await m.run()
+    await run_effect(m, client.loop, for_)
 
 
 @effects.command(help="Display a screensaver-like effect")
 @click.argument("text")
-@click.option("--tick", type=float)
 @pass_client()
-async def screensaver(client: Client, text: str, tick: Optional[float]) -> None:
+@click.pass_context
+async def screensaver(ctx: click.Context, client: Client, text: str) -> None:
+    tick = ctx.obj.effect_options.tick
+    for_ = ctx.obj.effect_options.for_
     s = client.screensaver(text, tick=tick)
 
-    await s.run()
+    await run_effect(s, client.loop, for_)

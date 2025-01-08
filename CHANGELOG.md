@@ -6,6 +6,7 @@ yyyy/mm/dd Version x.y.z
 - Default port is now `/dev/ttyUSB0`
 - Renamed `crystalfontz atx` arg `--power-pulse-length-seconds` to `--power-pulse-length`
 - Improved CLI help text
+- Add `--for SECONDS` option to `crystalfontz listen` and `crystalfontz effects` that closes the commands after a certain amount of time
 
 2025/01/06 Version 2.0.0
 ------------------------
