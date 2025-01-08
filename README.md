@@ -9,12 +9,12 @@ Here's a basic example:
 ```py
 import asyncio
 
-from crystalfontz import client, SLOW_BAUD_RATE
+from crystalfontz import connection, SLOW_BAUD_RATE
 
 
 async def main():
     # Will close the client on exit
-    async with client(
+    async with connection(
         "/dev/ttyUSB0",
         model="CFA533",
         baud_rate=SLOW_BAUD_RATE
