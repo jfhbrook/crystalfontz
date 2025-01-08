@@ -10,6 +10,7 @@
 - Renamed `TemperatureReport`'s `idx` attribute to `index`
 - Added `reset_invert` and `power_invert` from `ATXPowerSwitchFunction` to flags on `ATXPowerSwitchFunctionalitySettings`
 - Docstrings, plus documentation hosted at <https://crystalfontz.readthedocs.io/>
+- Expose `ClientProtocol` for developers of custom effects
 
 ## 2025/01/06 Version 2.0.0
 
