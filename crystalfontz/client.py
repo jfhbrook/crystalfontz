@@ -137,17 +137,27 @@ ReportHandlerMethod = Callable[[R], Coroutine[None, None, None]]
 T = TypeVar(name="T")
 
 
-def retry(
+def timeout(
     fn: Callable[..., Coroutine[None, None, T]]
 ) -> Callable[..., Coroutine[None, None, T]]:
     @functools.wraps(fn)
     async def wrapper(self: Any, *args, **kwargs) -> T:
         timeout: float = kwargs.get("timeout", self._default_timeout)
+        async with asyncio.timeout(timeout):
+            return await fn(self, *args, **kwargs)
+
+    return wrapper
+
+
+def retry(
+    fn: Callable[..., Coroutine[None, None, T]]
+) -> Callable[..., Coroutine[None, None, T]]:
+    @functools.wraps(fn)
+    async def wrapper(self: Any, *args, **kwargs) -> T:
         times: int = kwargs.get("retry_times", self._default_retry_times)
         while True:
             try:
-                async with asyncio.timeout(timeout):
-                    return await fn(self, *args, **kwargs)
+                return await fn(self, *args, **kwargs)
             except TimeoutError as exc:
                 if not times:
                     raise exc
@@ -357,16 +367,12 @@ class Client(asyncio.Protocol):
             for q_ in self._queues[key]
             if q_ != cast(asyncio.Queue[Result[Response]], q)
         ]
-        cast(List[asyncio.Queue[Result[Response]]], value)
-        self._queues[key] = cast(List[asyncio.Queue[Result[Response]]], value)
 
-    @retry
-    async def expect(
-        self: Self,
-        cls: Type[R],
-        timeout: Optional[float] = None,
-        retry_times: Optional[int] = None,
-    ) -> R:
+        cast_value = cast(List[asyncio.Queue[Result[Response]]], value)
+        self._queues[key] = cast_value
+
+    @timeout
+    async def expect(self: Self, cls: Type[R], timeout: Optional[float] = None) -> R:
         q = self.subscribe(cls)
         exc, res = await q.get()
         q.task_done()
@@ -381,6 +387,7 @@ class Client(asyncio.Protocol):
     # Commands
     #
 
+    @retry
     async def send_command(
         self: Self,
         command: Command,
@@ -390,9 +397,7 @@ class Client(asyncio.Protocol):
     ) -> R:
         async with self._lock:
             self.send_packet(command.to_packet())
-            return await self.expect(
-                response_cls, timeout=timeout, retry_times=retry_times
-            )
+            return await self.expect(response_cls, timeout=timeout)
 
     def send_packet(self: Self, packet: Packet) -> None:
         if not self._transport:

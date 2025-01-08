@@ -8,7 +8,7 @@ except ImportError:
 
 import pytest
 
-from crystalfontz.client import retry
+from crystalfontz.client import retry, timeout
 
 
 class MockClient:
@@ -20,10 +20,8 @@ class MockClient:
     def reset(self: Self) -> None:
         self.times = 0
 
-    @retry
-    async def test(
-        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
-    ) -> None:
+    @timeout
+    async def test_timeout(self: Self, timeout: Optional[float] = None) -> None:
         to = timeout if timeout is not None else self._default_timeout
         self.times += 1
 
@@ -33,23 +31,29 @@ class MockClient:
         # Trigger a timeout
         await asyncio.sleep(to + 0.1)
 
+    @retry
+    async def test_retry(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> None:
+        await self.test_timeout(timeout)
+
 
 @pytest.mark.asyncio
 async def test_retry() -> None:
     client = MockClient()
 
     with pytest.raises(asyncio.TimeoutError):
-        await client.test()
+        await client.test_retry()
 
     assert client.times == 1
 
     client.reset()
 
     with pytest.raises(asyncio.TimeoutError):
-        await client.test(retry_times=2)
+        await client.test_retry(retry_times=2)
 
     assert client.times == 3
 
     client.reset()
 
-    await client.test(timeout=float("inf"))
+    await client.test_timeout(timeout=float("inf"))
