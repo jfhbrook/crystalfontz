@@ -1,3 +1,30 @@
+"""
+crystalfontz is a library and CLI for interacting with Crystalfontz LCD displays.
+While it has an eye for supporting multiple devices, it was developed against a CFA533.
+
+# Example
+
+```py
+import asyncio
+
+from crystalfontz import connection, SLOW_BAUD_RATE
+
+
+async def main():
+    # Will close the client on exit
+    async with connection(
+        "/dev/ttyUSB0",
+        model="CFA533",
+        baud_rate=SLOW_BAUD_RATE
+    ) as client:
+        await client.send_data(0, 0, "Hello world!")
+
+asyncio.run(main())
+```
+
+This will write "Hello world!" on the first line of the LCD.
+"""
+
 import asyncio
 from collections import defaultdict
 from contextlib import asynccontextmanager
@@ -168,6 +195,22 @@ def retry(
 
 
 class Client(asyncio.Protocol):
+    """
+    A crystalfontz client. Typically created through a call to `connection` or
+    `create_connection`.
+
+    This client has methods for every command supported by the CFA533. For more
+    details, refer to the datasheet for your device.
+
+    In addition, this client will accept a `ReportHandler` class, and will call
+    the appropriate method on it whenever a key activity or temperature report is
+    received.
+
+    Also supported are configurations for command timeouts and retry behavior. The
+    default behavior is a timeout of 0.25 seconds with no retries. This 250ms timeout
+    is based on the datasheet for the CFA533.
+    """
+
     def __init__(
         self: Self,
         device: Device,
@@ -186,7 +229,7 @@ class Client(asyncio.Protocol):
         self.loop: asyncio.AbstractEventLoop = loop
         self._transport: Optional[SerialTransport] = None
         self._connection_made: asyncio.Future[None] = self.loop.create_future()
-        self.closed: asyncio.Future[None] = self.loop.create_future()
+        self._closed: asyncio.Future[None] = self.loop.create_future()
 
         self._lock: asyncio.Lock = asyncio.Lock()
         self._expect: Optional[Type[Response]] = None
@@ -244,10 +287,19 @@ class Client(asyncio.Protocol):
         else:
             self._close()
 
+    @property
+    def closed(self: Self) -> asyncio.Future:
+        """
+        An asyncio.Future that resolves when the connection is closed. This
+        may be due either to calling `client.close()` or an Exception.
+        """
+        return self._closed
+
     def close(self: Self) -> None:
         """
         Close the connection.
         """
+
         if self._transport:
             self._transport.close()
         self._close()
@@ -354,6 +406,14 @@ class Client(asyncio.Protocol):
     #
 
     def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[Result[R]]:
+        """
+        Subscribe to results of a given response class. Returns an
+        `asyncio.Queue[Tuple[Exception, None] | Tuple[None, Response]]`.
+
+        This is a low level method. Most use cases not met by individual command
+        methods or a ReportHandler are best handled with `client.expect`.
+        """
+
         q: asyncio.Queue[Result[R]] = asyncio.Queue()
         key = cast(Type[Response], cls)
         value = cast(asyncio.Queue[Result[Response]], q)
@@ -361,6 +421,14 @@ class Client(asyncio.Protocol):
         return q
 
     def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[Result[R]]) -> None:
+        """
+        Unsubscribe from results of a given response class and queue. This queue is
+        typically created by a call to `client.subscribe`.
+
+        This is a low level method. Most use cases not met by individual command
+        methods or a ReportHandler are best handled with `client.expect`.
+        """
+
         key = cast(Type[Response], cls)
         value = [
             q_
@@ -373,6 +441,15 @@ class Client(asyncio.Protocol):
 
     @timeout
     async def expect(self: Self, cls: Type[R], timeout: Optional[float] = None) -> R:
+        """
+        Wait for a response of an expected class, with a timeout.
+
+        This method accepts a `timeout` parameter. If defined, it will override
+        the client's default timeout.
+
+        This is a low level method. Most use cases are met by individual command
+        methods.
+        """
         q = self.subscribe(cls)
         exc, res = await q.get()
         q.task_done()
@@ -395,6 +472,15 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> R:
+        """
+        Send a `Command`, then wait for and return its expected `Response`.
+
+        This method accepts `timeout` and `retry_times` parameters. If defined, they
+        will override the client's default timeout.
+
+        This is a low level method. Most use cases are met by individual command
+        methods.
+        """
         async with self._lock:
             self.send_packet(command.to_packet())
             return await self.expect(response_cls, timeout=timeout)
@@ -411,6 +497,12 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> Pong:
+        """
+        0 (0x00): Ping Command
+
+        The device will return the Ping Command to the host.
+        """
+
         return await self.send_command(
             Ping(payload), Pong, timeout=timeout, retry_times=retry_times
         )
@@ -420,6 +512,13 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> Versions:
+        """
+        1 (0x01): Get Hardware & Firmware Version
+
+        The device will return the hardware and firmware version information to the
+        host.
+        """
+
         return await self.send_command(
             GetVersions(), Versions, timeout=timeout, retry_times=retry_times
         )
@@ -429,6 +528,12 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> None:
+        """
+        Get model, hardware and firmware versions from the device, then configure the
+        client to use that device. This is useful if you don't know a priori what
+        device you're using.
+        """
+
         versions = await self.versions(timeout=timeout, retry_times=retry_times)
         self.device = lookup_device(
             versions.model, versions.hardware_rev, versions.firmware_rev
@@ -440,6 +545,14 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> UserFlashAreaWritten:
+        """
+        2 (0x02): Write User Flash Area
+
+        The CFA533 reserves 16 bytes of nonvolatile memory for arbitrary use by the
+        host. This memory can be used to store a serial number, IP address, gateway
+        address, netmask, or any other data required. All 16 bytes must be supplied.
+        """
+
         return await self.send_command(
             WriteUserFlashArea(data),
             UserFlashAreaWritten,
@@ -452,6 +565,14 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> UserFlashAreaRead:
+        """
+        3 (0x03): Read User Flash Area
+
+        This command will read the User Flash Area and return the data to the host.
+        For more information, review the documentation for
+        `client.write_user_flash_area`.
+        """
+
         return await self.send_command(
             ReadUserFlashArea(),
             UserFlashAreaRead,
@@ -464,6 +585,32 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> BootStateStored:
+        """
+        4 (0x04): Store Current State as Boot State
+
+        The device loads its power-up configuration from nonvolatile memory when
+        power is applied. The device is configured at the factory to display a
+        "welcome" screen when power is applied. This command can be used to customize
+        the "welcome" screen, as well as the following items:
+
+        - Characters shown on LCD
+        - Special character font definitions
+        - Cursor position
+        - Cursor style
+        - Contrast setting
+        - LCD backlight setting
+        - Settings of any "live" displays, such as temperature display
+        - Key press and release masks
+        - ATX function enable and pulse length settings
+        - Baud rate
+        - GPIO settings
+
+        You cannot store the temperature reporting (although the live display of
+        temperatures can be saved). You cannot store the host watchdog. The host
+        software should enable this item once the system is initialized and is ready
+        to receive the data.
+        """
+
         return await self.send_command(
             StoreBootState(), BootStateStored, timeout=timeout, retry_times=retry_times
         )
@@ -473,6 +620,14 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> PowerResponse:
+        """
+        Reboot the device, using 5 (0x05): Reboot Device, Reset Host, or Power Off
+        Host.
+
+        Rebooting the device may be useful for testing the boot configuration. It may
+        also be useful to re-enumerate the devices on the One-Wire bus.
+        """
+
         return await self.send_command(
             RebootLCD(), PowerResponse, timeout=timeout, retry_times=retry_times
         )
@@ -482,6 +637,13 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> PowerResponse:
+        """
+        Reset the host, using 5 (0x05): Reboot Device, Reset Host, or Power Off Host.
+
+        This command assumes the host's reset line is connected to GPIO[3]. For more
+        information, review your device's datasheet.
+        """
+
         await self.send_command(ResetHost(), PowerResponse)
         return await self.expect(
             PowerResponse, timeout=timeout, retry_times=retry_times
@@ -492,6 +654,14 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> PowerResponse:
+        """
+        Turn off the host's power, using 5 (0x05): Reboot Device, Reset Host, or Power
+        Off Host.
+
+        This command assumes the host's power control line is connected to GPIO[2].
+        For more information, review your device's datasheet.
+        """
+
         return await self.send_command(
             ShutdownHost(), PowerResponse, timeout=timeout, retry_times=retry_times
         )
@@ -501,6 +671,13 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> ClearedScreen:
+        """
+        6 (0x06): Clear LCD Screen
+
+        Sets the contents of the LCD screen DDRAM to '' = 0x20 = 32 and moves the
+        cursor to the left-most column of the top line.
+        """
+
         return await self.send_command(
             ClearScreen(), ClearedScreen, timeout=timeout, retry_times=retry_times
         )
@@ -511,6 +688,16 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> Line1Set:
+        """
+        7 (0x07): Set LCD Contents, Line 1
+
+        Sets the center 16 characters displayed on the top line of the LCD screen.
+
+        Please use this command only if you need backwards compatibility with older
+        devices. For new applications, please use the more flexible command
+        `client.send_data`.
+        """
+
         return await self.send_command(
             SetLine1(line, self.device),
             Line1Set,
@@ -524,6 +711,16 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> Line2Set:
+        """
+        8 (0x08): Set LCD Contents, Line 2
+
+        Sets the center 16 characters displayed on the bottom line of the LCD screen.
+
+        Please use this command only if you need backwards compatibility with older
+        devices. For new applications, please use the more flexible command
+        `client.send_data`.
+        """
+
         return await self.send_command(
             SetLine2(line, self.device),
             Line2Set,
@@ -538,6 +735,12 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> SpecialCharacterDataSet:
+        """
+        9 (0x09): Set LCD Special Character Data
+
+        Sets the font definition for one of the special characters (CGRAM).
+        """
+
         return await self.send_command(
             SetSpecialCharacterData(index, character, self.device),
             SpecialCharacterDataSet,
@@ -549,9 +752,12 @@ class Client(asyncio.Protocol):
         self: Self,
         character: str,
         index: int,
-        timeout: Optional[float] = None,
-        retry_times: Optional[int] = None,
     ) -> None:
+        """
+        Configure a unicode character to encode to the index of a given special
+        character on CGRAM.
+        """
+
         self.device.character_rom.set_encoding(character, index)
 
     async def read_lcd_memory(
@@ -560,6 +766,13 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> LcdMemory:
+        """
+        10 (0x0A): Read 8 bytes of LCD Memory
+
+        This command will return the contents of the LCD's DDRAM or CGRAM. This
+        command is intended for debugging.
+        """
+
         return await self.send_command(
             ReadLcdMemory(address), LcdMemory, timeout=timeout, retry_times=retry_times
         )
@@ -571,6 +784,13 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> CursorPositionSet:
+        """
+        11 (0x0B): Set LCD Cursor Position
+
+        This command allows the cursor to be placed at the desired location on the
+        device's LCD screen.
+        """
+
         return await self.send_command(
             SetCursorPosition(row, column, self.device),
             CursorPositionSet,
@@ -584,6 +804,13 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> CursorStyleSet:
+        """
+        12 (0x0C): Set LCD Cursor Style
+
+        This command allows you to select among four hardware generated cursor
+        options.
+        """
+
         return await self.send_command(
             SetCursorStyle(style),
             CursorStyleSet,
@@ -597,6 +824,12 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> ContrastSet:
+        """
+        13 (0x0D): Set LCD Contrast
+
+        This command sets the contrast or vertical viewing angle of the display.
+        """
+
         return await self.send_command(
             SetContrast(contrast, self.device),
             ContrastSet,
@@ -611,6 +844,12 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> BacklightSet:
+        """
+        14 (0x0E): Set LCD & Keypad Backlight
+
+        This command sets the brightness of the LCD and keypad backlights.
+        """
+
         return await self.send_command(
             SetBacklight(lcd_brightness, keypad_brightness, self.device),
             BacklightSet,
@@ -624,6 +863,17 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> DowDeviceInformation:
+        """
+        18 (0x12): Read DOW Device Information
+
+        When power is applied to the unit, it detects any devices connected to the
+        Dallas Semiconductor One-Wire (DOW) bus and stores the device's information.
+        This command will allow the host to read the device's information.
+
+        Note: The GPIO pin used for DOW must not be configured as user GPIO. For more
+        information, review your unit's datasheet.
+        """
+
         return await self.send_command(
             ReadDowDeviceInformation(index),
             DowDeviceInformation,
@@ -637,6 +887,13 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> TemperatureReportingSetUp:
+        """
+        19 (0x13): Set Up Temperature Reporting
+
+        This command will configure the device to report the temperature information
+        to the host every second.
+        """
+
         return await self.send_command(
             SetupTemperatureReporting(enabled, self.device),
             TemperatureReportingSetUp,
@@ -652,6 +909,17 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> DowTransactionResult:
+        """
+        20 (0x14): Arbitrary DOW Transaction
+
+        The unit can function as an RS-232 to Dallas 1-Wire bridge. The unit can
+        send up to 15 bytes and receive up to 14 bytes. This will be sufficient for
+        many devices, but some devices require larger transactions and cannot by fully
+        used with the unit.
+
+        For more information, review your unit's datasheet.
+        """
+
         return await self.send_command(
             DowTransaction(index, bytes_to_read, data_to_write),
             DowTransactionResult,
@@ -666,6 +934,15 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> LiveTemperatureDisplaySetUp:
+        """
+        21 (0x15): Set Up Live Temperature Display
+
+        You can configure the device to automatically update a portion of the LCD with
+        a "live" temperature reading. Once the display is configured using this
+        command, the device will continue to display the live reading on the LCD
+        without host intervention.
+        """
+
         return await self.send_command(
             SetupLiveTemperatureDisplay(slot, item, self.device),
             LiveTemperatureDisplaySetUp,
@@ -680,6 +957,14 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> CommandSentToLcdController:
+        """
+        22 (0x16): Send Command Directly to the LCD Controller
+
+        The controller on the CFA533 is HD44780 compatible. Generally, you will not
+        need low-level access to the LCD controller but some arcane functions of the
+        HD44780 are not exposed by the CFA533's command set. This command allows you
+        to access the CFA533's LCD controller directly.
+        """
         return await self.send_command(
             SendCommandToLcdController(location, data),
             CommandSentToLcdController,
@@ -694,6 +979,14 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> KeyReportingConfigured:
+        """
+        23 (0x17): Configure Key Reporting
+
+
+        By default, the device reports any key event to the host. This command allows
+        the key events to be enabled or disabled on an individual basis.
+        """
+
         return await self.send_command(
             ConfigureKeyReporting(when_pressed, when_released),
             KeyReportingConfigured,
@@ -706,6 +999,15 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> KeypadPolled:
+        """
+        24 (0x18): Read Keypad, Polled Mode
+
+        In some situations, it may be convenient for the host to poll the device for
+        key activity. This command allows the host to detect which keys are currently
+        pressed, which keys have been pressed since the last poll, and which keys have
+        been released since the last poll.
+        """
+
         return await self.send_command(
             PollKeypad(), KeypadPolled, timeout=timeout, retry_times=retry_times
         )
@@ -716,6 +1018,17 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> AtxPowerSwitchFunctionalitySet:
+        """
+        28 (0x1C): Set ATX Power Switch Functionality
+
+        The combination of this device with the Crystalfontz WR-PWR-Y14 cable can
+        be used to replace the function of the power and reset switches in a standard
+        ATX-compatible system.
+
+        This functionality comes with a number of caveats. Please review your device's
+        datasheet for more information.
+        """
+
         return await self.send_command(
             SetAtxPowerSwitchFunctionality(settings),
             AtxPowerSwitchFunctionalitySet,
@@ -729,6 +1042,20 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> WatchdogConfigured:
+        """
+        29 (0x1D): Enable/Disable and Reset the Watchdog
+
+        Some high-availability systems use hardware watchdog timers to ensure that
+        a software or hardware failure does not result in an extended system outage.
+        Once the host system has booted, a system monitor program is started. The
+        system monitor program would enable the watchdog timer on the device. If the
+        system monitor program fails to reset the device's watchdog timer, the device
+        will reset the host system.
+
+        The GPIO pins used for ATX control must not be configured as user GPIO. For
+        more details, review your device's datasheet.
+        """
+
         return await self.send_command(
             ConfigureWatchdog(timeout_seconds),
             WatchdogConfigured,
@@ -741,7 +1068,17 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> DeviceStatus:
-        res = await self.send_command(
+        """
+        30 (0x1E): Read Reporting & Status
+
+        This command can be used to verify the current items configured to report to
+        the host, as well as some other miscellaneous status information. Please
+        note that the information returned is not identical between devices, and may
+        in fact vary between firmware versions of the same model. As such, the return
+        value of this function is not type-safe.
+        """
+
+        res: StatusRead = await self.send_command(
             ReadStatus(), StatusRead, timeout=timeout, retry_times=retry_times
         )
         return self.device.status(res.data)
@@ -754,6 +1091,12 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> DataSent:
+        """
+        31 (0x1F): Send Data to LCD
+
+        This command allows data to be placed at any position on the LCD.
+        """
+
         return await self.send_command(
             SendData(row, column, data, self.device),
             DataSent,
@@ -767,7 +1110,17 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> BaudRateSet:
-        res = await self.send_command(
+        """
+        33 (0x21): Set Baud Rate
+
+        This command will change the device's baud rate. This method sends the baud
+        rate command, waits for a positive acknowledgement from the device at the old
+        baud rate, and then switches to the new baud rate. The baud rate must be saved
+        by a call to `client.store_boot_state` if you want the device to power up at
+        the new baud rate.
+        """
+
+        res: BaudRateSet = await self.send_command(
             SetBaudRate(baud_rate),
             BaudRateSet,
             timeout=timeout,
@@ -789,6 +1142,18 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> GpioSet:
+        """
+        34 (0x22): Set or Set and Configure GPIO Pins
+
+        The CFA533 (hardware versions 1.4 and up, firmware versions 1.9 and up) has
+        five pins for user-definable general purpose input / output (GPIO). These pins
+        are shared with the DOW and ATX functions. Be careful when you configure GPIO
+        if you want to use the ATX or DOW at the same time.
+
+        This functionality comes with many caveats. Please review the documentation in
+        your device's datasheet.
+        """
+
         return await self.send_command(
             SetGpio(index, output_state, settings),
             GpioSet,
@@ -802,6 +1167,15 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> GpioRead:
+        """
+        35 (0x23): Read GPIO Pin Levels and Configuration State
+
+        See method `client.set_gpio` for details on the GPIO architecture.
+
+        This functionality comes with many caveats. Please review the documentation in
+        your device's datasheet.
+        """
+
         return await self.send_command(
             ReadGpio(index), GpioRead, timeout=timeout, retry_times=retry_times
         )
@@ -854,6 +1228,10 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> Marquee:
+        """
+        Display a marquee effect on the LCD screen.
+        """
+
         return Marquee(
             row,
             text,
@@ -872,6 +1250,10 @@ class Client(asyncio.Protocol):
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> Screensaver:
+        """
+        Display a screensaver effect on the LCD screen.
+        """
+
         return Screensaver(
             text,
             client=self,
@@ -894,6 +1276,14 @@ async def create_connection(
     loop: Optional[asyncio.AbstractEventLoop] = None,
     baud_rate: BaudRate = SLOW_BAUD_RATE,
 ) -> Client:
+    """
+    Create a connection to the specified device. Returns a Client object.
+
+    To close the connection, call `client.close()`. The `client.closed` property is a
+    Future that will resolve when the client is closed (either due to a call to
+    `client.close()` or an error) and should be awaited.
+    """
+
     _loop = loop if loop else asyncio.get_running_loop()
 
     if not device:
@@ -938,6 +1328,13 @@ async def connection(
     loop: Optional[asyncio.AbstractEventLoop] = None,
     baud_rate: BaudRate = SLOW_BAUD_RATE,
 ) -> AsyncGenerator[Client, None]:
+    """
+    Create a connection to the specified device, with an associated context.
+
+    This context will automatically close the connection on exit and wait for the
+    connection to close.
+    """
+
     client = await create_connection(
         port,
         model=model,
