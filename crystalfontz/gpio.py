@@ -14,6 +14,15 @@ GPIO_LOW = False
 
 @dataclass
 class GpioState:
+    """
+    Pin state & changes since last poll.
+
+    Attributes:
+        state: State at the last reading. When True, the pin was high.
+        falling: At least one falling edge has been detected since the last poll.
+        rising: At least one rising edge has been detected since the last poll.
+    """
+
     state: bool
     falling: bool
     rising: bool
@@ -28,11 +37,26 @@ class GpioState:
 
 
 class GpioFunction(Enum):
+    """
+    Pin function.
+
+    - **UNUSED**: Port unused for GPIO. It will take on the default function such as
+      ATX, DOW or unused.
+    - **USED**: Port used for GPIO under user control.
+    """
+
     UNUSED = 0b0000
     USED = 0b1000
 
 
 class GpioDriveMode(Enum):
+    """
+    Pin drive mode, based on the output state.
+
+    For details on these settings and the supported combination, refer to your
+    device's datasheet.
+    """
+
     SLOW_STRONG = 1
     FAST_STRONG = 2
     RESISTIVE = 3
@@ -72,6 +96,16 @@ class GpioDriveMode(Enum):
 
 
 class GpioSettings:
+    """
+    GPIO pin settings.
+
+    Attributes:
+        function (GpioFunction): The pin's function.
+        mode (Optional[int]): The raw setting of the pin's modes.
+        up (Optional[GpioDriveMode]): The pin's mode for drive-up.
+        down (Optional[GpioDriveMode]): The pin's mode for drive-down.
+    """
+
     def __init__(
         self: Self,
         function: GpioFunction,
