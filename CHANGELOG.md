@@ -1,16 +1,19 @@
-## yyyy/mm/dd Version x.y.z
+## 2025/01/08 Version 3.0.0
 
-- Add response `timeout` option with 250ms default and per-method overrides
-- Add response `retry_times` option with 0 default and per-method overrides
-- Default port is now `/dev/ttyUSB0`
-- Renamed `crystalfontz atx` arg `--power-pulse-length-seconds` to `--power-pulse-length`
-- Improved CLI help text
-- Add `--for SECONDS` option to `crystalfontz listen` and `crystalfontz effects` that closes the commands after a certain amount of time
-- Renamed `client` contextmanager to `connection`
-- Renamed `TemperatureReport`'s `idx` attribute to `index`
-- Added `reset_invert` and `power_invert` from `ATXPowerSwitchFunction` to flags on `ATXPowerSwitchFunctionalitySettings`
+- API changes:
+  - Renamed `client` contextmanager to `connection`
+  - Renamed `TemperatureReport`'s `idx` attribute to `index`
+  - Moved `reset_invert` and `power_invert` from `ATXPowerSwitchFunction` to flags on `ATXPowerSwitchFunctionalitySettings`
+  - Exposed `ClientProtocol` for developers of custom effects
+- Retry and timeout related functionality:
+  - Add response `timeout` option with 250ms default and per-method overrides
+  - Add response `retry_times` option with 0 default and per-method overrides
+- Command line changes and improvements:
+  - Default port is now `/dev/ttyUSB0`
+  - Renamed `crystalfontz atx` arg `--power-pulse-length-seconds` to `--power-pulse-length`
+  - Add `--for SECONDS` option to `crystalfontz listen` and `crystalfontz effects` that closes the commands after a certain amount of time
+  - Improved help text
 - Docstrings, plus documentation hosted at <https://crystalfontz.readthedocs.io/>
-- Expose `ClientProtocol` for developers of custom effects
 
 ## 2025/01/06 Version 2.0.0
 
