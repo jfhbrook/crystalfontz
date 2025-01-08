@@ -921,7 +921,7 @@ async def create_connection(
 
 
 @asynccontextmanager
-async def client(
+async def connection(
     port: str,
     model: str = "CFA533",
     hardware_rev: Optional[str] = None,
