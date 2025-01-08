@@ -1,0 +1,8 @@
+site_name: crystalfontz
+
+theme:
+  name: readthedocs
+
+plugins:
+  - include-markdown
+  - mkdocstrings

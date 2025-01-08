@@ -14,6 +14,8 @@ black==24.10.0
     # via
     #   crystalfontz (pyproject.toml)
     #   flake8-black
+bracex==2.5.post1
+    # via wcmatch
 click==8.1.8
     # via
     #   crystalfontz (pyproject.toml)
@@ -95,15 +97,16 @@ mkdocs==1.6.1
     # via
     #   crystalfontz (pyproject.toml)
     #   mkdocs-autorefs
+    #   mkdocs-include-markdown-plugin
     #   mkdocstrings
 mkdocs-autorefs==1.2.0
     # via
     #   mkdocstrings
     #   mkdocstrings-python
-mkdocs-bootstrap386==0.0.2
-    # via crystalfontz (pyproject.toml)
 mkdocs-get-deps==0.2.0
     # via mkdocs
+mkdocs-include-markdown-plugin==7.1.2
+    # via crystalfontz (pyproject.toml)
 mkdocstrings==0.27.0
     # via
     #   crystalfontz (pyproject.toml)
@@ -164,6 +167,10 @@ pyserial==3.5
 pyserial-asyncio==0.6
     # via crystalfontz (pyproject.toml)
 pytest==8.3.4
+    # via
+    #   crystalfontz (pyproject.toml)
+    #   pytest-asyncio
+pytest-asyncio==0.25.2
     # via crystalfontz (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
@@ -206,5 +213,7 @@ validate-pyproject==0.23
     # via crystalfontz (pyproject.toml)
 watchdog==6.0.0
     # via mkdocs
+wcmatch==10.0
+    # via mkdocs-include-markdown-plugin
 wcwidth==0.2.13
     # via prompt-toolkit

@@ -1,5 +1,4 @@
-yyyy/mm/dd Version x.y.z
-------------------------
+## yyyy/mm/dd Version x.y.z
 
 - Add response `timeout` option with 250ms default and per-method overrides
 - Add response `retry_times` option with 0 default and per-method overrides
@@ -11,8 +10,8 @@ yyyy/mm/dd Version x.y.z
 - Renamed `TemperatureReport`'s `idx` attribute to `index`
 - Added `reset_invert` and `power_invert` from `ATXPowerSwitchFunction` to flags on `ATXPowerSwitchFunctionalitySettings`
 
-2025/01/06 Version 2.0.0
-------------------------
+## 2025/01/06 Version 2.0.0
+
 - API changes:
   - Expose `pause` argument for marquee effect in client and CLI
   - Rename `client.poke` and `Poked` to `client.read_lcd_memory` and `LcdMemory` respectively
@@ -54,6 +53,6 @@ yyyy/mm/dd Version x.y.z
   - Add PyPI classifiers
   - Updated documentation in README.md
 
-2025/01/04 Version 1.0.0
-------------------------
+## 2025/01/04 Version 1.0.0
+
 - First version of `crystalfontz`
