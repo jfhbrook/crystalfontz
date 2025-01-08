@@ -236,13 +236,7 @@ def pass_client(
                 await client.closed
 
             try:
-                if run_forever:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    loop.create_task(main())
-                    loop.run_forever()
-                else:
-                    asyncio.run(main())
+                asyncio.run(main())
             except KeyboardInterrupt:
                 pass
 
