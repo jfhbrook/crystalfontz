@@ -655,8 +655,10 @@ def effects(ctx: click.Context, tick: Optional[float], for_: Optional[float]) ->
     ctx.obj.effect_options = EffectOptions(tick=tick, for_=for_)
 
 
-async def run_effect(effect: Effect, for_: Optional[float]) -> None:
-    f = effect.run()
+async def run_effect(
+    effect: Effect, loop: asyncio.AbstractEventLoop, for_: Optional[float]
+) -> None:
+    f = loop.create_task(effect.run())
     if for_ is not None:
         await asyncio.sleep(for_)
         effect.stop()
@@ -679,7 +681,7 @@ async def marquee(
     for_ = ctx.obj.effect_options.for_
     m = client.marquee(row, text, pause=pause, tick=tick)
 
-    await run_effect(m, for_)
+    await run_effect(m, client.loop, for_)
 
 
 @effects.command(help="Display a screensaver-like effect")
@@ -691,4 +693,4 @@ async def screensaver(ctx: click.Context, client: Client, text: str) -> None:
     for_ = ctx.obj.effect_options.for_
     s = client.screensaver(text, tick=tick)
 
-    await run_effect(s, for_)
+    await run_effect(s, client.loop, for_)
