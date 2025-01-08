@@ -9,6 +9,7 @@ yyyy/mm/dd Version x.y.z
 - Add `--for SECONDS` option to `crystalfontz listen` and `crystalfontz effects` that closes the commands after a certain amount of time
 - Renamed `client` contextmanager to `connection`
 - Renamed `TemperatureReport`'s `idx` attribute to `index`
+- Added `reset_invert` and `power_invert` from `ATXPowerSwitchFunction` to flags on `ATXPowerSwitchFunctionalitySettings`
 
 2025/01/06 Version 2.0.0
 ------------------------
