@@ -12,6 +12,17 @@ MAX_UNICODE_BYTES = 4
 
 
 class CharacterRom:
+    """
+    A character ROM (CGROM). A character ROM contains 5x7 glyphs stored at
+    specified addresses. The first 8 addresses are reserved for storing special
+    characters in RAM.
+
+    For more information, refer to your device's datasheet.
+
+    Parameters:
+        sheet: A multi-line string containing characters encoded in the character ROM.
+    """
+
     def __init__(self: Self, sheet: str) -> None:
         self.special_character_range: SpecialCharacterRange = (0, 7)
         self._table: Dict[str, bytes] = dict()
@@ -35,6 +46,11 @@ class CharacterRom:
         self._table[key] = value
 
     def set_encoding(self: Self, char: str, encoded: int | bytes) -> Self:
+        """
+        Set how a unicode character is encoded into a byte. This is used to allow the
+        encoding of special characters.
+        """
+
         if isinstance(encoded, int):
             self[char] = encoded.to_bytes()
         else:
@@ -42,6 +58,11 @@ class CharacterRom:
         return self
 
     def encode(self: Self, input: str, errors="strict") -> bytes:
+        """
+        Encode a unicode string into bytes, which correspond to the locations in your
+        device's character ROM.
+        """
+
         output: bytes = b""
         i = 0
         while i < len(input):

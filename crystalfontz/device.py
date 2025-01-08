@@ -78,6 +78,11 @@ CFA533_CHARACTER_ROM = (
 
 
 class Device(ABC):
+    """
+    An abstract device. Subclasses of Device contain parameter and methods
+    particular to a given model, hardware revision and firmware revision.
+    """
+
     model: str = "<unknown>"
     hardware_rev: str = "<unknown>"
     firmware_rev: str = "<unknown>"
@@ -90,19 +95,35 @@ class Device(ABC):
     n_temperature_sensors: int = 0
 
     def contrast(self: Self, contrast: float) -> bytes:
+        """
+        Set the contrast of the device. This is device-dependent.
+        """
         raise NotImplementedError("contrast")
 
     def brightness(
         self: Self, lcd_brightness: float, keypad_brightness: Optional[float]
     ) -> bytes:
+        """
+        Set the brightness of the device's LCD and keypad. This is device-dependent.
+        """
+
         raise NotImplementedError("brightness")
 
     def status(self: Self, data: bytes) -> DeviceStatus:
+        """
+        Parse the status included in a device response into a status object.
+        This is highly device-dependent.
+        """
+
         raise NotImplementedError("status")
 
 
 @dataclass
 class CFA533Status:
+    """
+    The status of a CFA533. This status is based on h1.4, u1v2.
+    """
+
     temperature_sensors_enabled: Set[int]
     key_states: KeyStates
     atx_power_switch_functionality_settings: AtxPowerSwitchFunctionalitySettings
@@ -115,6 +136,10 @@ class CFA533Status:
 
 
 class CFA533(Device):
+    """
+    A CFA533 device.
+    """
+
     model = "CFA533"
     hardware_rev = "h1.4"
     firmware_rev = "u1v2"
@@ -176,6 +201,14 @@ class CFA533(Device):
 
 
 class CFA633(Device):
+    """
+    A CFA633 device.
+
+    This device is partially documented in the CFA533 datasheet, and therefore
+    has nominal support. However, it is completely untested and is likely to
+    have bugs.
+    """
+
     model: str = "CFA633"
     hardware_rev: str = "h1.5c"
     firmware_rev: str = "k1.7"
