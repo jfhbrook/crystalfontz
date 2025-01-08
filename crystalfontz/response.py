@@ -192,6 +192,7 @@ class LcdMemory(Response):
         address (int): The address read from LCD memory.
         data (bytes): The data read from the address in LCD memory.
     """
+
     def __init__(self: Self, data: bytes) -> None:
         assert_len(9, data)
         self.address: int = data[0]
@@ -255,6 +256,7 @@ class DowTransactionResult(Response):
         data (bytes): Data read from the 1-wire bus.
         crc (int): The 1-wire CRC.
     """
+
     def __init__(self: Self, data: bytes) -> None:
         self.index = data[0]
         self.data = data[1:-1]
@@ -314,6 +316,7 @@ class StatusRead(Response):
     """
     A raw status response. This status is parsed based on the device.
     """
+
     def __init__(self: Self, data: bytes) -> None:
         self.data: bytes = data
 

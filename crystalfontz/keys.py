@@ -19,6 +19,16 @@ KP_DOWN: KeyPress = 0x20
 
 @dataclass
 class KeyState:
+    """
+    A key's state.
+
+    Attributes:
+        pressed (bool): When True, the key is currently pressed.
+        pressed_since (bool): When True, the key has been pressed since the last poll.
+        released_since (bool): When True, the key has been released since the last
+                               poll.
+    """
+
     pressed: bool
     pressed_since: bool
     released_since: bool
@@ -26,6 +36,18 @@ class KeyState:
 
 @dataclass
 class KeyStates:
+    """
+    The state of all keys.
+
+    Attributes:
+        up: The state of the "up" key.
+        enter: The state of the "enter" key.
+        exit: The state of the "exit" key.
+        left: The state of the "left" key.
+        right: The state of the "right" key.
+        down: The state of the "down" key.
+    """
+
     up: KeyState
     enter: KeyState
     exit: KeyState
@@ -77,6 +99,11 @@ class KeyStates:
 
 
 class KeyActivity(Enum):
+    """
+    A key activity. This is either a "press" event or a "release" event for a
+    given key.
+    """
+
     KEY_UP_PRESS = 1
     KEY_DOWN_PRESS = 2
     KEY_LEFT_PRESS = 3

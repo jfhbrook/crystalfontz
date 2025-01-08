@@ -8,8 +8,8 @@ class CursorStyle(Enum):
     - **NONE**:  No cursor.
     - **BLINKING_BLOCK**: Blinking block cursor.
     - **STATIC_UNDERSCORE**: Static underscore cursor.
-    - **BLINKING_UNDERSCORE**: Blinking underscore cursor. On the CFA633, this represents
-      a blinking block plus an underscore.
+    - **BLINKING_UNDERSCORE**: Blinking underscore cursor. On the CFA633, this
+      represents a blinking block plus an underscore.
     """
 
     NONE = 0
