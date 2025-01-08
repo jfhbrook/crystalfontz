@@ -26,6 +26,9 @@ def assert_len(n: int, data: bytes) -> None:
 class Response(ABC):
     """
     A response received from the Crystalfontz LCD.
+
+    To implement a new response type, subclass this class and implement the
+    __init__ method.
     """
 
     @abstractmethod
@@ -49,6 +52,11 @@ class Response(ABC):
 
 
 class RawResponse(Response):
+    """
+    A raw response. This class may be used with `client.expect` to capture
+    an otherwise unsupported response type.
+    """
+
     def __init__(self: Self, data: bytes) -> None:
         self.code: int = 0xFF
         self.data: bytes = data
@@ -84,6 +92,11 @@ def code(code: int) -> Callable[[Type[R]], Type[R]]:
 
 @code(0x40)
 class Pong(Response):
+    """
+    Attributes:
+        response (bytes): The data sent in the ping command.
+    """
+
     def __init__(self: Self, data: bytes) -> None:
         self.response = data
 
@@ -93,6 +106,13 @@ class Pong(Response):
 
 @code(0x41)
 class Versions(Response):
+    """
+    Attributes:
+        model (str): The device model.
+        hardware_rev (str): The device's hardware revision.
+        firmware_rev (str): The device's firmware revision.
+    """
+
     def __init__(self: Self, data: bytes) -> None:
         decoded = data.decode("ascii")
         model, versions = decoded.split(":")
@@ -117,6 +137,11 @@ class UserFlashAreaWritten(Ack):
 
 @code(0x43)
 class UserFlashAreaRead(Response):
+    """
+    Attributes:
+        data (bytes): The data read from the user flash area.
+    """
+
     def __init__(self: Self, data: bytes) -> None:
         self.data: bytes = data
 
@@ -162,6 +187,11 @@ class SpecialCharacterDataSet(Ack):
 
 @code(0x4A)
 class LcdMemory(Response):
+    """
+    Attributes:
+        address (int): The address read from LCD memory.
+        data (bytes): The data read from the address in LCD memory.
+    """
     def __init__(self: Self, data: bytes) -> None:
         assert_len(9, data)
         self.address: int = data[0]
@@ -197,6 +227,12 @@ class BacklightSet(Ack):
 
 @code(0x52)
 class DowDeviceInformation(Response):
+    """
+    Attributes:
+        index (int): The DOW device index.
+        rom_id (bytes): The ROM ID of the device.
+    """
+
     def __init__(self: Self, data: bytes) -> None:
         self.index: int = data[0]
         self.rom_id: bytes = data[1:]
@@ -213,6 +249,12 @@ class TemperatureReportingSetUp(Ack):
 
 @code(0x54)
 class DowTransactionResult(Response):
+    """
+    Attributes:
+        index (int): The DOW device index.
+        data (bytes): Data read from the 1-wire bus.
+        crc (int): The 1-wire CRC.
+    """
     def __init__(self: Self, data: bytes) -> None:
         self.index = data[0]
         self.data = data[1:-1]
@@ -242,6 +284,11 @@ class KeyReportingConfigured(Ack):
 
 @code(0x58)
 class KeypadPolled(Response):
+    """
+    Attributes:
+        states (KeyStates): The keypad's key states.
+    """
+
     def __init__(self: Self, data: bytes) -> None:
         assert_len(3, data)
         self.states = KeyStates.from_bytes(data)
@@ -264,6 +311,9 @@ class WatchdogConfigured(Ack):
 
 @code(0x5E)
 class StatusRead(Response):
+    """
+    A raw status response. This status is parsed based on the device.
+    """
     def __init__(self: Self, data: bytes) -> None:
         self.data: bytes = data
 
@@ -291,6 +341,14 @@ class GpioSet(Ack):
 
 @code(0x63)
 class GpioRead(Response):
+    """
+    Attributes:
+        index (int): The index of the GPIO pin.
+        state (GpioState): Pin state & changes since last poll.
+        requested_level (int): Requested Pin level/PWM level.
+        settings (GpioSettings): Pin function select and drive mode.
+    """
+
     def __init__(self: Self, data: bytes) -> None:
         self.index: int = data[0]
         self.state: GpioState = GpioState.from_byte(data[1])
@@ -309,7 +367,8 @@ class KeyActivityReport(Response):
     """
     A key activity report from the Crystalfontz LCD.
 
-    Status: Untested
+    Attributes:
+        activity (KeyActivity): The reported key activity.
     """
 
     def __init__(self: Self, data: bytes) -> None:
@@ -326,13 +385,16 @@ class TemperatureReport(Response):
     """
     A temperature sensor report from the Crystalfontz LCD.
 
-    Status: Untested
+    Attributes:
+        index (int): The index of the temperature sensor.
+        celsius (float): The temperature in celsius.
+        fahrenheit (float): The temperature in fahrenheit.
     """
 
     def __init__(self: Self, data: bytes) -> None:
         assert_len(4, data)
 
-        self.idx: int = data[0]
+        self.index: int = data[0]
         value = struct.unpack(">H", data[1:3])[0]
         dow_crc_status = data[3]
 
@@ -344,6 +406,6 @@ class TemperatureReport(Response):
 
     def __str__(self: Self) -> str:
         return (
-            f"TemperatureReport({self.idx}, celsius={self.celsius}, "
+            f"TemperatureReport({self.index}, celsius={self.celsius}, "
             f"fahrenheit={self.fahrenheit})"
         )
