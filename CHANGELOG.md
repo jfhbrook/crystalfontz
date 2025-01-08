@@ -9,6 +9,7 @@
 - Renamed `client` contextmanager to `connection`
 - Renamed `TemperatureReport`'s `idx` attribute to `index`
 - Added `reset_invert` and `power_invert` from `ATXPowerSwitchFunction` to flags on `ATXPowerSwitchFunctionalitySettings`
+- Docstrings, plus documentation hosted at <https://crystalfontz.readthedocs.io/>
 
 ## 2025/01/06 Version 2.0.0
 

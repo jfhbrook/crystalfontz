@@ -26,7 +26,7 @@ asyncio.run(main())
 
 This will write "Hello world!" on the first line of the LCD.
 
-The client has methods for every command supported by the CFA533. I unfortunately ran out of steam before completing the documentation, but the code in [`crystalfontz.client`](./crystalfontz/client.py) combined with [the datasheet](./docs/CFA533-TMI-KU.pdf) should help fill in the gaps.
+The client has methods for every command supported by the CFA533. For more documentation, refer to <https://crystalfontz.readthedocs.io> and [the CFA533 datasheet](./docs/CFA533-TMI-KU.pdf).
 
 ### Reporting
 
@@ -127,13 +127,11 @@ Commands:
 
 A lot of the functionality has been fleshed out. However, there are some issues:
 
-1. I haven't thoroughly tested the CLI. I developed the CLI after getting the client mostly buttoned up, and didn't get around to running all the commands again. Some commands may have bugs.
-2. Commands which take raw bytes as arguments are generally unimplemented. This is because Python and Click don't expose arguments as raw bytestrings. Implementing these commands will require developing a DSL for specifying non-ASCII bytes.
-3. Setting special character data. Special character data needs to be loaded from files - either as specially formatted text or as bitmap graphics - and that functionality is currently not fleshed out. This will be added once those features are more mature.
-4. Commands which imply persisting state across invocations. While there's a nascent implementation of a config file format, the mechanisms for persisting that kind of data aren't fully fleshed out. Related commands include:
+1. Commands which take raw bytes as arguments are generally unimplemented. This is because Python and Click don't expose arguments as raw bytestrings. Implementing these commands will require developing a DSL for specifying non-ASCII bytes.
+2. Setting special character data. Special character data needs to be loaded from files - either as specially formatted text or as bitmap graphics - and that functionality is currently not fleshed out. This will be added once those features are more mature.
+3. Commands which imply persisting state across invocations. While there's a nascent implementation of a config file format, the mechanisms for persisting that kind of data aren't fully fleshed out. Related commands include:
   - Setting the baud rate - if you set the baud rate and don't save the new baud rate for future connections, you will have a bad time.
   - Setting encodings from unicode characters to special character code points. Once you add a special character to the LCD, you need to tell `crystalfontz` how to convert unicode characters passed into `send_data` into bytes 0x01 to 0x07.
-5. GPIO pin functionality. These functions take object arguments and don't require special support, it was just low priority to implement them.
 
 ## Development
 
