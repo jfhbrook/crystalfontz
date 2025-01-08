@@ -15,12 +15,28 @@ class DeviceProtocol(Protocol):
 
 
 class TemperatureUnit(Enum):
+    """
+    A temperature unit. Either CELSIUS or FAHRENHEIT.
+    """
+
     CELSIUS = 0
     FAHRENHEIT = 1
 
 
 @dataclass
 class TemperatureDisplayItem:
+    """
+    A temperature display item, as used in command 21 (0x15): Set Up Live
+    Temperature Display.
+
+    Parameters:
+        index (int): The index of the display item.
+        n_digits (Literal[3] | Literal[5]): The number of digits to display.
+        column (int): The zero-indexed column to display the temperature on.
+        row (int): The zero-indexed row to display the temperature on.
+        units (TemperatureUnit): The units to use when displaying the temperature.
+    """
+
     index: int
     # TODO: Device specific?
     n_digits: Literal[3] | Literal[5]

@@ -12,16 +12,32 @@ from crystalfontz.response import KeyActivityReport, TemperatureReport
 
 
 class ReportHandler(ABC):
+    """
+    Handle reporting. Reports are issued for key activities and temperature readings.
+    """
+
     @abstractmethod
     async def on_key_activity(self: Self, report: KeyActivityReport) -> None:
+        """
+        This method is called on any new key activity report.
+        """
+
         raise NotImplementedError("on_key_activity")
 
     @abstractmethod
     async def on_temperature(self: Self, report: TemperatureReport) -> None:
+        """
+        This method is called on any new temperature report.
+        """
+
         raise NotImplementedError("on_temperature")
 
 
 class NoopReportHandler(ReportHandler):
+    """
+    A report handler which does nothing.
+    """
+
     async def on_key_activity(self: Self, report: KeyActivityReport) -> None:
         pass
 
@@ -30,6 +46,10 @@ class NoopReportHandler(ReportHandler):
 
 
 class LoggingReportHandler(ReportHandler):
+    """
+    A report handler which logs, using Python's logging module.
+    """
+
     def __init__(self: Self) -> None:
         self.logger = logging.getLogger(__name__)
 
