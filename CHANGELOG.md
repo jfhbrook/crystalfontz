@@ -1,3 +1,7 @@
+## 2025/01/09 Version 3.0.1
+
+- Remove development dependencies from extras
+
 ## 2025/01/08 Version 3.0.0
 
 - API changes:
