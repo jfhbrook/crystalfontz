@@ -2,6 +2,21 @@
 
 `crystalfontz` is a Python library and CLI for interacting with [Crystalfontz](https://www.crystalfontz.com/) LCD displays. While it has an eye for supporting multiple devices, it was developed against a CFA533.
 
+## Install
+
+`crystalfontz` is a Python package, and therefore can be installed [from PyPi](https://pypi.org/project/crystalfontz/), for instance with `pip`:
+
+```sh
+pip install crystalfontz
+```
+
+In addition, I have a Fedora package on COPR, which can be installed like so:
+
+```sh
+sudo dnf copr enable jfhbrook/joshiverse
+sudo dnf install crystalfontz
+```
+
 ## Usage
 
 Here's a basic example:
