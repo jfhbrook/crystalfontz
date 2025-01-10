@@ -40,7 +40,8 @@ _upgrade:
 # Generate locked requirements files based on dependencies in pyproject.toml
 compile:
   uv pip compile -o requirements.txt pyproject.toml
-  uv pip compile --extra=dev -o requirements_dev.txt pyproject.toml
+  cp requirements.txt requirements_dev.txt
+  cat requirements_dev.txt.in >> requirements_dev.txt
 
 _clean-compile:
   rm -f requirements.txt

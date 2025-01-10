@@ -1,0 +1,11 @@
+flake8
+flake8-black
+pytest
+pytest-asyncio
+black
+isort
+jupyter-console
+mkdocs
+mkdocs-include-markdown-plugin
+mkdocstrings[python]
+validate-pyproject[all]
