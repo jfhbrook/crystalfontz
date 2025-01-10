@@ -1,3 +1,6 @@
+## yyyy/mm/dd Version x.y.z
+- Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
+
 ## 2025/01/09 Version 3.0.1
 
 - Remove development dependencies from extras
