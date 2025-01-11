@@ -32,6 +32,7 @@ from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.effects import Effect
+from crystalfontz.error import CrystalfontzError
 from crystalfontz.keys import (
     KeyPress,
     KP_DOWN,
@@ -76,6 +77,101 @@ LogLevel = (
     | Literal["ERROR"]
     | Literal["CRITICAL"]
 )
+
+
+BYTE_ESCAPE_SEQUENCES: Dict[str, bytes] = {
+    "\n": b"",
+    "\\": b"\\",
+    "'": b"'",
+    '"': b'"',
+    "a": b"\a",
+    "b": b"\b",
+    "f": b"\f",
+    "n": b"\n",
+    "r": b"\r",
+    "\t": b"\t",
+    "\v": b"\v",
+}
+
+BYTE_VALUE_ESCAPE_SEQUENCES: Dict[str, Tuple[List[int], int]] = {
+    "o": ([3, 2], 8),
+    "x": ([2], 16),
+}
+
+
+def parse_bytes(text: str) -> bytes:
+    buffer: bytes = b""
+
+    i = 0
+
+    WARNING_MESSAGE = "invalid escape sequence '{}'"
+
+    def invalid(seq: str) -> None:
+        nonlocal i
+        nonlocal buffer
+        buffer = buffer + seq.encode("ascii")
+        i += len(seq)
+
+    def parse_escape_sequence() -> None:
+        nonlocal i
+        nonlocal buffer
+        widths, radix = BYTE_VALUE_ESCAPE_SEQUENCES[text[i + 1]]
+
+        # Some escape sequences support different skip lengths. These skip
+        # lengths are sorted in reverse order
+        min_width = widths[-1]
+        min_end = i + 2 + min_width
+
+        # If the string is shorter than the min skip, warn and return
+        if min_end > len(text):
+            warnings.warn(WARNING_MESSAGE.format(text[i:]))
+            invalid(text[i:])
+            return
+
+        for width in widths:
+            start = i + 2
+            end = i + 2 + width
+            try:
+                code = int(text[start:end], radix)
+                buffer += code.to_bytes(1, byteorder="big")
+            except ValueError as exc:
+                # Digits weren't valid
+                if width > min_width:
+                    # There are other widths to try
+                    logger.debug(exc)
+                    continue
+                # No widths are shorter!
+                logger.warning(exc)
+                warnings.warn(WARNING_MESSAGE.format(text[i:end]))
+                invalid(text[i:end])
+                return
+            else:
+                i = end
+                return
+        raise CrystalfontzError("assert: unreachable")
+
+    while i < len(text):
+        if text[i] == "\\":
+            if (i + 1) >= len(text):
+                # Last character in text is \
+                warnings.warn(WARNING_MESSAGE.format("\\"))
+                invalid("\\")
+                continue
+            if text[i + 1] in BYTE_ESCAPE_SEQUENCES:
+                buffer += BYTE_ESCAPE_SEQUENCES[text[i + 1]]
+                i += 2
+                continue
+            elif text[i + 1] in BYTE_VALUE_ESCAPE_SEQUENCES:
+                parse_escape_sequence()
+                continue
+            else:
+                warnings.warn(WARNING_MESSAGE.format(text[i : i + 1]))
+                invalid(text[i : i + 1])
+                continue
+        buffer += text[i : i + 1].encode("ascii")
+        i += 1
+
+    return buffer
 
 
 class Byte(click.IntRange):
