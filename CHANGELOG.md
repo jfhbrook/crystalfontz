@@ -1,5 +1,7 @@
 ## yyyy/mm/dd Version x.y.z
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
+- Rename `client.load_device` to `client.detect_device`
+- `--detect` flag to call `client.detect_device()`
 
 ## 2025/01/09 Version 3.0.1
 

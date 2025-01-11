@@ -210,7 +210,7 @@ wheels = [
 
 [[package]]
 name = "crystalfontz"
-version = "2.0.0"
+version = "3.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "appdirs" },
@@ -219,21 +219,6 @@ dependencies = [
     { name = "pyserial" },
     { name = "pyserial-asyncio" },
     { name = "pyyaml" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "black" },
-    { name = "flake8" },
-    { name = "flake8-black" },
-    { name = "isort" },
-    { name = "jupyter-console" },
-    { name = "mkdocs" },
-    { name = "mkdocs-include-markdown-plugin" },
-    { name = "mkdocstrings", extra = ["python"] },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "validate-pyproject", extra = ["all"] },
 ]
 
 [package.dev-dependencies]
@@ -255,21 +240,10 @@ dev = [
 requires-dist = [
     { name = "appdirs" },
     { name = "bitstring" },
-    { name = "black", marker = "extra == 'dev'" },
     { name = "click" },
-    { name = "flake8", marker = "extra == 'dev'" },
-    { name = "flake8-black", marker = "extra == 'dev'" },
-    { name = "isort", marker = "extra == 'dev'" },
-    { name = "jupyter-console", marker = "extra == 'dev'" },
-    { name = "mkdocs", marker = "extra == 'dev'" },
-    { name = "mkdocs-include-markdown-plugin", marker = "extra == 'dev'" },
-    { name = "mkdocstrings", extras = ["python"], marker = "extra == 'dev'" },
     { name = "pyserial" },
     { name = "pyserial-asyncio" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "pyyaml" },
-    { name = "validate-pyproject", extras = ["all"], marker = "extra == 'dev'" },
 ]
 
 [package.metadata.requires-dev]

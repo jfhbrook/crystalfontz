@@ -62,6 +62,7 @@ class Obj:
     model: str
     hardware_rev: Optional[str]
     firmware_rev: Optional[str]
+    detect: bool
     timeout: Optional[float]
     retry_times: Optional[int]
     baud_rate: BaudRate
@@ -137,6 +138,12 @@ WATCHDOG_SETTING = WatchdogSetting()
     help="The firmware revision of the device",
 )
 @click.option(
+    "--detect/--no-detect",
+    envvar="CRYSTALFONTZ_DEVICE_DETECT",
+    default=False,
+    help="When set, detect device version",
+)
+@click.option(
     "--timeout",
     type=float,
     envvar="CRYSTALFONTZ_TIMEOUT",
@@ -164,6 +171,7 @@ def main(
     model: str,
     hardware_rev: Optional[str],
     firmware_rev: Optional[str],
+    detect: bool,
     timeout: Optional[float],
     retry_times: Optional[int],
     baud: Optional[str],
@@ -186,6 +194,7 @@ def main(
         model=model or config.model,
         hardware_rev=hardware_rev or config.hardware_rev,
         firmware_rev=firmware_rev or config.firmware_rev,
+        detect=detect,
         timeout=timeout or config.timeout,
         retry_times=retry_times if retry_times is not None else config.retry_times,
         baud_rate=baud_rate or config.baud_rate,
@@ -211,6 +220,7 @@ def pass_client(
             model = ctx.obj.model
             hardware_rev = ctx.obj.hardware_rev
             firmware_rev = ctx.obj.firmware_rev
+            detect = ctx.obj.detect
             timeout = ctx.obj.timeout
             retry_times = ctx.obj.retry_times
             baud_rate: BaudRate = ctx.obj.baud_rate
@@ -230,6 +240,8 @@ def pass_client(
                 except SerialException as exc:
                     click.echo(exc)
                     sys.exit(1)
+                if detect:
+                    await client.detect_device()
                 await fn(client, *args, **kwargs)
                 if not run_forever:
                     client.close()

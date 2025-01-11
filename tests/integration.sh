@@ -40,6 +40,7 @@ confirm 'Did the cursor move and start blinking?'
 
 crystalfontz status
 crystalfontz versions
+crystalfontz --detect ping 'hello'
 crystalfontz power reboot-lcd
 
 confirm 'Did the LCD reboot?'

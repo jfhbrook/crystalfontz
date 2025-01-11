@@ -523,7 +523,7 @@ class Client(asyncio.Protocol):
             GetVersions(), Versions, timeout=timeout, retry_times=retry_times
         )
 
-    async def load_device(
+    async def detect_device(
         self: Self,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
