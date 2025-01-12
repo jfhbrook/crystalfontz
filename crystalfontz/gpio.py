@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, NoReturn, Optional, Tuple, Type
+from typing import Any, Dict, NoReturn, Optional, Tuple, Type
 
 try:
     from typing import Self
@@ -166,3 +166,22 @@ class GpioSettings:
         function = GpioFunction.USED if data & 0b1000 else GpioFunction.UNUSED
         mode = data & 0b0111
         return cls(function=function, mode=mode)
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        up, down = GpioDriveMode.from_byte(self.mode)
+        return dict(
+            function=self.function.value,
+            mode=self.mode,
+            up=up.name if up is not None else None,
+            down=down.name if down is not None else None,
+        )
+
+    def __repr__(self: Self) -> str:
+        up, down = GpioDriveMode.from_byte(self.mode)
+        repr_ = f"Function: {self.function.value}\n"
+        repr_ += (
+            f"Drive Mode: {up.name if up is not None else '<none>'}, "
+            f"{down.name if down is not None else '<none>'}"
+        )
+
+        return repr_

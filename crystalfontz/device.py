@@ -1,7 +1,8 @@
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import logging
-from typing import Any, Optional, Set
+import textwrap
+from typing import Any, Dict, Optional, Set
 
 try:
     from typing import Self
@@ -133,6 +134,47 @@ class CFA533Status:
     atx_sense_on_floppy: bool
     cfa633_contrast: float
     lcd_brightness: float
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        atx = (self.atx_power_switch_functionality_settings.as_dict(),)
+        return dict(
+            temperature_sensors_enabled=list(self.temperature_sensors_enabled),
+            key_states=asdict(self.key_states),
+            atx_power_switch_functionality_settings=atx,
+            watchdog_counter=self.watchdog_counter,
+            contrast=self.contrast,
+            keypad_brightness=self.keypad_brightness,
+            atx_sense_on_floppy=self.atx_sense_on_floppy,
+            cfa633_contrast=self.cfa633_contrast,
+            lcd_brightness=self.lcd_brightness,
+        )
+
+    def __repr__(self: Self) -> str:
+        repr_ = "CFA533 Status:\n"
+        repr_ += ("-" * (len(repr_) - 1)) + "\n"
+
+        enabled = ", ".join(
+            [f"{e}" for e in sorted(list(self.temperature_sensors_enabled))]
+        )
+        repr_ += "Temperature sensors enabled: " + enabled + "\n"
+
+        repr_ += "Key states:\n"
+        repr_ += textwrap.indent(repr(self.key_states), "  ") + "\n"
+
+        repr_ += "ATX Power Switch Functionality Settings:\n"
+        repr_ += (
+            textwrap.indent(repr(self.atx_power_switch_functionality_settings), "  ")
+            + "\n"
+        )
+
+        repr_ += f"Watchdog Counter: {self.watchdog_counter}\n"
+        repr_ += f"Contrast: {self.contrast}\n"
+        repr_ += f"Contrast (CFA633 Compatible): {self.cfa633_contrast}\n"
+        repr_ += "Backlight:\n"
+        repr_ += f"  Keypad Brightness: {self.keypad_brightness}\n"
+        repr_ += f"  LCD Brightness: {self.lcd_brightness}"
+
+        return repr_
 
 
 class CFA533(Device):

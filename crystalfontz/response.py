@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+from dataclasses import asdict
 import struct
+import textwrap
 from typing import Any, Callable, cast, Dict, Type, TypeVar
 
 try:
@@ -13,6 +15,7 @@ from crystalfontz.error import (
     ResponseDecodeError,
     UnknownResponseError,
 )
+from crystalfontz.format import format_bytes, format_json_bytes
 from crystalfontz.gpio import GpioSettings, GpioState
 from crystalfontz.keys import KeyActivity, KeyStates
 from crystalfontz.packet import Packet
@@ -128,6 +131,16 @@ class Versions(Response):
             f"firmware_rev={self.firmware_rev})"
         )
 
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(
+            model=self.model,
+            hardware_rev=self.hardware_rev,
+            firmware_rev=self.firmware_rev,
+        )
+
+    def __repr__(self: Self) -> str:
+        return f"{self.model}: {self.hardware_rev}, {self.firmware_rev}"
+
 
 @code(0x42)
 class UserFlashAreaWritten(Ack):
@@ -201,6 +214,12 @@ class LcdMemory(Response):
     def __str__(self: Self) -> str:
         return f"LcdMemory(0x{self.address:02X}={self.data})"
 
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(address=self.address, data=format_json_bytes(self.data))
+
+    def __repr__(self: Self) -> str:
+        return f"0x{self.address:02X}: {format_bytes(self.data)}"
+
 
 @code(0x4B)
 class CursorPositionSet(Ack):
@@ -239,7 +258,13 @@ class DowDeviceInformation(Response):
         self.rom_id: bytes = data[1:]
 
     def __str__(self: Self) -> str:
-        return f"DownDeviceInformation({self.index}={self.rom_id})"
+        return f"DowDeviceInformation({self.index}={self.rom_id})"
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(index=self.index, rom_id=format_json_bytes(self.rom_id))
+
+    def __repr__(self: Self) -> str:
+        return f"0x{self.index:02X}: {format_bytes(self.rom_id)}"
 
 
 @code(0x53)
@@ -263,7 +288,19 @@ class DowTransactionResult(Response):
         self.crc = data[-1]
 
     def __str__(self: Self) -> str:
-        return f"DowTransactionResult({self.index}, data={self.data}, crc={self.crc})"
+        return (
+            f"DowTransactionResult(0x{self.index:02X}, "
+            f"data={self.data}, crc={self.crc})"
+        )
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(index=self.index, data=format_json_bytes(self.data), crc=self.crc)
+
+    def __repr__(self: Self) -> str:
+        repr_ = f"Transaction Result for Device {self.index}:\n"
+        repr_ += f"  Data: {format_bytes(self.data)}\n"
+        repr_ += f"  CRC: 0x{self.crc:02X}"
+        return repr_
 
 
 @code(0x55)
@@ -297,6 +334,15 @@ class KeypadPolled(Response):
 
     def __str__(self: Self) -> str:
         return f"KeypadPolled(states={self.states})"
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(states=asdict(self.states))
+
+    def __repr__(self: Self) -> str:
+        repr_ = "Keypad States:\n"
+        repr_ += textwrap.indent(repr(self.states), "  ")
+
+        return repr_
 
 
 @code(0x5C)
@@ -364,6 +410,21 @@ class GpioRead(Response):
             f"requested_level={self.requested_level}, settings={self.settings}"
         )
 
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(
+            index=self.index,
+            state=asdict(self.state),
+            requested_level=self.requested_level,
+            settings=self.settings.as_dict(),
+        )
+
+    def __repr__(self: Self) -> str:
+        repr_ = f"GPIO pin {self.index}:\n"
+        repr_ += f"  Requested Level: {self.requested_level}\n"
+        repr_ += "  Settings:\n"
+        repr_ += textwrap.indent(repr(self.settings), "    ")
+        return repr_
+
 
 @code(0x80)
 class KeyActivityReport(Response):
@@ -381,6 +442,12 @@ class KeyActivityReport(Response):
 
     def __str__(self: Self) -> str:
         return f"KeyActivityReport({self.activity.name})"
+
+    def __repr__(self: Self) -> str:
+        return f"{self.__class__.__name__}\t{self.activity.name}"
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(type=self.__class__.__name__, activity=self.activity.name)
 
 
 @code(0x82)
@@ -411,4 +478,14 @@ class TemperatureReport(Response):
         return (
             f"TemperatureReport({self.index}, celsius={self.celsius}, "
             f"fahrenheit={self.fahrenheit})"
+        )
+
+    def __repr__(self: Self) -> str:
+        return f"{self.__class__.__name__}\t{self.celsius}\t{self.fahrenheit}"
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(
+            type=self.__class__.__name__,
+            celsius=self.celsius,
+            fahrenheit=self.fahrenheit,
         )

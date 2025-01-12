@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
 import json
 import logging
-from typing import Any
+from typing import Any, Optional
 
 try:
     from typing import Self
 except ImportError:
     Self = Any
 
+from crystalfontz.format import OutputMode
 from crystalfontz.response import KeyActivityReport, TemperatureReport
 
 
@@ -60,21 +61,17 @@ class LoggingReportHandler(ReportHandler):
         self.logger.info(report)
 
 
-class JsonReportHandler(ReportHandler):
+class CliReportHandler(ReportHandler):
+    mode: Optional[OutputMode] = None
+
     async def on_key_activity(self: Self, report: KeyActivityReport) -> None:
-        print(
-            json.dumps(
-                dict(type=report.__class__.__name__, activity=report.activity.name)
-            )
-        )
+        if self.mode == "json":
+            print(json.dumps(report.as_dict()))
+        elif self.mode == "text":
+            print(repr(report))
 
     async def on_temperature(self: Self, report: TemperatureReport) -> None:
-        print(
-            json.dumps(
-                dict(
-                    type=report.__class__.__name__,
-                    celsius=report.celsius,
-                    fahrenheit=report.fahrenheit,
-                )
-            )
-        )
+        if self.mode == "json":
+            print(json.dumps(report.as_dict()))
+        elif self.mode == "text":
+            print(repr(report))

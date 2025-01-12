@@ -1,5 +1,5 @@
 import asyncio
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 import functools
 import json
 import logging
@@ -33,6 +33,7 @@ from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.effects import Effect
 from crystalfontz.error import CrystalfontzError
+from crystalfontz.format import format_json_bytes, OutputMode
 from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
 from crystalfontz.keys import (
     KeyPress,
@@ -44,7 +45,7 @@ from crystalfontz.keys import (
     KP_UP,
 )
 from crystalfontz.lcd import LcdRegister
-from crystalfontz.report import JsonReportHandler, NoopReportHandler, ReportHandler
+from crystalfontz.report import CliReportHandler, NoopReportHandler, ReportHandler
 from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,7 @@ class Obj:
     hardware_rev: Optional[str]
     firmware_rev: Optional[str]
     detect: bool
+    output: OutputMode
     timeout: Optional[float]
     retry_times: Optional[int]
     baud_rate: BaudRate
@@ -258,6 +260,39 @@ FUNCTION = Function()
 DRIVE_MODE = DriveMode()
 
 
+def as_json(obj: Any) -> Any:
+    if hasattr(obj, "as_dict"):
+        return obj.as_dict()
+    elif is_dataclass(obj.__class__):
+        return asdict(obj)
+    elif isinstance(obj, bytes):
+        return format_json_bytes(obj)
+    else:
+        return obj
+
+
+class CliWriter:
+    mode: OutputMode = "text"
+
+    def echo(self: Self, obj: Any, *args, **kwargs) -> None:
+        if self.mode == "json":
+            try:
+                click.echo(json.dumps(as_json(obj), indent=2), *args, **kwargs)
+            except Exception as exc:
+                logger.debug(exc)
+                click.echo(json.dumps(repr(obj)), *args, **kwargs)
+        else:
+            click.echo(
+                obj if isinstance(obj, bytes) else repr(obj),
+                *args,
+                **kwargs,
+            )
+
+
+WRITER = CliWriter()
+echo = WRITER.echo
+
+
 @click.group(help="Control your Crystalfontz device")
 @click.option(
     "--global/--no-global",
@@ -302,6 +337,12 @@ DRIVE_MODE = DriveMode()
     help="When set, detect device version",
 )
 @click.option(
+    "--output",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output either human-friendly text or JSON",
+)
+@click.option(
     "--timeout",
     type=float,
     envvar="CRYSTALFONTZ_TIMEOUT",
@@ -330,6 +371,7 @@ def main(
     hardware_rev: Optional[str],
     firmware_rev: Optional[str],
     detect: bool,
+    output: Optional[OutputMode],
     timeout: Optional[float],
     retry_times: Optional[int],
     baud: Optional[str],
@@ -353,6 +395,7 @@ def main(
         hardware_rev=hardware_rev or config.hardware_rev,
         firmware_rev=firmware_rev or config.firmware_rev,
         detect=detect,
+        output=output or "text",
         timeout=timeout or config.timeout,
         retry_times=retry_times if retry_times is not None else config.retry_times,
         baud_rate=baud_rate or config.baud_rate,
@@ -379,9 +422,16 @@ def pass_client(
             hardware_rev = ctx.obj.hardware_rev
             firmware_rev = ctx.obj.firmware_rev
             detect = ctx.obj.detect
+            output = ctx.obj.output
             timeout = ctx.obj.timeout
             retry_times = ctx.obj.retry_times
             baud_rate: BaudRate = ctx.obj.baud_rate
+
+            report_handler = report_handler_cls()
+            if isinstance(report_handler, CliReportHandler):
+                report_handler.mode = output
+
+            WRITER.mode = output
 
             async def main() -> None:
                 try:
@@ -390,7 +440,7 @@ def pass_client(
                         model=model,
                         hardware_rev=hardware_rev,
                         firmware_rev=firmware_rev,
-                        report_handler=report_handler_cls(),
+                        report_handler=report_handler,
                         timeout=timeout,
                         retry_times=retry_times,
                         baud_rate=baud_rate,
@@ -417,13 +467,15 @@ def pass_client(
 
 @main.command(help="Listen for keypress and temperature reports")
 @click.option("--for", "for_", type=float, help="Amount of time to run the effect for")
-@pass_client(run_forever=True, report_handler_cls=JsonReportHandler)
-async def listen(client: Client, for_: Optional[float]) -> None:
+@click.pass_context
+@pass_client(run_forever=True, report_handler_cls=CliReportHandler)
+async def listen(client: Client, ctx: click.Context, for_: Optional[float]) -> None:
     """
     Listen for key and temperature reports. To configure which reports to
     receive, use 'crystalfontz keypad reporting' and
     'crystalfontz temperature reporting' respectively.
     """
+
     if for_ is not None:
         await asyncio.sleep(for_)
         client.close()
@@ -434,14 +486,14 @@ async def listen(client: Client, for_: Optional[float]) -> None:
 @pass_client()
 async def ping(client: Client, payload: bytes) -> None:
     pong = await client.ping(payload)
-    click.echo(pong.response)
+    echo(pong.response)
 
 
 @main.command(help="1 (0x01): Get Hardware & Firmware Version")
 @pass_client()
 async def versions(client: Client) -> None:
     versions = await client.versions()
-    click.echo(f"{versions.model}: {versions.hardware_rev}, {versions.firmware_rev}")
+    echo(versions)
 
 
 @main.group(help="Interact with the User Flash Area")
@@ -460,8 +512,7 @@ async def write_user_flash_area(client: Client, data: bytes) -> None:
 @pass_client()
 async def read_user_flash_area(client: Client) -> None:
     flash = await client.read_user_flash_area()
-    # TODO: Does this print as raw bytes?
-    print(flash.data)
+    echo(flash.data)
 
 
 @main.command(help="4 (0x04): Store Current State as Boot State")
@@ -544,7 +595,7 @@ def lcd() -> None:
 @pass_client()
 async def read_lcd_memory(client: Client, address: int) -> None:
     memory = await client.read_lcd_memory(address)
-    click.echo(bytes(memory.address) + b":" + memory.data)
+    echo(memory)
 
 
 @main.group(help="Interact with the LCD cursor")
@@ -592,7 +643,7 @@ def dow() -> None:
 @pass_client()
 async def read_dow_device_information(client: Client, index: int) -> None:
     info = await client.read_dow_device_information(index)
-    click.echo(bytes(info.index) + b":" + info.rom_id)
+    echo(info)
 
 
 @main.group(help="Temperature reporting and live display")
@@ -616,9 +667,7 @@ async def dow_transaction(
     client: Client, index: int, bytes_to_read: int, data_to_write: Optional[bytes]
 ) -> None:
     res = await client.dow_transaction(index, bytes_to_read, data_to_write)
-    click.echo(f"index: {res.index}")
-    click.echo(f"data: {res.data}")
-    click.echo(f"crc: {res.crc}")
+    echo(res)
 
 
 @temperature.command(name="display", help="21 (0x15): Set Up Live Temperature Display")
@@ -696,7 +745,7 @@ async def configure_key_reporting(
 @pass_client()
 async def poll_keypad(client: Client) -> None:
     polled = await client.poll_keypad()
-    click.echo(json.dumps(polled.states.as_dict(), indent=2))
+    echo(polled)
 
 
 @main.command(help="28 (0x1C): Set ATX Power Switch Functionality")
@@ -742,40 +791,7 @@ async def watchdog(client: Client, timeout_seconds: int) -> None:
 async def status(client: Client) -> None:
     status = await client.read_status()
 
-    if hasattr(status, "temperature_sensors_enabled"):
-        enabled = ", ".join(sorted(list(status.temperature_sensors_enabled)))
-        click.echo(f"Temperature sensors enabled: {enabled}")
-
-    if hasattr(status, "key_states"):
-        click.echo("Key states:")
-        click.echo(json.dumps(status.key_states.as_dict(), indent=2))
-
-    if hasattr(status, "atx_power_switch_functionality_settings"):
-        settings = status.atx_power_switch_functionality_settings
-        click.echo("ATX Power Switch Functionality Settings:")
-        click.echo(
-            f"  Functions enabled: {', '.join([e.name for e in settings.functions])}"
-        )
-        click.echo(f"  Auto-polarity Enabled: {settings.auto_polarity}")
-        click.echo(
-            f"  Power Pulse Length (Seconds): {settings.power_pulse_length_seconds}"
-        )
-
-    if hasattr(status, "watchdog_counter"):
-        click.echo(f"Watchdog counter: {status.watchdog_counter}")
-
-    if hasattr(status, "contrast"):
-        click.echo(f"Contrast: {status.contrast}")
-
-    if hasattr(status, "cfa633_contrast"):
-        click.echo(f"Contrast (CFA633 compatible): {status.cfa633_contrast}")
-
-    if hasattr(status, "keypad_brightness") or hasattr(status, "lcd_brightness"):
-        click.echo("Backlight:")
-        if hasattr(status, "keypad_brightness"):
-            click.echo(f"  Keypad Backlight Brightness: {status.keypad_brightness}")
-        if hasattr(status, "lcd_brightness"):
-            click.echo(f"  LCD Backlight Brightness: {status.lcd_brightness}")
+    echo(status)
 
 
 @main.command(help="31 (0x1F): Send Data to LCD")
@@ -832,8 +848,7 @@ async def set_gpio(
                 "When configuring GPIO pins, " "a pull-down mode must be defined"
             )
         settings = GpioSettings(function=function, up=up, down=down)
-    res = await client.set_gpio(index, output_state, settings)
-    click.echo(res)
+    await client.set_gpio(index, output_state, settings)
 
 
 @gpio.command(
@@ -843,7 +858,7 @@ async def set_gpio(
 @pass_client()
 async def read_gpio(client: Client, index: int) -> None:
     res = await client.read_gpio(index)
-    click.echo(res)
+    echo(res)
 
 
 @main.group(help="Run various effects, such as marquees")

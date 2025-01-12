@@ -7,6 +7,7 @@
 - Support for `crystalfontz dow transaction`
 - `client.dow_transaction`'s `data_to_write` argument defaults to empty bytes
 - Support for `crystalfontz gpio write` and `crystalfontz gpio read`
+- CLI supports `--output text` and `--output json`
 
 ## 2025/01/09 Version 3.0.1
 
