@@ -31,14 +31,14 @@
 # ---
 # name: test_repr[obj3]
   '''
-  index: 0xFF
-  data: \x01\x02\x03\x04\x05\x06\x07
-  crc: 0xFF
+  Transaction Result for Device 255:
+    Data: \x01\x02\x03\x04\x05\x06\x07
+    CRC: 0xFF
   '''
 # ---
 # name: test_repr[obj4]
   '''
-  Keypad states:
+  Keypad States:
     up: pressed=yes, pressed_since=yes, released_since=yes
     enter: pressed=no, pressed_since=no, released_since=no
     exit: pressed=no, pressed_since=no, released_since=no
@@ -49,7 +49,7 @@
 # ---
 # name: test_repr[obj5]
   '''
-  CFA533 status:
+  CFA533 Status:
   --------------
   Temperature sensors enabled: 1, 2
   Key states:

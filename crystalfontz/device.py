@@ -150,7 +150,7 @@ class CFA533Status:
         )
 
     def __repr__(self: Self) -> str:
-        repr_ = "CFA533 status:\n"
+        repr_ = "CFA533 Status:\n"
         repr_ += ("-" * (len(repr_) - 1)) + "\n"
 
         enabled = ", ".join(

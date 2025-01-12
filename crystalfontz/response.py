@@ -297,13 +297,10 @@ class DowTransactionResult(Response):
         return dict(index=self.index, data=format_json_bytes(self.data), crc=self.crc)
 
     def __repr__(self: Self) -> str:
-        return "\n".join(
-            [
-                f"index: 0x{self.index:02X}",
-                f"data: {format_bytes(self.data)}",
-                f"crc: 0x{self.crc:02X}",
-            ]
-        )
+        repr_ = f"Transaction Result for Device {self.index}:\n"
+        repr_ += f"  Data: {format_bytes(self.data)}\n"
+        repr_ += f"  CRC: 0x{self.crc:02X}"
+        return repr_
 
 
 @code(0x55)
@@ -342,7 +339,7 @@ class KeypadPolled(Response):
         return dict(states=asdict(self.states))
 
     def __repr__(self: Self) -> str:
-        repr_ = "Keypad states:\n"
+        repr_ = "Keypad States:\n"
         repr_ += textwrap.indent(repr(self.states), "  ")
 
         return repr_
