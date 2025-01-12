@@ -88,6 +88,10 @@ The basic features have all been tested with a real CFA533. However, there are a
 
 These features have been filled in, they type check, and they _probably_ work, mostly. But it's not viable for me to test them. If you're in a position where you need these features, give them a shot and let me know if they work for you!
 
+### Timeouts and Retries
+
+This library includes a default timeout for command responses, as well as the ability to retry. The default timeout is 250ms. This is the timeout recommended in the CFA533 documentation. By default the library does not retry commands - in practice, the CFA533 is *very* reliable, and so they were deemed unnecessary.
+
 ## CLI
 
 This library has a CLI, which you can run like so:
@@ -96,22 +100,25 @@ This library has a CLI, which you can run like so:
 crystalfontz --help
 Usage: crystalfontz [OPTIONS] COMMAND [ARGS]...
 
-  Control your Crystalfontz LCD
+  Control your Crystalfontz device
 
 Options:
   --global / --no-global          Load the global config file at
                                   /etc/crystalfontz.yaml
+  -C, --config-file PATH          A path to a config file
   --log-level [DEBUG|INFO|WARNING|ERROR|CRITICAL]
                                   Set the log level
-  --port TEXT                     The serial port the Crystalfontz LCD is
-                                  connected to
-  --model [CFA533|CFA633]         The model of Crystalfontz device
-  --hardware-rev TEXT             The hardware revision of the Crystalfontz
-                                  device
-  --firmware-rev TEXT             The firmware revision of the Crystalfontz
-                                  device
+  --port TEXT                     The serial port the device is connected to
+  --model [CFA533|CFA633]         The model of the device
+  --hardware-rev TEXT             The hardware revision of the device
+  --firmware-rev TEXT             The firmware revision of the device
+  --detect / --no-detect          When set, detect device version
+  --timeout FLOAT                 How long to wait for a response from the
+                                  device before timing out
+  --retry-times INTEGER           How many times to retry a command if a
+                                  response times out
   --baud [19200|115200]           The baud rate to use when connecting to the
-                                  Crystalfontz LCD
+                                  device
   --help                          Show this message and exit.
 
 Commands:
@@ -140,11 +147,16 @@ Commands:
   watchdog     29 (0x1D): Enable/Disable and Reset the Watchdog
 ```
 
+### Byte Parameters
+
+Some CLI parameters encode raw bytes. In these cases, the inputs support [the same escape sequences as Python's byte strings](https://docs.python.org/3/reference/lexical_analysis.html#escape-sequences). This includes hex numbers (`\xff`) and octal numbers (`\o333`). Note that unicode characters are parsed as utf-8.
+
+### Open Issues
+
 A lot of the functionality has been fleshed out. However, there are some issues:
 
-1. Commands which take raw bytes as arguments are generally unimplemented. This is because Python and Click don't expose arguments as raw bytestrings. Implementing these commands will require developing a DSL for specifying non-ASCII bytes.
-2. Setting special character data. Special character data needs to be loaded from files - either as specially formatted text or as bitmap graphics - and that functionality is currently not fleshed out. This will be added once those features are more mature.
-3. Commands which imply persisting state across invocations. While there's a nascent implementation of a config file format, the mechanisms for persisting that kind of data aren't fully fleshed out. Related commands include:
+1. Setting special character data. Special character data needs to be loaded from files - either as specially formatted text or as bitmap graphics - and that functionality is currently not fleshed out. This will be added once those features are more mature.
+2. Commands which imply persisting state across invocations. While there's a nascent implementation of a config file format, the mechanisms for persisting that kind of data aren't fully fleshed out. Related commands include:
   - Setting the baud rate - if you set the baud rate and don't save the new baud rate for future connections, you will have a bad time.
   - Setting encodings from unicode characters to special character code points. Once you add a special character to the LCD, you need to tell `crystalfontz` how to convert unicode characters passed into `send_data` into bytes 0x01 to 0x07.
 
