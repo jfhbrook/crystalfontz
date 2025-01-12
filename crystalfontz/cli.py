@@ -310,7 +310,7 @@ def as_json(obj: Any) -> Any:
         return obj
 
 
-class CliWriter:
+class Echo:
     """
     An abstraction for writing output to the terminal. Used to support the
     behavior of the --output flag.
@@ -318,7 +318,7 @@ class CliWriter:
 
     mode: OutputMode = "text"
 
-    def echo(self: Self, obj: Any, *args, **kwargs) -> None:
+    def __call__(self: Self, obj: Any, *args, **kwargs) -> None:
         if self.mode == "json":
             try:
                 click.echo(json.dumps(as_json(obj), indent=2), *args, **kwargs)
@@ -333,10 +333,7 @@ class CliWriter:
             )
 
 
-WRITER = CliWriter()
-
-# Generally, one would call echo()
-echo = WRITER.echo
+echo = Echo()
 
 
 @click.group()
@@ -487,8 +484,8 @@ def pass_client(
             if isinstance(report_handler, CliReportHandler):
                 report_handler.mode = output
 
-            # Set the output mode on the writer
-            WRITER.mode = output
+            # Set the output mode for echo
+            echo.mode = output
 
             async def main() -> None:
                 try:
