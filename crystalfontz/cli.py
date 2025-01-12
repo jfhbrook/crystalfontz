@@ -124,7 +124,7 @@ def parse_bytes(text: str) -> bytes:
 
         # If the string is shorter than the min skip, warn and return
         if min_end > len(text):
-            warnings.warn(WARNING_MESSAGE.format(text[i:]))
+            warnings.warn(WARNING_MESSAGE.format(text[i:]), SyntaxWarning)
             invalid(text[i:])
             return
 
@@ -142,7 +142,7 @@ def parse_bytes(text: str) -> bytes:
                     continue
                 # No widths are shorter!
                 logger.warning(exc)
-                warnings.warn(WARNING_MESSAGE.format(text[i:end]))
+                warnings.warn(WARNING_MESSAGE.format(text[i:end]), SyntaxWarning)
                 invalid(text[i:end])
                 return
             else:
@@ -154,7 +154,7 @@ def parse_bytes(text: str) -> bytes:
         if text[i] == "\\":
             if (i + 1) >= len(text):
                 # Last character in text is \
-                warnings.warn(WARNING_MESSAGE.format("\\"))
+                warnings.warn(WARNING_MESSAGE.format("\\"), SyntaxWarning)
                 invalid("\\")
                 continue
             if text[i + 1] in BYTE_ESCAPE_SEQUENCES:
@@ -165,7 +165,7 @@ def parse_bytes(text: str) -> bytes:
                 parse_escape_sequence()
                 continue
             else:
-                warnings.warn(WARNING_MESSAGE.format(text[i : i + 1]))
+                warnings.warn(WARNING_MESSAGE.format(text[i : i + 1]), SyntaxWarning)
                 invalid(text[i : i + 1])
                 continue
         buffer += text[i : i + 1].encode("utf-8")
