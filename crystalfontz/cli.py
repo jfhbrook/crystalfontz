@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass, is_dataclass
 import functools
 import json
 import logging
+import os
 import sys
 from typing import (
     Any,
@@ -28,7 +29,12 @@ from serial.serialutil import SerialException
 
 from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate, FAST_BAUD_RATE, SLOW_BAUD_RATE
-from crystalfontz.client import Client, create_connection
+from crystalfontz.client import (
+    Client,
+    create_connection,
+    DEFAULT_RETRY_TIMES,
+    DEFAULT_TIMEOUT,
+)
 from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.effects import Effect
@@ -74,7 +80,6 @@ class Obj:
     model: str
     hardware_rev: Optional[str]
     firmware_rev: Optional[str]
-    detect: bool
     output: OutputMode
     timeout: Optional[float]
     retry_times: Optional[int]
@@ -230,11 +235,29 @@ class WatchdogSetting(Byte):
     name = "watchdog_setting"
 
     def convert(
-        self, value: str, param: Optional[click.Parameter], ctx: Optional[click.Context]
+        self: Self,
+        value: str,
+        param: Optional[click.Parameter],
+        ctx: Optional[click.Context],
     ) -> int:
         if value == "disable" or value == "disabled":
             return 0
         return super().convert(value, param, ctx)
+
+
+class BaudRateParam(click.INT.__class__):
+    name = "baud_rate"
+
+    def convert(
+        self: Self,
+        value: str,
+        param: Optional[click.Parameter],
+        ctx: Optional[click.Context],
+    ) -> BaudRate:
+        rate = super().convert(value, param, ctx)
+        if rate == SLOW_BAUD_RATE or rate == FAST_BAUD_RATE:
+            return rate
+        self.fail(f"Baud rate {rate} is unsupported", param, ctx)
 
 
 class Function(click.Choice):
@@ -292,6 +315,7 @@ class DriveMode(click.Choice):
 BYTES = Bytes()
 BYTE = Byte()
 WATCHDOG_SETTING = WatchdogSetting()
+BAUD_RATE = BaudRateParam()
 FUNCTION = Function()
 DRIVE_MODE = DriveMode()
 
@@ -327,7 +351,7 @@ class Echo:
                 click.echo(json.dumps(repr(obj)), *args, **kwargs)
         else:
             click.echo(
-                obj if isinstance(obj, bytes) else repr(obj),
+                obj if isinstance(obj, bytes) or isinstance(obj, str) else repr(obj),
                 *args,
                 **kwargs,
             )
@@ -335,13 +359,92 @@ class Echo:
 
 echo = Echo()
 
+AsyncCommand = Callable[..., Coroutine[None, None, None]]
+WrappedAsyncCommand = Callable[..., None]
+AsyncCommandDecorator = Callable[[AsyncCommand], WrappedAsyncCommand]
+
+
+def pass_client(
+    run_forever: bool = False,
+    report_handler_cls: Type[ReportHandler] = NoopReportHandler,
+) -> AsyncCommandDecorator:
+    """
+    Create a client and pass it to the decorated click handler.
+    """
+
+    def decorator(fn: AsyncCommand) -> WrappedAsyncCommand:
+        @click.pass_obj
+        @functools.wraps(fn)
+        def wrapped(obj: Obj, *args, **kwargs) -> None:
+            port: str = obj.port
+            model = obj.model
+            hardware_rev = obj.hardware_rev
+            firmware_rev = obj.firmware_rev
+            output = obj.output
+            timeout = obj.timeout
+            retry_times = obj.retry_times
+            baud_rate: BaudRate = obj.baud_rate
+
+            report_handler = report_handler_cls()
+
+            # Set the output mode on the report handler
+            if isinstance(report_handler, CliReportHandler):
+                report_handler.mode = output
+
+            # Set the output mode for echo
+            echo.mode = output
+
+            async def main() -> None:
+                try:
+                    client: Client = await create_connection(
+                        port,
+                        model=model,
+                        hardware_rev=hardware_rev,
+                        firmware_rev=firmware_rev,
+                        report_handler=report_handler,
+                        timeout=timeout if timeout is not None else DEFAULT_TIMEOUT,
+                        retry_times=(
+                            retry_times
+                            if retry_times is not None
+                            else DEFAULT_RETRY_TIMES
+                        ),
+                        baud_rate=baud_rate,
+                    )
+                except SerialException as exc:
+                    click.echo(exc)
+                    sys.exit(1)
+
+                # Giddyup!
+                try:
+                    await fn(client, *args, **kwargs)
+                except TimeoutError:
+                    echo(f"Command timed out after {timeout} seconds.")
+                    sys.exit(1)
+
+                # Close the client if we're done
+                if not run_forever:
+                    client.close()
+
+                # Await the client closing and surface any exceptions
+                await client.closed
+
+            try:
+                asyncio.run(main())
+            except KeyboardInterrupt:
+                pass
+
+        return wrapped
+
+    return decorator
+
 
 @click.group()
 @click.option(
     "--global/--no-global",
     "global_",
-    default=False,
-    help=f"Load the global config file at {GLOBAL_FILE}",
+    default=os.geteuid() == 0,
+    help=f"Load the global config file at {GLOBAL_FILE} "
+    "(default true when called with sudo)",
 )
 @click.option("--config-file", "-C", type=click.Path(), help="A path to a config file")
 @click.option(
@@ -372,12 +475,6 @@ echo = Echo()
     "--firmware-rev",
     envvar="CRYSTALFONTZ_FIRMWARE_REV",
     help="The firmware revision of the device",
-)
-@click.option(
-    "--detect/--no-detect",
-    envvar="CRYSTALFONTZ_DEVICE_DETECT",
-    default=False,
-    help="When set, detect device version",
 )
 @click.option(
     "--output",
@@ -413,7 +510,6 @@ def main(
     model: str,
     hardware_rev: Optional[str],
     firmware_rev: Optional[str],
-    detect: bool,
     output: Optional[OutputMode],
     timeout: Optional[float],
     retry_times: Optional[int],
@@ -441,7 +537,6 @@ def main(
         model=model or config.model,
         hardware_rev=hardware_rev or config.hardware_rev,
         firmware_rev=firmware_rev or config.firmware_rev,
-        detect=detect,
         output=output or "text",
         timeout=timeout or config.timeout,
         retry_times=retry_times if retry_times is not None else config.retry_times,
@@ -451,80 +546,106 @@ def main(
     logging.basicConfig(level=getattr(logging, log_level))
 
 
-AsyncCommand = Callable[..., Coroutine[None, None, None]]
-WrappedAsyncCommand = Callable[..., None]
-AsyncCommandDecorator = Callable[[AsyncCommand], WrappedAsyncCommand]
-
-
-def pass_client(
-    run_forever: bool = False,
-    report_handler_cls: Type[ReportHandler] = NoopReportHandler,
-) -> AsyncCommandDecorator:
+@main.group()
+def config() -> None:
     """
-    Create a client and pass it to the decorated click handler.
+    Configure crystalfontz.
+    """
+    pass
+
+
+@config.command()
+@click.argument("name")
+@click.pass_obj
+def get(obj: Obj, name: str) -> None:
+    """
+    Get a parameter from the configuration file.
     """
 
-    def decorator(fn: AsyncCommand) -> WrappedAsyncCommand:
-        @click.pass_context
-        @functools.wraps(fn)
-        def wrapped(ctx: click.Context, *args, **kwargs) -> None:
-            port: str = ctx.obj.port
-            model = ctx.obj.model
-            hardware_rev = ctx.obj.hardware_rev
-            firmware_rev = ctx.obj.firmware_rev
-            detect = ctx.obj.detect
-            output = ctx.obj.output
-            timeout = ctx.obj.timeout
-            retry_times = ctx.obj.retry_times
-            baud_rate: BaudRate = ctx.obj.baud_rate
+    try:
+        echo(obj.config.get(name))
+    except ValueError as exc:
+        echo(str(exc))
+        sys.exit(1)
 
-            report_handler = report_handler_cls()
 
-            # Set the output mode on the report handler
-            if isinstance(report_handler, CliReportHandler):
-                report_handler.mode = output
+@config.command()
+@click.pass_obj
+def show(obj: Obj) -> None:
+    """
+    Show the current configuration.
+    """
+    echo(obj.config)
 
-            # Set the output mode for echo
-            echo.mode = output
 
-            async def main() -> None:
-                try:
-                    client: Client = await create_connection(
-                        port,
-                        model=model,
-                        hardware_rev=hardware_rev,
-                        firmware_rev=firmware_rev,
-                        report_handler=report_handler,
-                        timeout=timeout,
-                        retry_times=retry_times,
-                        baud_rate=baud_rate,
-                    )
-                except SerialException as exc:
-                    click.echo(exc)
-                    sys.exit(1)
+@config.command()
+@click.argument("name")
+@click.argument("value")
+@click.pass_obj
+def set(obj: Obj, name: str, value: str) -> None:
+    """
+    Set a parameter in the configuration file.
+    """
+    try:
+        obj.config.set(name, value)
+    except ValueError as exc:
+        echo(str(exc))
+        sys.exit(1)
+    obj.config.to_file()
 
-                # If enabled, detect the device and update it accordingly
-                if detect:
-                    await client.detect_device()
 
-                # Giddyup!
-                await fn(client, *args, **kwargs)
+@config.command()
+@click.argument("name")
+@click.pass_obj
+def unset(obj: Obj, name: str) -> None:
+    """
+    Unset a parameter in the configuration file.
+    """
+    try:
+        obj.config.unset(name)
+    except ValueError as exc:
+        echo(str(exc))
+        sys.exit(1)
+    obj.config.to_file()
 
-                # Close the client if we're done
-                if not run_forever:
-                    client.close()
 
-                # Await the client closing and surface any exceptions
-                await client.closed
+@config.command()
+@click.option("--baud/--no-baud", default=True, help="Detect baud rate")
+@click.option(
+    "--device/--no-device", default=True, help="Detect device model and versions"
+)
+@click.option(
+    "--save/--no-save", default=True, help="Whether or not to save the configuration"
+)
+@pass_client()
+@click.pass_obj
+async def detect(
+    obj: Obj, client: Client, baud: bool, device: bool, save: bool
+) -> None:
+    """
+    Detect device versions and baud rate.
+    """
 
-            try:
-                asyncio.run(main())
-            except KeyboardInterrupt:
-                pass
+    if baud:
+        try:
+            await client.detect_baud_rate()
+        except ConnectionError as exc:
+            logger.debug(exc)
+            sys.exit(1)
+        else:
+            obj.config.baud_rate = client.baud_rate
 
-        return wrapped
+    if device:
+        await client.detect_device()
 
-    return decorator
+        obj.config.model = client.model
+        obj.config.hardware_rev = client.hardware_rev
+        obj.config.firmware_rev = client.firmware_rev
+
+    if save:
+        obj.config.to_file()
+    else:
+        echo(obj.config)
 
 
 @main.command()
@@ -866,12 +987,22 @@ async def send(client: Client, row: int, column: int, data: str) -> None:
 
 
 @main.command(help="33 (0x21): Set Baud Rate")
-def baud() -> None:
-    #
-    # Setting the baud rate will more or less require updating the config
-    # file. The correct behavior needs to be sussed out.
-    #
-    raise NotImplementedError("crystalfontz baud")
+@click.argument("rate", type=BAUD_RATE)
+@click.option(
+    "--save/--no-save",
+    default=False,
+    help="Save the new baud rate to the configuration",
+)
+@click.pass_obj
+@pass_client()
+async def baud(client: Client, obj: Obj, rate: BaudRate, save: bool) -> None:
+    await client.set_baud_rate(rate)
+
+    if save:
+        config = obj.config
+        config.baud_rate = client.baud_rate
+        logger.info(f"Saving baud rate {client.baud_rate} to {config.file}")
+        obj.config = config.to_file()
 
 
 @main.group(help="Interact with GPIO pins")
@@ -926,9 +1057,9 @@ async def read_gpio(client: Client, index: int) -> None:
 @main.group(help="Run various effects, such as marquees")
 @click.option("--tick", type=float, help="How often to update the effect")
 @click.option("--for", "for_", type=float, help="Amount of time to run the effect for")
-@click.pass_context
-def effects(ctx: click.Context, tick: Optional[float], for_: Optional[float]) -> None:
-    ctx.obj.effect_options = EffectOptions(tick=tick, for_=for_)
+@click.pass_obj
+def effects(obj: Obj, tick: Optional[float], for_: Optional[float]) -> None:
+    obj.effect_options = EffectOptions(tick=tick, for_=for_)
 
 
 async def run_effect(
@@ -949,12 +1080,12 @@ async def run_effect(
     "--pause", type=float, help="An amount of time to pause before starting the effect"
 )
 @pass_client()
-@click.pass_context
+@click.pass_obj
 async def marquee(
-    ctx: click.Context, client: Client, row: int, text: str, pause: Optional[float]
+    obj: Obj, client: Client, row: int, text: str, pause: Optional[float]
 ) -> None:
-    tick = ctx.obj.effect_options.tick
-    for_ = ctx.obj.effect_options.for_
+    tick = obj.effect_options.tick if obj.effect_options else None
+    for_ = obj.effect_options.for_ if obj.effect_options else None
     m = client.marquee(row, text, pause=pause, tick=tick)
 
     await run_effect(m, client.loop, for_)
@@ -963,10 +1094,10 @@ async def marquee(
 @effects.command(help="Display a screensaver-like effect")
 @click.argument("text")
 @pass_client()
-@click.pass_context
-async def screensaver(ctx: click.Context, client: Client, text: str) -> None:
-    tick = ctx.obj.effect_options.tick
-    for_ = ctx.obj.effect_options.for_
+@click.pass_obj
+async def screensaver(obj: Obj, client: Client, text: str) -> None:
+    tick = obj.effect_options.tick if obj.effect_options else None
+    for_ = obj.effect_options.for_ if obj.effect_options else None
     s = client.screensaver(text, tick=tick)
 
     await run_effect(s, client.loop, for_)

@@ -3,9 +3,11 @@ Configuration management for the Crystalfontz CLI.
 """
 
 from dataclasses import asdict, dataclass, field, fields, replace
+import logging
 import os
 import os.path
-from typing import Any, cast, Dict, Optional, Type
+from pathlib import Path
+from typing import Any, Callable, cast, Dict, NoReturn, Optional, Type
 
 try:
     from typing import Self
@@ -15,13 +17,16 @@ except ImportError:
 from appdirs import user_config_dir
 import yaml
 
-from crystalfontz.baud import BaudRate, SLOW_BAUD_RATE
+from crystalfontz.baud import BaudRate, FAST_BAUD_RATE, SLOW_BAUD_RATE
+from crystalfontz.client import DEFAULT_RETRY_TIMES, DEFAULT_TIMEOUT
 
 try:
     from yaml import CDumper as Dumper
     from yaml import CLoader as Loader
 except ImportError:
     from yaml import Dumper, Loader
+
+logger = logging.getLogger(__name__)
 
 APP_NAME = "crystalfontz"
 
@@ -73,20 +78,29 @@ class Config:
     baud_rate: BaudRate = field(
         default=SLOW_BAUD_RATE, metadata=_metadata(env_var="CRYSTALFONTZ_BAUD_RATE")
     )
-    timeout: Optional[float] = field(
-        default=None, metadata=_metadata(env_var="CRYSTALFONTZ_TIMEOUT")
+    timeout: float = field(
+        default=DEFAULT_TIMEOUT, metadata=_metadata(env_var="CRYSTALFONTZ_TIMEOUT")
     )
-    retry_times: Optional[int] = field(
-        default=None, metadata=_metadata(env_var="CRYSTALFONTZ_RETRY_TIMES")
+    retry_times: int = field(
+        default=DEFAULT_RETRY_TIMES,
+        metadata=_metadata(env_var="CRYSTALFONTZ_RETRY_TIMES"),
     )
-    file: Optional[str] = None
+    _file: Optional[str] = None
+
+    @property
+    def file(self: Self) -> str:
+        """
+        The configuration file path.
+        """
+        return self._file or default_file()
 
     @classmethod
     def from_environment(cls: Type[Self]) -> Self:
         """
-        Load a config from the environment.
+        Load configuration from the environment.
         """
 
+        logger.debug("Loading config from environment...")
         return cls(**_from_environment())
 
     @classmethod
@@ -97,25 +111,29 @@ class Config:
         create_file: bool = False,
     ) -> Self:
         """
-        Load a config from a file.
+        Load configuration from a file. Optionally load environment overrides and
+        optionally create the file.
         """
 
         _file: str = file or os.environ.get("CRYSTALFONTZ_CONFIG", default_file())
 
         found_file = False
-        kwargs: Dict[str, Any] = dict(file=_file)
+        kwargs: Dict[str, Any] = dict(_file=_file)
         try:
             with open(_file, "r") as f:
                 found_file = True
+                logger.debug(f"Loading config from {_file}...")
                 kwargs.update(yaml.load(f, Loader=Loader))
         except FileNotFoundError:
             try:
                 with open(GLOBAL_FILE, "r") as f:
+                    logger.debug(f"Loading config from {GLOBAL_FILE}...")
                     kwargs.update(yaml.load(f, Loader=Loader))
             except FileNotFoundError:
                 pass
 
         if load_environment:
+            logger.debug("Loading environment overrides...")
             kwargs.update(_from_environment())
 
         config = cls(**kwargs)
@@ -125,14 +143,120 @@ class Config:
 
         return config
 
-    def to_file(self, file: Optional[str] = None) -> "Config":
+    def _assert_has(self: Self, name: str) -> None:
+        if not hasattr(self, name) or name.startswith("_"):
+            raise ValueError(f"Unknown configuration parameter {name}")
+
+    def get(self: Self, name: str) -> Any:
         """
-        Save the config to a file.
+        Get a configuration parameter by name.
         """
 
-        file = file or self.file or default_file()
+        self._assert_has(name)
+        return getattr(self, name)
+
+    def set(self: Self, name: str, value: str) -> None:
+        """
+        Set a configuration parameter by name and string value.
+        """
+
+        self._assert_has(name)
+
+        setters: Dict[Any, Callable[[str, str], None]] = {
+            str: self._set_str,
+            Optional[str]: self._set_str,
+            bool: self._set_bool,
+            BaudRate: self._set_baud_rate,
+            float: self._set_float,
+            Optional[float]: self._set_float,
+            int: self._set_int,
+            Optional[int]: self._set_int,
+        }
+        for f in fields(self):
+            if f.name == name:
+                if f.type in setters:
+                    setters[f.type](name, value)
+                    return
+                else:
+                    raise ValueError(f"Unknown type {f.type}")
+
+    def _set_str(self: Self, name: str, value: str) -> None:
+        setattr(self, name, value)
+
+    def _set_bool(self: Self, name: str, value: str) -> None:
+        if value.lower() in {"true", "yes", "y", "1"}:
+            setattr(self, name, True)
+        elif value.lower() in {"false", "no", "n", "0"}:
+            setattr(self, name, False)
+        else:
+            raise ValueError(f"Can not convert {value} to bool")
+
+    def _set_baud_rate(self: Self, name: str, value: str) -> None:
+        rate: int = int(value)
+        if rate == SLOW_BAUD_RATE or rate == FAST_BAUD_RATE:
+            setattr(self, name, rate)
+        else:
+            raise ValueError(
+                f"{rate} is not a supported baud rate. "
+                f"Supported baud rates are {SLOW_BAUD_RATE} and {FAST_BAUD_RATE}"
+            )
+
+    def _set_float(self: Self, name: str, value: str) -> None:
+        setattr(self, name, float(value))
+
+    def _set_int(self: Self, name: str, value: str) -> None:
+        setattr(self, name, int(value))
+
+    def unset(self: Self, name: str) -> None:
+        """
+        Unset an optional parameter.
+        """
+
+        self._assert_has(name)
+
+        unsetters: Dict[Any, Callable[[str], None]] = {
+            str: self._parameter_required,
+            Optional[str]: self._unset,
+            bool: self._parameter_required,
+            BaudRate: self._parameter_required,
+            float: self._parameter_required,
+            Optional[float]: self._unset,
+            int: self._parameter_required,
+            Optional[int]: self._unset,
+        }
+
+        for f in fields(self):
+            if f.name == name:
+                if f.type in unsetters:
+                    unsetters[f.type](name)
+                    return
+                else:
+                    raise ValueError(f"Unknown type {f.type}")
+
+    def _parameter_required(self: Self, name: str) -> NoReturn:
+        raise ValueError(f"{name} is a required configuraiton parameter")
+
+    def _unset(self: Self, name: str) -> None:
+        setattr(self, name, None)
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return {k: v for k, v in asdict(self).items() if not k.startswith("_")}
+
+    def to_file(self: Self, file: Optional[str] = None) -> Self:
+        """
+        Save the configuration to a file.
+        """
+
+        file = file or self.file
+
+        os.makedirs(Path(file).parent, exist_ok=True)
 
         with open(file, "w") as f:
-            yaml.dump(asdict(self), f, Dumper=Dumper)
+            yaml.dump(self.as_dict(), f, Dumper=Dumper)
 
-        return replace(self, file=file)
+        logger.info(f"Wrote configuration to {file}.")
+
+        return replace(self, _file=file)
+
+    def __repr__(self: Self) -> str:
+        return yaml.dump(self.as_dict(), Dumper=Dumper)
