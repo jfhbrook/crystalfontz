@@ -337,7 +337,12 @@ echo = WRITER.echo
     default=False,
     help="When set, detect device version",
 )
-@click.option("--output", type=click.Choice(["text", "json"]), default="text")
+@click.option(
+    "--output",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output either human-friendly text or JSON",
+)
 @click.option(
     "--timeout",
     type=float,

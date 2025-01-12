@@ -113,6 +113,7 @@ Options:
   --hardware-rev TEXT             The hardware revision of the device
   --firmware-rev TEXT             The firmware revision of the device
   --detect / --no-detect          When set, detect device version
+  --output [text|json]            Output either human-friendly text or JSON
   --timeout FLOAT                 How long to wait for a response from the
                                   device before timing out
   --retry-times INTEGER           How many times to retry a command if a
@@ -150,6 +151,10 @@ Commands:
 ### Byte Parameters
 
 Some CLI parameters encode raw bytes. In these cases, the inputs support [the same escape sequences as Python's byte strings](https://docs.python.org/3/reference/lexical_analysis.html#escape-sequences). This includes hex numbers (`\xff`) and octal numbers (`\o333`). Note that unicode characters are parsed as utf-8.
+
+### Output Format
+
+This CLI supports two output formats: `text` and `json`. The former will output a human-readable format, and the latter will output JSON. When generating JSON output, bytes are encoded in base64.
 
 ### Open Issues
 
