@@ -32,6 +32,7 @@ from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.effects import Effect
+from crystalfontz.error import CrystalfontzError
 from crystalfontz.keys import (
     KeyPress,
     KP_DOWN,
@@ -78,6 +79,116 @@ LogLevel = (
 )
 
 
+BYTE_ESCAPE_SEQUENCES: Dict[str, bytes] = {
+    "\n": b"",
+    "\\": b"\\",
+    "'": b"'",
+    '"': b'"',
+    "a": b"\a",
+    "b": b"\b",
+    "f": b"\f",
+    "n": b"\n",
+    "r": b"\r",
+    "\t": b"\t",
+    "\v": b"\v",
+}
+
+BYTE_VALUE_ESCAPE_SEQUENCES: Dict[str, Tuple[List[int], int]] = {
+    "o": ([3, 2], 8),
+    "x": ([2], 16),
+}
+
+
+def parse_bytes(text: str) -> bytes:
+    buffer: bytes = b""
+
+    i = 0
+
+    WARNING_MESSAGE = "invalid escape sequence '{}'"
+
+    def invalid(seq: str) -> None:
+        nonlocal i
+        nonlocal buffer
+        buffer = buffer + seq.encode("utf-8")
+        i += len(seq)
+
+    def parse_escape_sequence() -> None:
+        nonlocal i
+        nonlocal buffer
+        widths, radix = BYTE_VALUE_ESCAPE_SEQUENCES[text[i + 1]]
+
+        # Some escape sequences support different skip lengths. These skip
+        # lengths are sorted in reverse order
+        min_width = widths[-1]
+        min_end = i + 2 + min_width
+
+        # If the string is shorter than the min skip, warn and return
+        if min_end > len(text):
+            warnings.warn(WARNING_MESSAGE.format(text[i:]), SyntaxWarning)
+            invalid(text[i:])
+            return
+
+        for width in widths:
+            start = i + 2
+            end = i + 2 + width
+            try:
+                code = int(text[start:end], radix)
+                buffer += code.to_bytes(1, byteorder="big")
+            except ValueError as exc:
+                # Digits weren't valid
+                if width > min_width:
+                    # There are other widths to try
+                    logger.debug(exc)
+                    continue
+                # No widths are shorter!
+                logger.warning(exc)
+                warnings.warn(WARNING_MESSAGE.format(text[i:end]), SyntaxWarning)
+                invalid(text[i:end])
+                return
+            else:
+                i = end
+                return
+        raise CrystalfontzError("assert: unreachable")
+
+    while i < len(text):
+        if text[i] == "\\":
+            if (i + 1) >= len(text):
+                # Last character in text is \
+                warnings.warn(WARNING_MESSAGE.format("\\"), SyntaxWarning)
+                invalid("\\")
+                continue
+            if text[i + 1] in BYTE_ESCAPE_SEQUENCES:
+                buffer += BYTE_ESCAPE_SEQUENCES[text[i + 1]]
+                i += 2
+                continue
+            elif text[i + 1] in BYTE_VALUE_ESCAPE_SEQUENCES:
+                parse_escape_sequence()
+                continue
+            else:
+                warnings.warn(WARNING_MESSAGE.format(text[i : i + 1]), SyntaxWarning)
+                invalid(text[i : i + 1])
+                continue
+        buffer += text[i : i + 1].encode("utf-8")
+        i += 1
+
+    return buffer
+
+
+class Bytes(click.ParamType):
+    name = "bytes"
+
+    def convert(
+        self: Self,
+        value: str,
+        param: Optional[click.Parameter],
+        ctx: Optional[click.Context],
+    ) -> bytes:
+        try:
+            return parse_bytes(value)
+        except Exception as exc:
+            self.fail(f"{value!r} is not valid bytes: {exc}", param, ctx)
+
+
 class Byte(click.IntRange):
     name = "byte"
 
@@ -96,6 +207,7 @@ class WatchdogSetting(Byte):
         return super().convert(value, param, ctx)
 
 
+BYTES = Bytes()
 BYTE = Byte()
 WATCHDOG_SETTING = WatchdogSetting()
 
@@ -272,10 +384,10 @@ async def listen(client: Client, for_: Optional[float]) -> None:
 
 
 @main.command(help="0 (0x00): Ping command")
-@click.argument("payload")
+@click.argument("payload", type=BYTES)
 @pass_client()
-async def ping(client: Client, payload: str) -> None:
-    pong = await client.ping(payload.encode("utf8"))
+async def ping(client: Client, payload: bytes) -> None:
+    pong = await client.ping(payload)
     click.echo(pong.response)
 
 
@@ -292,11 +404,10 @@ def flash() -> None:
 
 
 @flash.command(name="write", help="2 (0x02): Write User Flash Area")
-@click.argument("data")
+@click.argument("data", type=BYTES)
 @pass_client()
-async def write_user_flash_area(client: Client, data: str) -> None:
-    # Click doesn't have a good way of receiving bytes as arguments.
-    raise NotImplementedError("crystalfontz user-flash-area write")
+async def write_user_flash_area(client: Client, data: bytes) -> None:
+    await client.write_user_flash_area(data)
 
 
 @flash.command(name="read", help="3 (0x03): Read User Flash Area")
@@ -453,12 +564,15 @@ async def setup_temperature_reporting(client: Client, enabled: Tuple[int]) -> No
 @dow.command(name="transaction", help="20 (0x14): Arbitrary DOW Transaction")
 @click.argument("index", type=BYTE)
 @click.argument("bytes_to_read", type=BYTE)
-@click.option("--data_to_write")
-def dow_transaction() -> None:
-    #
-    # This command also depends on being able to receive bytes from click.
-    #
-    raise NotImplementedError("crystalfontz dow transaction")
+@click.option("--data_to_write", type=BYTES)
+@pass_client()
+async def dow_transaction(
+    client: Client, index: int, bytes_to_read: int, data_to_write: Optional[bytes]
+) -> None:
+    res = await client.dow_transaction(index, bytes_to_read, data_to_write)
+    click.echo(f"index: {res.index}")
+    click.echo(f"data: {res.data}")
+    click.echo(f"crc: {res.crc}")
 
 
 @temperature.command(name="display", help="21 (0x15): Set Up Live Temperature Display")
