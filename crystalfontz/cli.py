@@ -33,6 +33,7 @@ from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.effects import Effect
 from crystalfontz.error import CrystalfontzError
+from crystalfontz.format import OutputMode
 from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
 from crystalfontz.keys import (
     KeyPress,
@@ -44,7 +45,7 @@ from crystalfontz.keys import (
     KP_UP,
 )
 from crystalfontz.lcd import LcdRegister
-from crystalfontz.report import JsonReportHandler, NoopReportHandler, ReportHandler
+from crystalfontz.report import CliReportHandler, NoopReportHandler, ReportHandler
 from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,7 @@ class Obj:
     hardware_rev: Optional[str]
     firmware_rev: Optional[str]
     detect: bool
+    output: Optional[OutputMode]
     timeout: Optional[float]
     retry_times: Optional[int]
     baud_rate: BaudRate
@@ -257,6 +259,8 @@ WATCHDOG_SETTING = WatchdogSetting()
 FUNCTION = Function()
 DRIVE_MODE = DriveMode()
 
+REPORT_HANDLER = CliReportHandler()
+
 
 @click.group(help="Control your Crystalfontz device")
 @click.option(
@@ -301,6 +305,7 @@ DRIVE_MODE = DriveMode()
     default=False,
     help="When set, detect device version",
 )
+@click.option("--output", type=click.Choice(["text", "json"]), default="text")
 @click.option(
     "--timeout",
     type=float,
@@ -330,6 +335,7 @@ def main(
     hardware_rev: Optional[str],
     firmware_rev: Optional[str],
     detect: bool,
+    output: Optional[OutputMode],
     timeout: Optional[float],
     retry_times: Optional[int],
     baud: Optional[str],
@@ -353,6 +359,7 @@ def main(
         hardware_rev=hardware_rev or config.hardware_rev,
         firmware_rev=firmware_rev or config.firmware_rev,
         detect=detect,
+        output=output,
         timeout=timeout or config.timeout,
         retry_times=retry_times if retry_times is not None else config.retry_times,
         baud_rate=baud_rate or config.baud_rate,
@@ -379,9 +386,12 @@ def pass_client(
             hardware_rev = ctx.obj.hardware_rev
             firmware_rev = ctx.obj.firmware_rev
             detect = ctx.obj.detect
+            output = ctx.obj.output
             timeout = ctx.obj.timeout
             retry_times = ctx.obj.retry_times
             baud_rate: BaudRate = ctx.obj.baud_rate
+
+            REPORT_HANDLER.mode = output
 
             async def main() -> None:
                 try:
@@ -417,7 +427,7 @@ def pass_client(
 
 @main.command(help="Listen for keypress and temperature reports")
 @click.option("--for", "for_", type=float, help="Amount of time to run the effect for")
-@pass_client(run_forever=True, report_handler_cls=JsonReportHandler)
+@pass_client(run_forever=True, report_handler_cls=CliReportHandler)
 async def listen(client: Client, for_: Optional[float]) -> None:
     """
     Listen for key and temperature reports. To configure which reports to

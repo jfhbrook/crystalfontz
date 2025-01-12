@@ -382,6 +382,12 @@ class KeyActivityReport(Response):
     def __str__(self: Self) -> str:
         return f"KeyActivityReport({self.activity.name})"
 
+    def __repr__(self: Self) -> str:
+        return f"{self.__class__.__name__}\t{self.activity.name}"
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(type=self.__class__.__name__, activity=self.activity.name)
+
 
 @code(0x82)
 class TemperatureReport(Response):
@@ -411,4 +417,14 @@ class TemperatureReport(Response):
         return (
             f"TemperatureReport({self.index}, celsius={self.celsius}, "
             f"fahrenheit={self.fahrenheit})"
+        )
+
+    def __repr__(self: Self) -> str:
+        return f"{self.__class__.__name__}\t{self.celsius}\t{self.fahrenheit}"
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(
+            type=self.__class__.__name__,
+            celsius=self.celsius,
+            fahrenheit=self.fahrenheit,
         )
