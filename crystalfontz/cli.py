@@ -33,7 +33,7 @@ from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.effects import Effect
 from crystalfontz.error import CrystalfontzError
-from crystalfontz.format import OutputMode
+from crystalfontz.format import format_json_bytes, OutputMode
 from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
 from crystalfontz.keys import (
     KeyPress,
@@ -265,6 +265,8 @@ def as_json(obj: Any) -> Any:
         return obj.as_dict()
     elif is_dataclass(obj.__class__):
         return asdict(obj)
+    elif isinstance(obj, bytes):
+        return format_json_bytes(obj)
     else:
         return obj
 
@@ -280,7 +282,11 @@ class CliWriter:
                 logger.debug(exc)
                 click.echo(json.dumps(repr(obj)), *args, **kwargs)
         else:
-            click.echo(obj if isinstance(obj, bytes) else repr(obj), *args, **kwargs)
+            click.echo(
+                obj if isinstance(obj, bytes) else repr(obj),
+                *args,
+                **kwargs,
+            )
 
 
 REPORT_HANDLER = CliReportHandler()

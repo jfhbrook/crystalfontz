@@ -67,6 +67,7 @@ OBJECTS = [
         lcd_brightness=0.5,
     ),
     GpioRead(bytes([0xFF, 0b0111, 0x11, 0b1101])),
+    b"\01",
 ]
 
 

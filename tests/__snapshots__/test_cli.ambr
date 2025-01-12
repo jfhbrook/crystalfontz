@@ -1,4 +1,7 @@
 # serializer version: 1
+# name: test_json[\x01]
+  '"AQ=="'
+# ---
 # name: test_json[obj0]
   '{"model": "CFA533", "hardware_rev": "h1.4", "firmware_rev": "u1v2"}'
 # ---
@@ -19,6 +22,9 @@
 # ---
 # name: test_json[obj6]
   '{"index": 255, "state": {"state": true, "falling": true, "rising": true}, "requested_level": 17, "settings": {"function": 8, "mode": 5, "up": "SLOW_STRONG", "down": "SLOW_STRONG"}}'
+# ---
+# name: test_repr[\x01]
+  "b'\\x01'"
 # ---
 # name: test_repr[obj0]
   'CFA533: h1.4, u1v2'
