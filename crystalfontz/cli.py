@@ -1,5 +1,5 @@
 import asyncio
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 import functools
 import json
 import logging
@@ -265,7 +265,18 @@ class CliWriter:
 
     def echo(self: Self, obj: Any, *args, **kwargs) -> None:
         if self.mode == "json":
-            click.echo(json.dumps(obj, indent=2), *args, **kwargs)
+            if hasattr(obj, "as_dict"):
+                jsobj: Any = obj.as_dict()
+            elif is_dataclass(obj.__class__):
+                jsobj: Any = asdict(obj)
+            else:
+                jsobj: Any = obj
+
+            try:
+                click.echo(json.dumps(jsobj, indent=2), *args, **kwargs)
+            except Exception as exc:
+                logger.debug(exc)
+                click.echo(json.dumps(repr(obj)), *args, **kwargs)
         else:
             click.echo(obj if isinstance(obj, bytes) else repr(obj), *args, **kwargs)
 
