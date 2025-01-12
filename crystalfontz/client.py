@@ -221,7 +221,7 @@ class Client(asyncio.Protocol):
     ) -> None:
 
         self.device: Device = device
-        self._report_handler: ReportHandler = report_handler
+        self.report_handler: ReportHandler = report_handler
         self._default_timeout: float = timeout
         self._default_retry_times: int = retry_times
 
@@ -264,14 +264,14 @@ class Client(asyncio.Protocol):
             self._handle_report(
                 "key_activity",
                 self._key_activity_queue,
-                self._report_handler.on_key_activity,
+                self.report_handler.on_key_activity,
             )
         )
         self._temperature_task: asyncio.Task[None] = self.loop.create_task(
             self._handle_report(
                 "temperature",
                 self._temperature_queue,
-                self._report_handler.on_temperature,
+                self.report_handler.on_temperature,
             )
         )
 

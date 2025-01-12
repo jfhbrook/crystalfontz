@@ -289,7 +289,6 @@ class CliWriter:
             )
 
 
-REPORT_HANDLER = CliReportHandler()
 WRITER = CliWriter()
 echo = WRITER.echo
 
@@ -428,8 +427,11 @@ def pass_client(
             retry_times = ctx.obj.retry_times
             baud_rate: BaudRate = ctx.obj.baud_rate
 
-            REPORT_HANDLER.mode = output
-            WRITER.mode = output or "text"
+            report_handler = report_handler_cls()
+            if isinstance(report_handler, CliReportHandler):
+                report_handler.mode = output
+
+            WRITER.mode = output
 
             async def main() -> None:
                 try:
@@ -438,7 +440,7 @@ def pass_client(
                         model=model,
                         hardware_rev=hardware_rev,
                         firmware_rev=firmware_rev,
-                        report_handler=report_handler_cls(),
+                        report_handler=report_handler,
                         timeout=timeout,
                         retry_times=retry_times,
                         baud_rate=baud_rate,
@@ -465,13 +467,15 @@ def pass_client(
 
 @main.command(help="Listen for keypress and temperature reports")
 @click.option("--for", "for_", type=float, help="Amount of time to run the effect for")
+@click.pass_context
 @pass_client(run_forever=True, report_handler_cls=CliReportHandler)
-async def listen(client: Client, for_: Optional[float]) -> None:
+async def listen(client: Client, ctx: click.Context, for_: Optional[float]) -> None:
     """
     Listen for key and temperature reports. To configure which reports to
     receive, use 'crystalfontz keypad reporting' and
     'crystalfontz temperature reporting' respectively.
     """
+
     if for_ is not None:
         await asyncio.sleep(for_)
         client.close()
