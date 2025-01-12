@@ -56,6 +56,8 @@ class AtxPowerSwitchFunctionalitySettings:
             if settings[0] & function.value:
                 functions.add(function)
         auto_polarity: bool = bool(settings[0] & AUTO_POLARITY)
+        reset_invert: bool = bool(settings[0] & RESET_INVERT)
+        power_invert: bool = bool(settings[0] & POWER_INVERT)
         power_pulse_length_seconds: Optional[float] = (
             settings[1] / 32 if len(settings) > 1 else None
         )
@@ -63,6 +65,8 @@ class AtxPowerSwitchFunctionalitySettings:
         return cls(
             functions=functions,
             auto_polarity=auto_polarity,
+            reset_invert=reset_invert,
+            power_invert=power_invert,
             power_pulse_length_seconds=power_pulse_length_seconds,
         )
 
@@ -88,3 +92,11 @@ class AtxPowerSwitchFunctionalitySettings:
             packed += min(pulse_length, 255).to_bytes(length=1)
 
         return packed
+
+    def __repr__(self: Self) -> str:
+        repr_ = "Functions enabled: {', '.join([e.name for e in self.functions])}\n"
+        repr_ += "Auto-Polarity Enabled: {'yes' if self.auto_polarity else 'no'}\n"
+        repr_ += "Reset Inverted: {'yes' if self.reset_invert else 'no'}\n"
+        repr_ += "Power Inverted: {'yes' if self.power_invert else 'no'}\n"
+        repr_ += "Power Pulse Length (seconds): {self.power_pulse_length_seconds}"
+        return repr_

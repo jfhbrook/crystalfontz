@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import struct
+import textwrap
 from typing import Any, Callable, cast, Dict, Type, TypeVar
 
 try:
@@ -128,6 +129,9 @@ class Versions(Response):
             f"firmware_rev={self.firmware_rev})"
         )
 
+    def __repr__(self: Self) -> str:
+        return f"{self.model}: {self.hardware_rev}, {self.firmware_rev}"
+
 
 @code(0x42)
 class UserFlashAreaWritten(Ack):
@@ -201,6 +205,9 @@ class LcdMemory(Response):
     def __str__(self: Self) -> str:
         return f"LcdMemory(0x{self.address:02X}={self.data})"
 
+    def __repr__(self: Self) -> str:
+        return f"{self.address}: {self.data}"
+
 
 @code(0x4B)
 class CursorPositionSet(Ack):
@@ -239,7 +246,10 @@ class DowDeviceInformation(Response):
         self.rom_id: bytes = data[1:]
 
     def __str__(self: Self) -> str:
-        return f"DownDeviceInformation({self.index}={self.rom_id})"
+        return f"DowDeviceInformation({self.index}={self.rom_id})"
+
+    def __repr__(self: Self) -> str:
+        return f"{self.index}: {self.rom_id}"
 
 
 @code(0x53)
@@ -264,6 +274,11 @@ class DowTransactionResult(Response):
 
     def __str__(self: Self) -> str:
         return f"DowTransactionResult({self.index}, data={self.data}, crc={self.crc})"
+
+    def __repr__(self: Self) -> str:
+        return "\n".join(
+            [f"index: {self.index}", f"data: {self.data}", f"crc: {self.crc}"]
+        )
 
 
 @code(0x55)
@@ -297,6 +312,12 @@ class KeypadPolled(Response):
 
     def __str__(self: Self) -> str:
         return f"KeypadPolled(states={self.states})"
+
+    def __repr__(self: Self) -> str:
+        repr_ = "Keypad states:\n"
+        repr_ += textwrap.indent(repr(self.states), "  ")
+
+        return repr_
 
 
 @code(0x5C)
@@ -363,6 +384,13 @@ class GpioRead(Response):
             f"GpioRead({self.index}, state={self.state}, "
             f"requested_level={self.requested_level}, settings={self.settings}"
         )
+
+    def __repr__(self: Self) -> str:
+        repr_ = "GPIO pin # {self.index}:\n"
+        repr_ += "  Requested Level: {self.requested_level}\n"
+        repr_ += "  Settings:\n"
+        repr_ += textwrap.indent(repr(self.settings), "    ")
+        return repr_
 
 
 @code(0x80)

@@ -166,3 +166,9 @@ class GpioSettings:
         function = GpioFunction.USED if data & 0b1000 else GpioFunction.UNUSED
         mode = data & 0b0111
         return cls(function=function, mode=mode)
+
+    def __repr__(self: Self) -> str:
+        repr_ = f"Function: {self.function.value}\n"
+        repr_ += "Drive Mode: {self.up.value}, {self.down.value}"
+
+        return repr_

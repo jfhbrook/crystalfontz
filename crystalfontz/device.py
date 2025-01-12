@@ -1,6 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 import logging
+import textwrap
 from typing import Any, Optional, Set
 
 try:
@@ -133,6 +134,33 @@ class CFA533Status:
     atx_sense_on_floppy: bool
     cfa633_contrast: float
     lcd_brightness: float
+
+    def __repr__(self: Self) -> str:
+        repr_ = "CFA533 status:\n"
+        repr_ += ("-" * (len(repr_) - 1)) + "\n\n"
+
+        enabled = ", ".join(
+            [f"{e}" for e in sorted(list(self.temperature_sensors_enabled))]
+        )
+        repr_ += "Temperature sensors enabled: " + enabled + "\n"
+
+        repr_ += "Key states:\n"
+        repr_ += textwrap.indent(repr(self.key_states), "  ") + "\n"
+
+        repr_ += "ATX Power Switch Functionality Settings:\n"
+        repr_ += (
+            textwrap.indent(repr(self.atx_power_switch_functionality_settings), "  ")
+            + "\n"
+        )
+
+        repr_ += "Watchdog Counter: {self.watchdog_counter}\n"
+        repr_ += "Contrast: {self.contrast}\n"
+        repr_ += "Contrast (CFA633 Compatible): {self.cfa633_contrast}\n"
+        repr_ += "Backlight:\n"
+        repr_ += "  Keypad Brightness: {self.keypad_brightness}\n"
+        repr_ += "  LCD Brightness: {self.lcd_brightness}"
+
+        return repr_
 
 
 class CFA533(Device):
