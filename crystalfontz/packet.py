@@ -300,7 +300,7 @@ def serialize_packet(packet: Packet) -> bytes:
     cmd, data = packet
     if len(data) > MAX_DATA_LEN:
         raise EncodeError(f"Too much data ({len(data)} > {MAX_DATA_LEN}")
-    pkt = cmd.to_bytes() + len(data).to_bytes() + data
+    pkt = cmd.to_bytes(1, "big") + len(data).to_bytes(len(data), "big") + data
     crc = make_crc(pkt)
 
     logger.debug(f"Sending packet: {pkt + crc}")

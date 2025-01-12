@@ -136,7 +136,7 @@ def parse_bytes(text: str) -> bytes:
             end = i + 2 + width
             try:
                 code = int(text[start:end], radix)
-                buffer += code.to_bytes(1, byteorder="big")
+                buffer += code.to_bytes(1, "big")
             except ValueError as exc:
                 # Digits weren't valid
                 if width > min_width:

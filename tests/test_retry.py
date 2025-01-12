@@ -2,6 +2,11 @@ import asyncio
 from typing import Any, Optional
 
 try:
+    from asyncio import TimeoutError
+except ImportError:
+    TimeoutError = Exception
+
+try:
     from typing import Self
 except ImportError:
     Self = Any
@@ -42,14 +47,14 @@ class MockClient:
 async def test_retry() -> None:
     client = MockClient()
 
-    with pytest.raises(asyncio.TimeoutError):
+    with pytest.raises(TimeoutError):
         await client.test_retry()
 
     assert client.times == 1
 
     client.reset()
 
-    with pytest.raises(asyncio.TimeoutError):
+    with pytest.raises(TimeoutError):
         await client.test_retry(retry_times=2)
 
     assert client.times == 3
