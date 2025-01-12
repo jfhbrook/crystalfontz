@@ -9,6 +9,7 @@
 - Support for `crystalfontz gpio write` and `crystalfontz gpio read`
 - CLI supports `--output text` and `--output json`
 - Support Python 3.10
+- Export `Config` class used by CLI
 
 ## 2025/01/09 Version 3.0.1
 
