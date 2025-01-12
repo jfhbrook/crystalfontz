@@ -1,7 +1,13 @@
 # serializer version: 1
+# name: test_json[obj0]
+  '{"model": "CFA533", "hardware_rev": "h1.4", "firmware_rev": "u1v2"}'
+# ---
+# name: test_json[obj1]
+  '{"address": 255, "data": "AAECAwQFBgc="}'
+# ---
 # name: test_repr[obj0]
   'CFA533: h1.4, u1v2'
 # ---
 # name: test_repr[obj1]
-  "255: \\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07"
+  '0xFF: \\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07'
 # ---

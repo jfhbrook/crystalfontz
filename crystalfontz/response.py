@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import base64
 import struct
 import textwrap
 from typing import Any, Callable, cast, Dict, Type, TypeVar
@@ -14,6 +15,7 @@ from crystalfontz.error import (
     ResponseDecodeError,
     UnknownResponseError,
 )
+from crystalfontz.format import format_bytes
 from crystalfontz.gpio import GpioSettings, GpioState
 from crystalfontz.keys import KeyActivity, KeyStates
 from crystalfontz.packet import Packet
@@ -129,6 +131,13 @@ class Versions(Response):
             f"firmware_rev={self.firmware_rev})"
         )
 
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(
+            model=self.model,
+            hardware_rev=self.hardware_rev,
+            firmware_rev=self.firmware_rev,
+        )
+
     def __repr__(self: Self) -> str:
         return f"{self.model}: {self.hardware_rev}, {self.firmware_rev}"
 
@@ -205,8 +214,13 @@ class LcdMemory(Response):
     def __str__(self: Self) -> str:
         return f"LcdMemory(0x{self.address:02X}={self.data})"
 
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(
+            address=self.address, data=base64.b64encode(self.data).decode("utf-8")
+        )
+
     def __repr__(self: Self) -> str:
-        return f"{self.address}: {self.data}"
+        return f"0x{self.address:02X}: {format_bytes(self.data)}"
 
 
 @code(0x4B)
