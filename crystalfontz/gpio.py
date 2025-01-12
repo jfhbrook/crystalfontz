@@ -159,7 +159,7 @@ class GpioSettings:
         return f"GpioSettings(function={self.function}, mode={self.mode:0b}"
 
     def to_bytes(self: Self) -> bytes:
-        return (self.function.value + self.mode).to_bytes()
+        return (self.function.value + self.mode).to_bytes(1, "big")
 
     @classmethod
     def from_byte(cls: Type[Self], data: int) -> Self:
