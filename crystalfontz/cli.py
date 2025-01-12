@@ -109,7 +109,7 @@ def parse_bytes(text: str) -> bytes:
     def invalid(seq: str) -> None:
         nonlocal i
         nonlocal buffer
-        buffer = buffer + seq.encode("ascii")
+        buffer = buffer + seq.encode("utf-8")
         i += len(seq)
 
     def parse_escape_sequence() -> None:
@@ -168,10 +168,25 @@ def parse_bytes(text: str) -> bytes:
                 warnings.warn(WARNING_MESSAGE.format(text[i : i + 1]))
                 invalid(text[i : i + 1])
                 continue
-        buffer += text[i : i + 1].encode("ascii")
+        buffer += text[i : i + 1].encode("utf-8")
         i += 1
 
     return buffer
+
+
+class Bytes(click.ParamType):
+    name = "bytes"
+
+    def convert(
+        self: Self,
+        value: str,
+        param: Optional[click.Parameter],
+        ctx: Optional[click.Context],
+    ) -> bytes:
+        try:
+            return parse_bytes(value)
+        except Exception as exc:
+            self.fail(f"{value!r} is not valid bytes: {exc}", param, ctx)
 
 
 class Byte(click.IntRange):
@@ -192,6 +207,7 @@ class WatchdogSetting(Byte):
         return super().convert(value, param, ctx)
 
 
+BYTES = Bytes()
 BYTE = Byte()
 WATCHDOG_SETTING = WatchdogSetting()
 
@@ -368,10 +384,10 @@ async def listen(client: Client, for_: Optional[float]) -> None:
 
 
 @main.command(help="0 (0x00): Ping command")
-@click.argument("payload")
+@click.argument("payload", type=BYTES)
 @pass_client()
-async def ping(client: Client, payload: str) -> None:
-    pong = await client.ping(payload.encode("utf8"))
+async def ping(client: Client, payload: bytes) -> None:
+    pong = await client.ping(payload)
     click.echo(pong.response)
 
 
@@ -388,11 +404,10 @@ def flash() -> None:
 
 
 @flash.command(name="write", help="2 (0x02): Write User Flash Area")
-@click.argument("data")
+@click.argument("data", type=BYTES)
 @pass_client()
-async def write_user_flash_area(client: Client, data: str) -> None:
-    # Click doesn't have a good way of receiving bytes as arguments.
-    raise NotImplementedError("crystalfontz user-flash-area write")
+async def write_user_flash_area(client: Client, data: bytes) -> None:
+    await client.write_user_flash_area(data)
 
 
 @flash.command(name="read", help="3 (0x03): Read User Flash Area")
@@ -549,12 +564,15 @@ async def setup_temperature_reporting(client: Client, enabled: Tuple[int]) -> No
 @dow.command(name="transaction", help="20 (0x14): Arbitrary DOW Transaction")
 @click.argument("index", type=BYTE)
 @click.argument("bytes_to_read", type=BYTE)
-@click.option("--data_to_write")
-def dow_transaction() -> None:
-    #
-    # This command also depends on being able to receive bytes from click.
-    #
-    raise NotImplementedError("crystalfontz dow transaction")
+@click.option("--data_to_write", type=BYTES)
+@pass_client()
+async def dow_transaction(
+    client: Client, index: int, bytes_to_read: int, data_to_write: Optional[bytes]
+) -> None:
+    res = await client.dow_transaction(index, bytes_to_read, data_to_write)
+    click.echo(f"index: {res.index}")
+    click.echo(f"data: {res.data}")
+    click.echo(f"crc: {res.crc}")
 
 
 @temperature.command(name="display", help="21 (0x15): Set Up Live Temperature Display")

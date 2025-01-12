@@ -905,7 +905,7 @@ class Client(asyncio.Protocol):
         self: Self,
         index: int,
         bytes_to_read: int,
-        data_to_write: bytes,
+        data_to_write: Optional[bytes] = None,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
     ) -> DowTransactionResult:
@@ -921,7 +921,11 @@ class Client(asyncio.Protocol):
         """
 
         return await self.send_command(
-            DowTransaction(index, bytes_to_read, data_to_write),
+            DowTransaction(
+                index,
+                bytes_to_read,
+                data_to_write if data_to_write is not None else b"",
+            ),
             DowTransactionResult,
             timeout=timeout,
             retry_times=retry_times,

@@ -2,6 +2,10 @@
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
 - Rename `client.load_device` to `client.detect_device`
 - `--detect` flag to call `client.detect_device()`
+- `crystalfontz ping` may receive encoded bytes
+- Support for `crystalfontz flash write`
+- Support for `crystalfontz dow transaction`
+- `client.dow_transaction`'s `data_to_write` argument defaults to empty bytes
 
 ## 2025/01/09 Version 3.0.1
 
