@@ -1,3 +1,7 @@
+"""
+Configuration management for the Crystalfontz CLI.
+"""
+
 from dataclasses import asdict, dataclass, field, fields, replace
 import os
 import os.path
@@ -18,10 +22,6 @@ try:
     from yaml import CLoader as Loader
 except ImportError:
     from yaml import Dumper, Loader
-
-"""
-Configuration management for the Crystalfontz CLI.
-"""
 
 APP_NAME = "crystalfontz"
 
@@ -56,7 +56,8 @@ def _from_environment() -> Dict[str, Any]:
 @dataclass
 class Config:
     """
-    A config for the crystalfontz CLI.
+    A configuration object. This class is typically used by the Crystalfontz CLI, but
+    may also be useful for scripts or Jupyter notebooks using its configuration.
     """
 
     port: str = field(
@@ -125,7 +126,9 @@ class Config:
         return config
 
     def to_file(self, file: Optional[str] = None) -> "Config":
-        """Save the config to a file."""
+        """
+        Save the config to a file.
+        """
 
         file = file or self.file or default_file()
 

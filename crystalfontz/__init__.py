@@ -4,6 +4,7 @@ from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionality
 from crystalfontz.baud import BaudRate, FAST_BAUD_RATE, SLOW_BAUD_RATE
 from crystalfontz.client import Client, connection, create_connection
 from crystalfontz.command import Command
+from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus
 from crystalfontz.effects import Effect, Marquee, Screensaver
@@ -86,6 +87,7 @@ __all__: List[str] = [
     "ClientProtocol",
     "Command",
     "CommandSentToLcdController",
+    "Config",
     "connection",
     "ConnectionError",
     "ContrastSet",
