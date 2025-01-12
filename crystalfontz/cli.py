@@ -260,20 +260,22 @@ FUNCTION = Function()
 DRIVE_MODE = DriveMode()
 
 
+def as_json(obj: Any) -> Any:
+    if hasattr(obj, "as_dict"):
+        return obj.as_dict()
+    elif is_dataclass(obj.__class__):
+        return asdict(obj)
+    else:
+        return obj
+
+
 class CliWriter:
     mode: OutputMode = "text"
 
     def echo(self: Self, obj: Any, *args, **kwargs) -> None:
         if self.mode == "json":
-            if hasattr(obj, "as_dict"):
-                jsobj: Any = obj.as_dict()
-            elif is_dataclass(obj.__class__):
-                jsobj: Any = asdict(obj)
-            else:
-                jsobj: Any = obj
-
             try:
-                click.echo(json.dumps(jsobj, indent=2), *args, **kwargs)
+                click.echo(json.dumps(as_json(obj), indent=2), *args, **kwargs)
             except Exception as exc:
                 logger.debug(exc)
                 click.echo(json.dumps(repr(obj)), *args, **kwargs)
