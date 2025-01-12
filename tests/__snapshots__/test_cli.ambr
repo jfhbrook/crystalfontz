@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_repr[obj0]
+  'CFA533: h1.4, u1v2'
+# ---
+# name: test_repr[obj1]
+  "255: \\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07"
+# ---

@@ -79,6 +79,11 @@ test:
   uv run pytest ./tests
   @just _clean-test
 
+# Update snapshots
+snap:
+  uv run pytest --snapshot-update ./tests
+  @just _clean-test
+
 # Run simple integration test suite
 integration:
   uv run bash ./tests/integration.sh
