@@ -33,6 +33,7 @@ from crystalfontz.config import Config, GLOBAL_FILE
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.effects import Effect
 from crystalfontz.error import CrystalfontzError
+from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
 from crystalfontz.keys import (
     KeyPress,
     KP_DOWN,
@@ -207,9 +208,54 @@ class WatchdogSetting(Byte):
         return super().convert(value, param, ctx)
 
 
+class Function(click.Choice):
+    name = "function"
+
+    def __init__(self: Self) -> None:
+        super().__init__(["used", "unused", "USED", "UNUSED"])
+
+    def convert(
+        self: Self,
+        value: str,
+        param: Optional[click.Parameter],
+        ctx: Optional[click.Context],
+    ) -> GpioFunction:
+        choice = super().convert(value, param, ctx)
+
+        if choice in {"used", "USED"}:
+            return GpioFunction.USED
+        else:
+            return GpioFunction.UNUSED
+
+
+class DriveMode(click.Choice):
+    name = "drive_mode"
+
+    def __init__(self: Self) -> None:
+        super().__init__(["slow-strong", "fast-strong", "resistive", "hi-z"])
+
+    def convert(
+        self: Self,
+        value: str,
+        param: Optional[click.Parameter],
+        ctx: Optional[click.Context],
+    ) -> GpioDriveMode:
+        choice = super().convert(value, param, ctx)
+        if choice == "slow-strong":
+            return GpioDriveMode.SLOW_STRONG
+        elif choice == "fast-strong":
+            return GpioDriveMode.FAST_STRONG
+        elif choice == "resistive":
+            return GpioDriveMode.RESISTIVE
+        else:
+            return GpioDriveMode.HI_Z
+
+
 BYTES = Bytes()
 BYTE = Byte()
 WATCHDOG_SETTING = WatchdogSetting()
+FUNCTION = Function()
+DRIVE_MODE = DriveMode()
 
 
 @click.group(help="Control your Crystalfontz device")
@@ -756,15 +802,48 @@ def gpio() -> None:
 
 
 @gpio.command(name="set", help="34 (0x22): Set or Set and Configure GPIO Pins")
-def set_gpio() -> None:
-    raise NotImplementedError("crystalfontz gpio set")
+@click.argument("index", type=BYTE)
+@click.argument("state", type=BYTE)
+@click.option("--function", type=FUNCTION, help="The GPIO pin's function")
+@click.option("--up", type=DRIVE_MODE, help="The GPIO pin's pull-up drive mode")
+@click.option("--down", type=DRIVE_MODE, help="The GPIO pin's pull-down drive mode")
+@pass_client()
+async def set_gpio(
+    client: Client,
+    index: int,
+    output_state: int,
+    function: Optional[GpioFunction],
+    up: Optional[GpioDriveMode],
+    down: Optional[GpioDriveMode],
+) -> None:
+    settings: Optional[GpioSettings] = None
+    settings_undefined = function is None and up is None and down is None
+    if not settings_undefined:
+        if not function:
+            raise ValueError(
+                "When configuring GPIO pins, " "a function must be defined"
+            )
+        if not up:
+            raise ValueError(
+                "When configuring GPIO pins, " "a pull-up mode must be defined"
+            )
+        if not down:
+            raise ValueError(
+                "When configuring GPIO pins, " "a pull-down mode must be defined"
+            )
+        settings = GpioSettings(function=function, up=up, down=down)
+    res = await client.set_gpio(index, output_state, settings)
+    click.echo(res)
 
 
 @gpio.command(
     name="read", help="35 (0x23): Read GPIO Pin Levels and Configuration State"
 )
-def read_gpio() -> None:
-    raise NotImplementedError("crystalfontz gpio read")
+@click.argument("index", type=BYTE)
+@pass_client()
+async def read_gpio(client: Client, index: int) -> None:
+    res = await client.read_gpio(index)
+    click.echo(res)
 
 
 @main.group(help="Run various effects, such as marquees")

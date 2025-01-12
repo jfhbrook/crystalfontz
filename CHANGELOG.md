@@ -6,6 +6,7 @@
 - Support for `crystalfontz flash write`
 - Support for `crystalfontz dow transaction`
 - `client.dow_transaction`'s `data_to_write` argument defaults to empty bytes
+- Support for `crystalfontz gpio write` and `crystalfontz gpio read`
 
 ## 2025/01/09 Version 3.0.1
 
