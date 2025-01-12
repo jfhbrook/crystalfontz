@@ -5,9 +5,80 @@
 # name: test_json[obj1]
   '{"address": 255, "data": "AAECAwQFBgc="}'
 # ---
+# name: test_json[obj2]
+  '{"index": 255, "rom_id": "AAECAwQFBgc="}'
+# ---
+# name: test_json[obj3]
+  '{"index": 255, "data": "AQIDBAUGBw==", "crc": 255}'
+# ---
+# name: test_json[obj4]
+  '{"states": {"up": {"pressed": true, "pressed_since": true, "released_since": true}, "enter": {"pressed": false, "pressed_since": false, "released_since": false}, "exit": {"pressed": false, "pressed_since": false, "released_since": false}, "left": {"pressed": false, "pressed_since": false, "released_since": false}, "right": {"pressed": false, "pressed_since": false, "released_since": false}, "down": {"pressed": false, "pressed_since": false, "released_since": false}}}'
+# ---
+# name: test_json[obj5]
+  '{"temperature_sensors_enabled": [1, 2], "key_states": {"up": {"pressed": false, "pressed_since": true, "released_since": true}, "enter": {"pressed": false, "pressed_since": true, "released_since": true}, "exit": {"pressed": false, "pressed_since": true, "released_since": true}, "left": {"pressed": false, "pressed_since": true, "released_since": true}, "right": {"pressed": false, "pressed_since": true, "released_since": true}, "down": {"pressed": false, "pressed_since": true, "released_since": true}}, "atx_power_switch_functionality_settings": [{"functions": [32], "auto_polarity": true, "reset_invert": false, "power_invert": false, "power_pulse_length_seconds": 1.0}], "watchdog_counter": 0, "contrast": 0.5, "keypad_brightness": 0.5, "atx_sense_on_floppy": false, "cfa633_contrast": 0.5, "lcd_brightness": 0.5}'
+# ---
+# name: test_json[obj6]
+  '{"index": 255, "state": {"state": true, "falling": true, "rising": true}, "requested_level": 17, "settings": {"function": 8, "mode": 5, "up": "SLOW_STRONG", "down": "SLOW_STRONG"}}'
+# ---
 # name: test_repr[obj0]
   'CFA533: h1.4, u1v2'
 # ---
 # name: test_repr[obj1]
   '0xFF: \\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07'
+# ---
+# name: test_repr[obj2]
+  '0xFF: \\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07'
+# ---
+# name: test_repr[obj3]
+  '''
+  index: 0xFF
+  data: \x01\x02\x03\x04\x05\x06\x07
+  crc: 0xFF
+  '''
+# ---
+# name: test_repr[obj4]
+  '''
+  Keypad states:
+    up: pressed=yes, pressed_since=yes, released_since=yes
+    enter: pressed=no, pressed_since=no, released_since=no
+    exit: pressed=no, pressed_since=no, released_since=no
+    left: pressed=no, pressed_since=no, released_since=no
+    right: pressed=no, pressed_since=no, released_since=no
+    down: pressed=no, pressed_since=no, released_since=no
+  '''
+# ---
+# name: test_repr[obj5]
+  '''
+  CFA533 status:
+  --------------
+  Temperature sensors enabled: 1, 2
+  Key states:
+    up: pressed=no, pressed_since=yes, released_since=yes
+    enter: pressed=no, pressed_since=yes, released_since=yes
+    exit: pressed=no, pressed_since=yes, released_since=yes
+    left: pressed=no, pressed_since=yes, released_since=yes
+    right: pressed=no, pressed_since=yes, released_since=yes
+    down: pressed=no, pressed_since=yes, released_since=yes
+  ATX Power Switch Functionality Settings:
+    Functions enabled: KEYPAD_RESET
+    Auto-Polarity Enabled: yes
+    Reset Inverted: no
+    Power Inverted: no
+    Power Pulse Length (seconds): 1.0
+  Watchdog Counter: 0
+  Contrast: 0.5
+  Contrast (CFA633 Compatible): 0.5
+  Backlight:
+    Keypad Brightness: 0.5
+    LCD Brightness: 0.5
+  '''
+# ---
+# name: test_repr[obj6]
+  '''
+  GPIO pin 255:
+    Requested Level: 17
+    Settings:
+      Function: 8
+      Drive Mode: SLOW_STRONG, SLOW_STRONG
+  '''
 # ---

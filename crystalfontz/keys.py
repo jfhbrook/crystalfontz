@@ -1,6 +1,6 @@
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, List, Type
+from typing import Any, List, Type
 
 try:
     from typing import Self
@@ -94,13 +94,10 @@ class KeyStates:
             ),
         )
 
-    def as_dict(self: Self) -> Dict[str, Dict[str, bool]]:
-        return {key: state for key, state in asdict(self).items()}
-
     def __repr__(self: Self) -> str:
         repr_ = ""
-        for name, state in self.as_dict().items():
-            st = ", ".join([f"{n}: {'yes' if s else 'no'}" for n, s in state.items()])
+        for name, state in asdict(self).items():
+            st = ", ".join([f"{n}={'yes' if s else 'no'}" for n, s in state.items()])
             repr_ += f"{name}: {st}\n"
         return repr_[0:-1]
 

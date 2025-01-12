@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Optional, Set, Type
+from typing import Any, Dict, Optional, Set, Type
 
 try:
     from typing import Self
@@ -93,10 +93,19 @@ class AtxPowerSwitchFunctionalitySettings:
 
         return packed
 
+    def as_dict(self: Self) -> Dict[str, Any]:
+        as_ = asdict(self)
+
+        as_["functions"] = [fn.value for fn in self.functions]
+
+        print(as_)
+
+        return as_
+
     def __repr__(self: Self) -> str:
-        repr_ = "Functions enabled: {', '.join([e.name for e in self.functions])}\n"
-        repr_ += "Auto-Polarity Enabled: {'yes' if self.auto_polarity else 'no'}\n"
-        repr_ += "Reset Inverted: {'yes' if self.reset_invert else 'no'}\n"
-        repr_ += "Power Inverted: {'yes' if self.power_invert else 'no'}\n"
-        repr_ += "Power Pulse Length (seconds): {self.power_pulse_length_seconds}"
+        repr_ = f"Functions enabled: {', '.join([e.name for e in self.functions])}\n"
+        repr_ += f"Auto-Polarity Enabled: {'yes' if self.auto_polarity else 'no'}\n"
+        repr_ += f"Reset Inverted: {'yes' if self.reset_invert else 'no'}\n"
+        repr_ += f"Power Inverted: {'yes' if self.power_invert else 'no'}\n"
+        repr_ += f"Power Pulse Length (seconds): {self.power_pulse_length_seconds}"
         return repr_

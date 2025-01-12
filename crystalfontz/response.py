@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import base64
+from dataclasses import asdict
 import struct
 import textwrap
 from typing import Any, Callable, cast, Dict, Type, TypeVar
@@ -15,7 +15,7 @@ from crystalfontz.error import (
     ResponseDecodeError,
     UnknownResponseError,
 )
-from crystalfontz.format import format_bytes
+from crystalfontz.format import format_bytes, format_json_bytes
 from crystalfontz.gpio import GpioSettings, GpioState
 from crystalfontz.keys import KeyActivity, KeyStates
 from crystalfontz.packet import Packet
@@ -215,9 +215,7 @@ class LcdMemory(Response):
         return f"LcdMemory(0x{self.address:02X}={self.data})"
 
     def as_dict(self: Self) -> Dict[str, Any]:
-        return dict(
-            address=self.address, data=base64.b64encode(self.data).decode("utf-8")
-        )
+        return dict(address=self.address, data=format_json_bytes(self.data))
 
     def __repr__(self: Self) -> str:
         return f"0x{self.address:02X}: {format_bytes(self.data)}"
@@ -262,8 +260,11 @@ class DowDeviceInformation(Response):
     def __str__(self: Self) -> str:
         return f"DowDeviceInformation({self.index}={self.rom_id})"
 
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(index=self.index, rom_id=format_json_bytes(self.rom_id))
+
     def __repr__(self: Self) -> str:
-        return f"{self.index}: {self.rom_id}"
+        return f"0x{self.index:02X}: {format_bytes(self.rom_id)}"
 
 
 @code(0x53)
@@ -287,11 +288,21 @@ class DowTransactionResult(Response):
         self.crc = data[-1]
 
     def __str__(self: Self) -> str:
-        return f"DowTransactionResult({self.index}, data={self.data}, crc={self.crc})"
+        return (
+            f"DowTransactionResult(0x{self.index:02X}, "
+            f"data={self.data}, crc={self.crc})"
+        )
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(index=self.index, data=format_json_bytes(self.data), crc=self.crc)
 
     def __repr__(self: Self) -> str:
         return "\n".join(
-            [f"index: {self.index}", f"data: {self.data}", f"crc: {self.crc}"]
+            [
+                f"index: 0x{self.index:02X}",
+                f"data: {format_bytes(self.data)}",
+                f"crc: 0x{self.crc:02X}",
+            ]
         )
 
 
@@ -326,6 +337,9 @@ class KeypadPolled(Response):
 
     def __str__(self: Self) -> str:
         return f"KeypadPolled(states={self.states})"
+
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(states=asdict(self.states))
 
     def __repr__(self: Self) -> str:
         repr_ = "Keypad states:\n"
@@ -399,9 +413,17 @@ class GpioRead(Response):
             f"requested_level={self.requested_level}, settings={self.settings}"
         )
 
+    def as_dict(self: Self) -> Dict[str, Any]:
+        return dict(
+            index=self.index,
+            state=asdict(self.state),
+            requested_level=self.requested_level,
+            settings=self.settings.as_dict(),
+        )
+
     def __repr__(self: Self) -> str:
-        repr_ = "GPIO pin # {self.index}:\n"
-        repr_ += "  Requested Level: {self.requested_level}\n"
+        repr_ = f"GPIO pin {self.index}:\n"
+        repr_ += f"  Requested Level: {self.requested_level}\n"
         repr_ += "  Settings:\n"
         repr_ += textwrap.indent(repr(self.settings), "    ")
         return repr_
