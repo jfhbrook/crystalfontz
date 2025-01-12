@@ -53,12 +53,21 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class EffectOptions:
+    """
+    Options for effects.
+    """
+
     tick: Optional[float]
     for_: Optional[float]
 
 
 @dataclass
 class Obj:
+    """
+    The main click context object. Contains options collated from parameters and the
+    loaded config file.
+    """
+
     config: Config
     global_: bool
     port: str
@@ -103,6 +112,11 @@ BYTE_VALUE_ESCAPE_SEQUENCES: Dict[str, Tuple[List[int], int]] = {
 
 
 def parse_bytes(text: str) -> bytes:
+    """
+    Parse a string representation of bytes into bytes. Supports the same escape
+    sequences as Python's bytes literals.
+    """
+
     buffer: bytes = b""
 
     i = 0
@@ -178,6 +192,10 @@ def parse_bytes(text: str) -> bytes:
 
 
 class Bytes(click.ParamType):
+    """
+    A parameter containing byte escape codes.
+    """
+
     name = "bytes"
 
     def convert(
@@ -193,6 +211,10 @@ class Bytes(click.ParamType):
 
 
 class Byte(click.IntRange):
+    """
+    A parameter representing a single byte - an integer in [0, 255].
+    """
+
     name = "byte"
 
     def __init__(self: Self) -> None:
@@ -200,6 +222,11 @@ class Byte(click.IntRange):
 
 
 class WatchdogSetting(Byte):
+    """
+    A watchdog setting. This is typically an integer, but the values "disable" and
+    "disabled" are supported as aliases for 0.
+    """
+
     name = "watchdog_setting"
 
     def convert(
@@ -211,6 +238,10 @@ class WatchdogSetting(Byte):
 
 
 class Function(click.Choice):
+    """
+    A GPIO function parameter. Either used or unused.
+    """
+
     name = "function"
 
     def __init__(self: Self) -> None:
@@ -231,6 +262,11 @@ class Function(click.Choice):
 
 
 class DriveMode(click.Choice):
+    """
+    A GPIO drive mode. Each direction supports one of four settings, which are
+    in turn supported in various combinations.
+    """
+
     name = "drive_mode"
 
     def __init__(self: Self) -> None:
@@ -261,6 +297,9 @@ DRIVE_MODE = DriveMode()
 
 
 def as_json(obj: Any) -> Any:
+    """
+    Convert an object into something that is JSON-serializable.
+    """
     if hasattr(obj, "as_dict"):
         return obj.as_dict()
     elif is_dataclass(obj.__class__):
@@ -272,6 +311,11 @@ def as_json(obj: Any) -> Any:
 
 
 class CliWriter:
+    """
+    An abstraction for writing output to the terminal. Used to support the
+    behavior of the --output flag.
+    """
+
     mode: OutputMode = "text"
 
     def echo(self: Self, obj: Any, *args, **kwargs) -> None:
@@ -290,10 +334,12 @@ class CliWriter:
 
 
 WRITER = CliWriter()
+
+# Generally, one would call echo()
 echo = WRITER.echo
 
 
-@click.group(help="Control your Crystalfontz device")
+@click.group()
 @click.option(
     "--global/--no-global",
     "global_",
@@ -376,6 +422,10 @@ def main(
     retry_times: Optional[int],
     baud: Optional[str],
 ) -> None:
+    """
+    Control your Crystalfontz device.
+    """
+
     baud_rate = cast(Optional[BaudRate], int(baud) if baud else None)
     file = None
     if config_file:
@@ -413,6 +463,10 @@ def pass_client(
     run_forever: bool = False,
     report_handler_cls: Type[ReportHandler] = NoopReportHandler,
 ) -> AsyncCommandDecorator:
+    """
+    Create a client and pass it to the decorated click handler.
+    """
+
     def decorator(fn: AsyncCommand) -> WrappedAsyncCommand:
         @click.pass_context
         @functools.wraps(fn)
@@ -428,9 +482,12 @@ def pass_client(
             baud_rate: BaudRate = ctx.obj.baud_rate
 
             report_handler = report_handler_cls()
+
+            # Set the output mode on the report handler
             if isinstance(report_handler, CliReportHandler):
                 report_handler.mode = output
 
+            # Set the output mode on the writer
             WRITER.mode = output
 
             async def main() -> None:
@@ -448,11 +505,19 @@ def pass_client(
                 except SerialException as exc:
                     click.echo(exc)
                     sys.exit(1)
+
+                # If enabled, detect the device and update it accordingly
                 if detect:
                     await client.detect_device()
+
+                # Giddyup!
                 await fn(client, *args, **kwargs)
+
+                # Close the client if we're done
                 if not run_forever:
                     client.close()
+
+                # Await the client closing and surface any exceptions
                 await client.closed
 
             try:
@@ -465,14 +530,14 @@ def pass_client(
     return decorator
 
 
-@main.command(help="Listen for keypress and temperature reports")
+@main.command()
 @click.option("--for", "for_", type=float, help="Amount of time to run the effect for")
-@click.pass_context
 @pass_client(run_forever=True, report_handler_cls=CliReportHandler)
-async def listen(client: Client, ctx: click.Context, for_: Optional[float]) -> None:
+async def listen(client: Client, for_: Optional[float]) -> None:
     """
-    Listen for key and temperature reports. To configure which reports to
-    receive, use 'crystalfontz keypad reporting' and
+    Listen for key and temperature reports.
+
+    To configure which reports to receive, use 'crystalfontz keypad reporting' and
     'crystalfontz temperature reporting' respectively.
     """
 
