@@ -53,11 +53,10 @@ import warnings
 
 try:
     from asyncio import timeout as async_timeout
-    from asyncio import TimeoutError
 except ImportError:
     from async_timeout import timeout as async_timeout
 
-    TimeoutError = Exception
+from asyncio import TimeoutError
 
 try:
     from typing import Self
