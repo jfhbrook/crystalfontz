@@ -451,7 +451,7 @@ def pass_client(
     "--log-level",
     envvar="CRYSTALFONTZ_LOG_LEVEL",
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
-    default="WARNING",
+    default="INFO",
     help="Set the log level",
 )
 @click.option(
