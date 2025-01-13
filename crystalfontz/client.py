@@ -52,14 +52,6 @@ from typing import (
 import warnings
 
 try:
-    from asyncio import timeout as async_timeout
-    from asyncio import TimeoutError
-except ImportError:
-    from async_timeout import timeout as async_timeout
-
-    TimeoutError = Exception
-
-try:
     from typing import Self
 except ImportError:
     Self = Any
@@ -182,7 +174,7 @@ def timeout(
         to = kwargs.get("timeout", self._default_timeout)
         to = to if to is not None else self._default_timeout
         assert type(to) is float, "timeout should be a float"
-        async with async_timeout(to):
+        async with asyncio.timeout(to):
             return await fn(self, *args, **kwargs)
 
     return wrapper

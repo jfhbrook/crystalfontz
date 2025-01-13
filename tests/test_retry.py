@@ -2,11 +2,6 @@ import asyncio
 from typing import Any, Optional
 
 try:
-    from asyncio import TimeoutError
-except ImportError:
-    TimeoutError = Exception
-
-try:
     from typing import Self
 except ImportError:
     Self = Any
