@@ -37,7 +37,7 @@ class CharacterRom:
             for j, char in enumerate(row):
                 point = (16 * j) + i
                 if char != " " or point == 32:
-                    self._table[char] = point.to_bytes(1, "big")
+                    self._table[char] = point.to_bytes(length=1)
 
     def __getitem__(self: Self, key: str) -> bytes:
         return self._table[key]
@@ -52,7 +52,7 @@ class CharacterRom:
         """
 
         if isinstance(encoded, int):
-            self[char] = encoded.to_bytes(1, "big")
+            self[char] = encoded.to_bytes()
         else:
             self[char] = encoded
         return self

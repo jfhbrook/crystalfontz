@@ -159,7 +159,7 @@ class SetSpecialCharacterData(Command):
         self.character: bytes = character.as_bytes(device)
 
     def to_packet(self: Self) -> Packet:
-        data = self.index.to_bytes(1, "big") + self.character
+        data = self.index.to_bytes(length=1) + self.character
         assert len(data) == 9
         return (self.command, data)
 
@@ -181,7 +181,7 @@ class ReadLcdMemory(Command):
         # addresses as an exercise for the user.
         if not (0 < address < 255):
             raise ValueError(f"Address {address} is invalid")
-        self.address: bytes = address.to_bytes(1, "big")
+        self.address: bytes = address.to_bytes(length=1)
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.address)
@@ -206,7 +206,7 @@ class SetCursorPosition(Command):
     def to_packet(self: Self) -> Packet:
         return (
             self.command,
-            self.column.to_bytes(1, "big") + self.row.to_bytes(1, "big"),
+            self.column.to_bytes(length=1) + self.row.to_bytes(length=1),
         )
 
 
@@ -214,7 +214,7 @@ class SetCursorStyle(Command):
     command: int = 0x0C
 
     def __init__(self, style: CursorStyle) -> None:
-        self.style: bytes = style.value.to_bytes(1, "big")
+        self.style: bytes = style.value.to_bytes(length=1)
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.style)
@@ -257,7 +257,7 @@ class ReadDowDeviceInformation(Command):
         self.index: int = index
 
     def to_packet(self: Self) -> Packet:
-        return (self.command, self.index.to_bytes(1, "big"))
+        return (self.command, self.index.to_bytes(length=1))
 
 
 class SetupTemperatureReporting(Command):
@@ -290,8 +290,8 @@ class DowTransaction(Command):
     def to_packet(self: Self) -> Packet:
         return (
             self.command,
-            self.index.to_bytes(1, "big")
-            + self.bytes_to_read.to_bytes(1, "big")
+            self.index.to_bytes(length=1)
+            + self.bytes_to_read.to_bytes(length=1)
             + self.data_to_write,
         )
 
@@ -308,14 +308,14 @@ class SetupLiveTemperatureDisplay(Command):
         self.item: bytes = TemperatureDisplayItem.to_bytes(item, device)
 
     def to_packet(self: Self) -> Packet:
-        return (self.command, self.slot.to_bytes(1, "big") + self.item)
+        return (self.command, self.slot.to_bytes() + self.item)
 
 
 class SendCommandToLcdController(Command):
     command: int = 0x16
 
     def __init__(self: Self, location: LcdRegister, data: int | bytes) -> None:
-        byte: bytes = data.to_bytes(1, "big") if isinstance(data, int) else data
+        byte: bytes = data.to_bytes() if isinstance(data, int) else data
 
         if len(byte) != 1:
             raise ValueError("May send one byte to LCD controller")
@@ -324,7 +324,7 @@ class SendCommandToLcdController(Command):
         self.byte = byte
 
     def to_packet(self: Self) -> Packet:
-        return (self.command, self.location.value.to_bytes(1, "big") + self.byte)
+        return (self.command, self.location.value.to_bytes() + self.byte)
 
 
 def _key_mask(keypresses: Set[KeyPress]) -> int:
@@ -343,8 +343,7 @@ class ConfigureKeyReporting(Command):
     def to_packet(self: Self) -> Packet:
         return (
             self.command,
-            self.when_pressed.to_bytes(1, "big")
-            + self.when_released.to_bytes(1, "big"),
+            self.when_pressed.to_bytes() + self.when_released.to_bytes(),
         )
 
 
@@ -377,7 +376,7 @@ class ConfigureWatchdog(Command):
         self.timeout_seconds = timeout_seconds
 
     def to_packet(self: Self) -> Packet:
-        return (self.command, self.timeout_seconds.to_bytes(1, "big"))
+        return (self.command, self.timeout_seconds.to_bytes())
 
 
 class ReadStatus(Command):
@@ -410,10 +409,7 @@ class SendData(Command):
         self.text: bytes = buffer
 
     def to_packet(self: Self) -> Packet:
-        return (
-            self.command,
-            self.column.to_bytes(1, "big") + self.row.to_bytes(1, "big") + self.text,
-        )
+        return (self.command, self.column.to_bytes() + self.row.to_bytes() + self.text)
 
 
 # 0x20 is reserved for CFA631 key legends
@@ -430,7 +426,7 @@ class SetBaudRate(Command):
             raise ValueError(f"Unsupported baud rate {rate}")
 
     def to_packet(self: Self) -> Packet:
-        return (self.command, self.baud_rate.to_bytes(1, "big"))
+        return (self.command, self.baud_rate.to_bytes())
 
 
 class SetGpio(Command):
@@ -453,9 +449,7 @@ class SetGpio(Command):
         self.settings: Optional[GpioSettings] = settings
 
     def to_packet(self: Self) -> Packet:
-        data: bytes = self.index.to_bytes(1, "big") + self.output_state.to_bytes(
-            1, "big"
-        )
+        data: bytes = self.index.to_bytes() + self.output_state.to_bytes()
 
         if self.settings is not None:
             data += self.settings.to_bytes()
@@ -470,4 +464,4 @@ class ReadGpio(Command):
         self.index: int = index
 
     def to_packet(self: Self) -> Packet:
-        return (self.command, self.index.to_bytes(1, "big"))
+        return (self.command, self.index.to_bytes())

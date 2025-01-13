@@ -50,14 +50,6 @@ from typing import (
 import warnings
 
 try:
-    from asyncio import timeout as async_timeout
-    from asyncio import TimeoutError
-except ImportError:
-    from async_timeout import timeout as async_timeout
-
-    TimeoutError = Exception
-
-try:
     from typing import Self
 except ImportError:
     Self = Any
@@ -177,8 +169,8 @@ def timeout(
 ) -> Callable[..., Coroutine[None, None, T]]:
     @functools.wraps(fn)
     async def wrapper(self: Any, *args, **kwargs) -> T:
-        to: float = kwargs.get("timeout", self._default_timeout)
-        async with async_timeout(to):
+        timeout: float = kwargs.get("timeout", self._default_timeout)
+        async with asyncio.timeout(timeout):
             return await fn(self, *args, **kwargs)
 
     return wrapper

@@ -52,19 +52,19 @@ class TemperatureDisplayItem:
             return b"\x00"
         # TODO: Validation. The documentation suggests that sensors 32+ are
         # actually for something else - fan speed?
-        index: bytes = item.index.to_bytes(1, "big")
-        n_digits: bytes = item.n_digits.to_bytes(1, "big")
+        index: bytes = item.index.to_bytes()
+        n_digits: bytes = item.n_digits.to_bytes()
 
         if not (0 <= item.column < device.columns):
             raise ValueError(f"Column {item.column} is invalid")
 
-        column: bytes = item.column.to_bytes(1, "big")
+        column: bytes = item.column.to_bytes()
 
         if not (0 <= item.row < device.lines):
             raise ValueError(f"Row {item.row} is invalid")
 
-        row: bytes = item.row.to_bytes(1, "big")
-        units: bytes = item.units.value.to_bytes(1, "big")
+        row: bytes = item.row.to_bytes()
+        units: bytes = item.units.value.to_bytes()
 
         return index + n_digits + column + row + units
 

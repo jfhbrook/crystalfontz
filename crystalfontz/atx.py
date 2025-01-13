@@ -81,7 +81,7 @@ class AtxPowerSwitchFunctionalitySettings:
         if self.power_invert:
             functions ^= POWER_INVERT
 
-        packed: bytes = functions.to_bytes(1, "big")
+        packed: bytes = functions.to_bytes(length=1)
 
         if self.power_pulse_length_seconds is not None:
             pulse_length = int(self.power_pulse_length_seconds * 32)
@@ -89,7 +89,7 @@ class AtxPowerSwitchFunctionalitySettings:
             if pulse_length < 1:
                 raise ValueError(f"Pulse length can not be less than {1/32}")
 
-            packed += min(pulse_length, 255).to_bytes(1, "big")
+            packed += min(pulse_length, 255).to_bytes(length=1)
 
         return packed
 
