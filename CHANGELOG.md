@@ -1,14 +1,23 @@
 ## yyyy/mm/dd Version x.y.z
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
-- Rename `client.load_device` to `client.detect_device`
-- `--detect` flag to call `client.detect_device()`
-- `crystalfontz ping` may receive encoded bytes
-- Support for `crystalfontz flash write`
-- Support for `crystalfontz dow transaction`
-- `client.dow_transaction`'s `data_to_write` argument defaults to empty bytes
-- Support for `crystalfontz gpio write` and `crystalfontz gpio read`
-- CLI supports `--output text` and `--output json`
-- Export `Config` class used by CLI
+- Client API Changes:
+  - Rename `client.load_device` to `client.detect_device`
+  - `client.dow_transaction`'s `data_to_write` argument defaults to empty bytes
+  - New `client.test_connection` method
+  - New `client.detect_baud_rate` method
+- CLI Improvements and Features:
+  - `crystalfontz ping` may receive encoded bytes
+  - Support for `crystalfontz flash write`
+  - Support for `crystalfontz dow transaction`
+  - Support for `crystalfontz gpio write`
+  - Support for `crystalfontz gpio read`
+  - Support for `crystalfontz baud`
+  - Support for `--output text` and `--output json`
+  - New `crystalfontz config` command group
+  - Global config loaded by default when command called with sudo
+- Configuration Improvements and Features:
+  - Export `Config` class used by CLI
+  - Add `get`, `set` and `unset` methods to `Config` class
 
 ## 2025/01/09 Version 3.0.1
 

@@ -30,6 +30,8 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 import functools
 import logging
+import random
+from string import ascii_lowercase
 import traceback
 from typing import (
     Any,
@@ -58,7 +60,7 @@ from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
-from crystalfontz.baud import BaudRate, SLOW_BAUD_RATE
+from crystalfontz.baud import BaudRate, OTHER_BAUD_RATE, SLOW_BAUD_RATE
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.command import (
     ClearScreen,
@@ -169,8 +171,10 @@ def timeout(
 ) -> Callable[..., Coroutine[None, None, T]]:
     @functools.wraps(fn)
     async def wrapper(self: Any, *args, **kwargs) -> T:
-        timeout: float = kwargs.get("timeout", self._default_timeout)
-        async with asyncio.timeout(timeout):
+        to = kwargs.get("timeout", self._default_timeout)
+        to = to if to is not None else self._default_timeout
+        assert type(to) is float, "timeout should be a float"
+        async with asyncio.timeout(to):
             return await fn(self, *args, **kwargs)
 
     return wrapper
@@ -181,7 +185,11 @@ def retry(
 ) -> Callable[..., Coroutine[None, None, T]]:
     @functools.wraps(fn)
     async def wrapper(self: Any, *args, **kwargs) -> T:
-        times: int = kwargs.get("retry_times", self._default_retry_times)
+        times = (
+            kwargs.get("retry_times", self._default_retry_times)
+            or self._default_retry_times
+        )
+        assert type(times) is int, "retry_times should be an int"
         while True:
             try:
                 return await fn(self, *args, **kwargs)
@@ -236,6 +244,46 @@ class Client(asyncio.Protocol):
         self._queues: Dict[Type[Response], List[asyncio.Queue[Result[Response]]]] = (
             defaultdict(lambda: list())
         )
+
+    @property
+    def model(self: Self) -> str:
+        """
+        The model of the current device.
+        """
+
+        return self.device.model
+
+    @property
+    def hardware_rev(self: Self) -> str:
+        """
+        The hardware revision of the current device.
+        """
+
+        return self.device.hardware_rev
+
+    @property
+    def firmware_rev(self: Self) -> str:
+        """
+        The firmware revision of the current device.
+        """
+
+        return self.device.firmware_rev
+
+    @property
+    def baud_rate(self: Self) -> BaudRate:
+        """
+        The transport's baud rate.
+        """
+
+        if not self._transport or not self._transport.serial:
+            raise ConnectionError("Uninitialized transport has no baud rate")
+        return self._transport.serial.baudrate
+
+    @baud_rate.setter
+    def baud_rate(self: Self, baud_rate: BaudRate) -> None:
+        if not self._transport or not self._transport.serial:
+            raise ConnectionError("Uninitialized transport has no baud rate")
+        self._transport.serial.baudrate = baud_rate
 
     #
     # pyserial callbacks
@@ -506,6 +554,50 @@ class Client(asyncio.Protocol):
         return await self.send_command(
             Ping(payload), Pong, timeout=timeout, retry_times=retry_times
         )
+
+    async def test_connection(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> None:
+        """
+        Test the connection by sending a ping and checking that the response matches.
+        """
+
+        payload: bytes = "".join(
+            random.choice(ascii_lowercase) for _ in range(16)
+        ).encode("ascii")
+        try:
+            pong = await self.ping(payload, timeout=timeout, retry_times=retry_times)
+        except TimeoutError as exc:
+            raise ConnectionError(
+                "Failed to receive packet within "
+                f"{timeout if timeout is not None else self._default_timeout} seconds"
+            ) from exc
+        if pong.response != payload:
+            raise ConnectionError(f"{pong.response} != {payload}")
+
+    async def detect_baud_rate(self: Self) -> None:
+        baud_rate = self.baud_rate
+        try:
+            logger.info(f"Testing connection at {baud_rate} bps...")
+            await self.test_connection()
+        except ConnectionError as exc:
+            logger.debug(exc)
+            other_baud_rate = OTHER_BAUD_RATE[baud_rate]
+            self.baud_rate = other_baud_rate
+            logger.info(
+                f"Connection failed at {baud_rate} bps. "
+                f"Testing connection at {other_baud_rate} bps..."
+            )
+            try:
+                await self.test_connection()
+            except ConnectionError as exc:
+                logger.info(
+                    f"Connection failed for both {baud_rate} bps "
+                    f"and {other_baud_rate} bps."
+                )
+                raise exc
+        else:
+            logger.info(f"Connection successful at {baud_rate} bps.")
 
     async def versions(
         self: Self,
@@ -1130,9 +1222,7 @@ class Client(asyncio.Protocol):
             timeout=timeout,
             retry_times=retry_times,
         )
-        if not self._transport or not self._transport.serial:
-            raise ConnectionError("Unable to set new baud rate")
-        self._transport.serial.baudrate = baud_rate
+        self.baud_rate = baud_rate
         return res
 
     # Older versions of the CFA533 don't support GPIO, and future models might

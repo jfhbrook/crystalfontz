@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import asdict, dataclass
 import logging
 import textwrap
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, Optional, Set, Type
 
 try:
     from typing import Self
@@ -293,12 +293,13 @@ def lookup_device(
                 v += f", {firmware_rev}"
         return v
 
-    def selected(
+    def select(
+        cls: Type[Device],
         hw_rev: Optional[str] = None,
         fw_rev: Optional[str] = None,
         untested: bool = False,
         dangerous: bool = False,
-    ) -> None:
+    ) -> Device:
         nonlocal hardware_rev
         nonlocal firmware_rev
 
@@ -317,18 +318,23 @@ def lookup_device(
             else:
                 logger.warning(message)
 
+        device = cls()
+        device.model = model
+        device.hardware_rev = hardware_rev or device.hardware_rev
+        device.firmware_rev = firmware_rev or device.firmware_rev
+        return device
+
     if model == "CFA533":
         if hardware_rev is None:
-            selected(hw_rev="h1.4", fw_rev="u1v2")
-        elif hardware_rev != "h1.4":
-            selected(untested=True)
-        elif firmware_rev is None:
-            selected(fw_rev="u1v2", untested=True)
+            return select(CFA533, hw_rev="h1.4", fw_rev="u1v2")
+        if hardware_rev != "h1.4":
+            return select(CFA533, untested=True)
+        if firmware_rev is None:
+            return select(CFA533, fw_rev="u1v2", untested=True)
         elif firmware_rev != "u1v2":
-            selected(untested=True)
+            return select(CFA533, untested=True)
         return CFA533()
     elif model == "CFA633":
-        selected(untested=True, dangerous=True)
-        return CFA633()
+        return select(CFA633, untested=True, dangerous=True)
     else:
         raise DeviceLookupError(f"Unknown device {version()}")
