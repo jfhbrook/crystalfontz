@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import TimeoutError
 from dataclasses import asdict, dataclass, is_dataclass
 import functools
 import json

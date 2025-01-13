@@ -26,6 +26,7 @@ This will write "Hello world!" on the first line of the LCD.
 """
 
 import asyncio
+from asyncio import TimeoutError
 from collections import defaultdict
 from contextlib import asynccontextmanager
 import functools
@@ -55,8 +56,6 @@ try:
     from asyncio import timeout as async_timeout
 except ImportError:
     from async_timeout import timeout as async_timeout
-
-from asyncio import TimeoutError
 
 try:
     from typing import Self
