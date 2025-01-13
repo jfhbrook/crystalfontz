@@ -16,6 +16,7 @@ pyserial-asyncio==0.6
     # via crystalfontz (pyproject.toml)
 pyyaml==6.0.2
     # via crystalfontz (pyproject.toml)
+async_timeout
 flake8
 flake8-black
 pytest
