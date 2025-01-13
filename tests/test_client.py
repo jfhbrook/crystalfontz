@@ -4,6 +4,11 @@ from typing import Any
 from unittest.mock import AsyncMock, Mock
 
 try:
+    from asyncio import timeout
+except ImportError:
+    from async_timeout import timeout
+
+try:
     from typing import Self
 except ImportError:
     Self = Any
@@ -87,7 +92,7 @@ async def test_ping_success(client: Client) -> None:
     # TODO: On an unknown response error, this will time out and we won't
     # know about the error until we close. Should we emit the error on the
     # first active non-reporting queue instead?
-    async with asyncio.timeout(0.2):
+    async with timeout(0.2):
         exc, res = await q.get()
 
     client.unsubscribe(Pong, q)
@@ -106,7 +111,7 @@ async def test_device_error(client: Client) -> None:
     q = client.subscribe(Pong)
     client._packet_received((0b11000000, b"ping!"))
 
-    async with asyncio.timeout(0.2):
+    async with timeout(0.2):
         exc, res = await q.get()
 
     client.unsubscribe(Pong, q)
@@ -151,7 +156,7 @@ async def test_response_decode_error(client: Client) -> None:
     q = client.subscribe(BrokenResponse)
     client._packet_received((0x64, b"oops!"))
 
-    async with asyncio.timeout(0.2):
+    async with timeout(0.2):
         exc, res = await q.get()
 
     client.unsubscribe(BrokenResponse, q)

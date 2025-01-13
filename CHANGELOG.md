@@ -18,6 +18,8 @@
 - Configuration Improvements and Features:
   - Export `Config` class used by CLI
   - Add `get`, `set` and `unset` methods to `Config` class
+- Support Python 3.10
+- Export `Config` class used by CLI
 
 ## 2025/01/09 Version 3.0.1
 
