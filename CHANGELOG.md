@@ -1,4 +1,4 @@
-## yyyy/mm/dd Version x.y.z
+## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
 - Client API Changes:
   - Rename `client.load_device` to `client.detect_device`
