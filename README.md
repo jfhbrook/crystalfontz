@@ -97,7 +97,7 @@ This library includes a default timeout for command responses, as well as the ab
 This library has a CLI, which you can run like so:
 
 ```sh
-crystalfontz --help
+$ crystalfontz --help
 Usage: crystalfontz [OPTIONS] COMMAND [ARGS]...
 
   Control your Crystalfontz device
@@ -158,12 +158,7 @@ This CLI supports two output formats: `text` and `json`. The former will output 
 
 ### Open Issues
 
-A lot of the functionality has been fleshed out. However, there are some issues:
-
-1. Setting special character data. Special character data needs to be loaded from files - either as specially formatted text or as bitmap graphics - and that functionality is currently not fleshed out. This will be added once those features are more mature.
-2. Commands which imply persisting state across invocations. While there's a nascent implementation of a config file format, the mechanisms for persisting that kind of data aren't fully fleshed out. Related commands include:
-  - Setting the baud rate - if you set the baud rate and don't save the new baud rate for future connections, you will have a bad time.
-  - Setting encodings from unicode characters to special character code points. Once you add a special character to the LCD, you need to tell `crystalfontz` how to convert unicode characters passed into `send_data` into bytes 0x01 to 0x07.
+The major open issue has to do with setting special character data. Special character data needs to be loaded from files - either as specially formatted text or as bitmap graphics - and that functionality is currently not fleshed out. This will be added once those features are more mature.
 
 ## Development
 
