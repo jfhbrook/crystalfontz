@@ -649,7 +649,7 @@ async def detect(
 
 
 @main.command()
-@click.option("--for", "for_", type=float, help="Amount of time to run the effect for")
+@click.option("--for", "for_", type=float, help="Amount of time to listen for reports")
 @pass_client(run_forever=True, report_handler_cls=CliReportHandler)
 async def listen(client: Client, for_: Optional[float]) -> None:
     """
