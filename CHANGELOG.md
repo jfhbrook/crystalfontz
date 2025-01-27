@@ -1,4 +1,5 @@
 - Improve CLI documentation for `crystalfontz listen` `--for` option
+- Update CLI to use `configurence` library
 
 ## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
