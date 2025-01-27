@@ -3,12 +3,12 @@ from typing import Any
 import pytest
 
 from crystalfontz.baud import FAST_BAUD_RATE
-from crystalfontz.config import Config
+from crystalfontz.config import Config, GLOBAL_FILE
 
 
 @pytest.fixture
 def config() -> Config:
-    return Config()
+    return Config(file=GLOBAL_FILE)
 
 
 @pytest.mark.parametrize(
