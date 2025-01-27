@@ -27,12 +27,11 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-  "appdirs",
   "bitstring",
   "click",
+  "configurence",
   "pyserial",
   "pyserial-asyncio",
-  "pyyaml",
 ]
 
 [project.scripts]

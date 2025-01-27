@@ -1,10 +1,12 @@
 # serializer version: 1
 # name: test_repr
   '''
-  baud_rate: 19200
+  baud_rate: '19200'
+  file: /etc/crystalfontz.yaml
   firmware_rev: null
   hardware_rev: null
   model: CFA533
+  name: crystalfontz
   port: /dev/ttyUSB0
   retry_times: 0
   timeout: 0.25
