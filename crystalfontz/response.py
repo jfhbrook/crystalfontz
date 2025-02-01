@@ -2,12 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import asdict
 import struct
 import textwrap
-from typing import Any, Callable, cast, Dict, Type, TypeVar
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
+from typing import Any, Callable, cast, Dict, Self, Type, TypeVar
 
 from crystalfontz.error import (
     DecodeError,

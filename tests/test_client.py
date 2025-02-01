@@ -1,12 +1,7 @@
 import asyncio
 import logging
-from typing import Any
+from typing import Self
 from unittest.mock import AsyncMock, Mock
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
 
 import pytest
 import pytest_asyncio

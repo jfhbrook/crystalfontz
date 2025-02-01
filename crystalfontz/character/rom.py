@@ -1,9 +1,4 @@
-from typing import Any, Dict, Tuple
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
+from typing import Dict, Self, Tuple
 
 from crystalfontz.error import EncodeError
 

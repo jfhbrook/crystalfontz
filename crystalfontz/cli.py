@@ -14,15 +14,11 @@ from typing import (
     List,
     Literal,
     Optional,
+    Self,
     Tuple,
     Type,
 )
 import warnings
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
 
 import click
 from serial.serialutil import SerialException

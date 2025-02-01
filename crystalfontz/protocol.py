@@ -1,10 +1,5 @@
 import asyncio
-from typing import Any, Iterable, Optional, Protocol, Set, Tuple, Type, TypeVar
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
+from typing import Iterable, Optional, Protocol, Self, Set, Tuple, Type, TypeVar
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate

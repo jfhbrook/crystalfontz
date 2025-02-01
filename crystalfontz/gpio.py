@@ -1,11 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, NoReturn, Optional, Tuple, Type
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
+from typing import Any, Dict, NoReturn, Optional, Self, Tuple, Type
 import warnings
 
 GPIO_HIGH = True

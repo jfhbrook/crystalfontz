@@ -2,14 +2,9 @@ from abc import ABC, abstractmethod
 import asyncio
 import random
 import time
-from typing import Any, Optional
+from typing import Optional, Self
 
 from crystalfontz.protocol import ClientProtocol
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
 
 
 class Effect(ABC):

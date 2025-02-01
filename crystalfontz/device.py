@@ -2,12 +2,7 @@ from abc import ABC
 from dataclasses import asdict, dataclass
 import logging
 import textwrap
-from typing import Any, Dict, Optional, Set, Type
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
+from typing import Any, Dict, Optional, Self, Set, Type
 import warnings
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings

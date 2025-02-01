@@ -1,11 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import reduce
-from typing import Any, Iterable, Optional, Set
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
+from typing import Iterable, Optional, Self, Set
 import warnings
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings

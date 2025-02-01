@@ -1,12 +1,6 @@
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Set, Type
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
-
+from typing import Any, Dict, Optional, Self, Set, Type
 
 AUTO_POLARITY = 0x01
 RESET_INVERT = 0x02

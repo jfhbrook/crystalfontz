@@ -43,6 +43,7 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Self,
     Set,
     Tuple,
     Type,
@@ -50,11 +51,6 @@ from typing import (
     TypeVar,
 )
 import warnings
-
-try:
-    from typing import Self
-except ImportError:
-    Self = Any
 
 from serial import EIGHTBITS, PARITY_NONE, STOPBITS_ONE
 from serial_asyncio import create_serial_connection, SerialTransport
