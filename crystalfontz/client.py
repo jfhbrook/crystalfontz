@@ -436,13 +436,9 @@ class Client(asyncio.Protocol):
                 else None
             )
         except ResponseDecodeError as exc:
-            # We know the intended response type, so send it to any subscribers
-            self._emit(exc.response_cls, (exc, None))
+            self._emit_response_decode_error(exc)
         except DeviceError as exc:
-            if exc.expected_response in RESPONSE_CLASSES:
-                self._emit(RESPONSE_CLASSES[exc.expected_response], (exc, None))
-            else:
-                self._error(exc)
+            self._emit_device_error(exc)
         except Exception as exc:
             self._error(exc)
         else:
@@ -456,6 +452,16 @@ class Client(asyncio.Protocol):
                 rcv.put_nowait(item)
         elif item[0]:
             self._error(item[0])
+
+    def _emit_response_decode_error(self: Self, exc: ResponseDecodeError) -> None:
+        # We know the intended response type, so send it to any subscribers
+        self._emit(exc.response_cls, (exc, None))
+
+    def _emit_device_error(self: Self, exc: DeviceError) -> None:
+        if exc.expected_response in RESPONSE_CLASSES:
+            self._emit(RESPONSE_CLASSES[exc.expected_response], (exc, None))
+        else:
+            self._error(exc)
 
     #
     # Event subscriptions
