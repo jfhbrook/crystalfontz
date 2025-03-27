@@ -12,8 +12,14 @@ class Receiver(asyncio.Queue[Result[R]]):
         super().__init__(maxsize)
         self._receiving = receiving
 
-    async def get(self: Self) -> Result[R]:
+    def _set_receiving(self: Self) -> None:
         self._receiving.add(self)
+
+    def _set_not_receiving(self: Self) -> None:
+        self._receiving.discard(self)
+
+    async def get(self: Self) -> Result[R]:
+        self._set_receiving()
         rv = await super().get()
-        self._receiving.remove(self)
+        self._set_not_receiving()
         return rv

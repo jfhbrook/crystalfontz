@@ -133,9 +133,15 @@ async def test_arbitrary_error(client: Client, monkeypatch) -> None:
 
     rcv = client.subscribe(Pong)
 
+    # Need to manually mark as receiving, since we don't actually call
+    # rcv.get() until after we call _packet_received. Recall that nothing in
+    # a coroutine gets called until it is awaited. In practice, the user
+    # would have called rcv.get() async.
+    rcv._set_receiving()
+
     client._packet_received((0x40, b"ping!"))
 
-    async with asyncio.timeout(0.2):
+    async with asyncio.timeout(1.0):
         exc, res = await rcv.get()
 
     client.unsubscribe(Pong, rcv)

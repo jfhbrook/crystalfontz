@@ -300,10 +300,10 @@ class Client(asyncio.Protocol):
         self._running = True
 
         self._key_activity_queue: Receiver[KeyActivityReport] = self.subscribe(
-            KeyActivityReport
+            KeyActivityReport, expect=False
         )
         self._temperature_queue: Receiver[TemperatureReport] = self.subscribe(
-            TemperatureReport
+            TemperatureReport, expect=False
         )
 
         self._key_activity_task: asyncio.Task[None] = self.loop.create_task(
@@ -422,9 +422,11 @@ class Client(asyncio.Protocol):
             self._error(exc)
 
     def _error(self: Self, exc: Exception) -> None:
+        print(self._receiving)
         if self._receiving:
-            list(self._receiving)[0].put_nowait((None, exc))
-        self._close(exc)
+            list(self._receiving)[0].put_nowait((exc, None))
+        else:
+            self._close(exc)
 
     def _packet_received(self: Self, packet: Packet) -> None:
         logging.debug(f"Packet received: {packet}")
@@ -467,7 +469,7 @@ class Client(asyncio.Protocol):
     # Event subscriptions
     #
 
-    def subscribe(self: Self, cls: Type[R]) -> Receiver[R]:
+    def subscribe(self: Self, cls: Type[R], expect: bool = True) -> Receiver[R]:
         """
         Subscribe to results of a given response class. Returns a
         `Receiver[Response]`.
@@ -476,7 +478,9 @@ class Client(asyncio.Protocol):
         methods or a ReportHandler are best handled with `client.expect`.
         """
 
-        rcv: Receiver[R] = Receiver(self._receiving)
+        receiving: Set[Receiver[Any]] = self._receiving if expect else set()
+
+        rcv: Receiver[R] = Receiver(receiving)
         key = cast(Type[Response], cls)
         value = cast(Receiver[Response], rcv)
         self._receivers[key].append(value)
