@@ -358,19 +358,16 @@ class Client(asyncio.Protocol):
         self._temperature_task.cancel()
 
         tasks_done = asyncio.gather(self._key_activity_task, self._temperature_task)
+        tasks_done.add_done_callback(self._finish_tasks(exc))
 
-        def finish() -> None:
-            # Tasks successfully closed. Resolve the future if we have it,
-            # otherwise raise.
-            if self.closed.done():
-                if exc:
-                    raise exc
-            elif exc:
-                self.closed.set_exception(exc)
-            else:
-                self.closed.set_result(None)
+        if self.closed.done() and exc:
+            raise exc
 
-        def on_tasks_done(_: asyncio.Future[Tuple[None, None]]) -> None:
+    def _finish_tasks(
+        self: Self,
+        exc: Optional[Exception],
+    ) -> Callable[[asyncio.Future[Tuple[None, None]]], None]:
+        def callback(tasks_done: asyncio.Future[Tuple[None, None]]) -> None:
             nonlocal exc
             task_exc = tasks_done.exception()
             try:
@@ -379,7 +376,7 @@ class Client(asyncio.Protocol):
                     raise task_exc
             except asyncio.CancelledError:
                 # This error is expected, wrap it up
-                finish()
+                self._finish_close(exc)
             except Exception as task_exc:
                 # An unexpected error of some kind was raised by the tasks.
                 # Do our best to handle them...
@@ -388,15 +385,23 @@ class Client(asyncio.Protocol):
                     # exception that actually caused us to close, so we
                     # warn and hope for the best.
                     warnings.warn(traceback.format_exc())
+                    self._finish_close(exc)
                 else:
                     # This is our new exception.
-                    exc = task_exc
-                finish()
+                    self._finish_close(task_exc)
 
-        tasks_done.add_done_callback(on_tasks_done)
+        return callback
 
-        if self.closed.done() and exc:
-            raise exc
+    def _finish_close(self: Self, exc: Optional[BaseException]) -> None:
+        # Tasks successfully closed. Resolve the future if we have it,
+        # otherwise raise.
+        if self.closed.done():
+            if exc:
+                raise exc
+        elif exc:
+            self.closed.set_exception(exc)
+        else:
+            self.closed.set_result(None)
 
     def data_received(self: Self, data: bytes) -> None:
         try:
