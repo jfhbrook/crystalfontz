@@ -39,6 +39,7 @@ from crystalfontz.keys import (
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.packet import Packet
 from crystalfontz.protocol import ClientProtocol
+from crystalfontz.receiver import Receiver
 from crystalfontz.report import LoggingReportHandler, NoopReportHandler, ReportHandler
 from crystalfontz.response import (
     AtxPowerSwitchFunctionalitySet,
@@ -135,6 +136,7 @@ __all__: List[str] = [
     "Pong",
     "PowerResponse",
     "RawResponse",
+    "Receiver",
     "ReportHandler",
     "Response",
     "SLOW_BAUD_RATE",

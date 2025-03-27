@@ -76,16 +76,14 @@ async def test_close_exc(client: Client) -> None:
 
 @pytest.mark.asyncio
 async def test_ping_success(client: Client) -> None:
-    q = client.subscribe(Pong)
+    rcv = client.subscribe(Pong)
     client._packet_received((0x40, b"ping!"))
 
-    # TODO: On an unknown response error, this will time out and we won't
-    # know about the error until we close. Should we emit the error on the
-    # first active non-reporting queue instead?
+    # Timeout is in case errors aren't properly raised by the receiver
     async with asyncio.timeout(0.2):
-        exc, res = await q.get()
+        exc, res = await rcv.get()
 
-    client.unsubscribe(Pong, q)
+    client.unsubscribe(Pong, rcv)
 
     assert exc is None
     assert isinstance(res, Pong)
@@ -98,13 +96,13 @@ async def test_ping_success(client: Client) -> None:
 
 @pytest.mark.asyncio
 async def test_device_error(client: Client) -> None:
-    q = client.subscribe(Pong)
+    rcv = client.subscribe(Pong)
     client._packet_received((0b11000000, b"ping!"))
 
     async with asyncio.timeout(0.2):
-        exc, res = await q.get()
+        exc, res = await rcv.get()
 
-    client.unsubscribe(Pong, q)
+    client.unsubscribe(Pong, rcv)
 
     assert isinstance(exc, DeviceError)
     assert exc.command == 0x00
@@ -124,6 +122,36 @@ async def test_device_error_no_sub(client: Client) -> None:
 
     with pytest.raises(DeviceError):
         await client.closed
+
+
+@pytest.mark.asyncio
+async def test_arbitrary_error(client: Client, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "crystalfontz.response.Response.from_packet",
+        Mock(name="Response.from_packet()", side_effect=Exception("oops!")),
+    )
+
+    rcv = client.subscribe(Pong)
+
+    # Need to manually mark as receiving, since we don't actually call
+    # rcv.get() until after we call _packet_received. Recall that nothing in
+    # a coroutine gets called until it is awaited. In practice, the user
+    # would have called rcv.get() async.
+    rcv._set_receiving()
+
+    client._packet_received((0x40, b"ping!"))
+
+    async with asyncio.timeout(1.0):
+        exc, res = await rcv.get()
+
+    client.unsubscribe(Pong, rcv)
+
+    assert isinstance(exc, Exception)
+    assert res is None
+
+    client.close()
+
+    await client.closed
 
 
 @pytest.mark.asyncio
