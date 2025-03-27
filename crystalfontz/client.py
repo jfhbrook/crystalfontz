@@ -327,7 +327,7 @@ class Client(asyncio.Protocol):
             if exc:
                 raise ConnectionError("Connection lost") from exc
         except Exception as exc:
-            self._close(exc)
+            self._error(exc)
         else:
             self._close()
 
@@ -417,7 +417,10 @@ class Client(asyncio.Protocol):
         except Exception as exc:
             # Exceptions here would have come from the packet parser, not
             # the packet handler
-            self._close(exc)
+            self._error(exc)
+
+    def _error(self: Self, exc: Exception) -> None:
+        self._close(exc)
 
     def _packet_received(self: Self, packet: Packet) -> None:
         logging.debug(f"Packet received: {packet}")
@@ -433,9 +436,9 @@ class Client(asyncio.Protocol):
             if exc.expected_response in RESPONSE_CLASSES:
                 self._emit(RESPONSE_CLASSES[exc.expected_response], (exc, None))
             else:
-                self._close(exc)
+                self._error(exc)
         except Exception as exc:
-            self._close(exc)
+            self._error(exc)
         else:
             self._emit(type(res), (None, res))
             if raw_res:
@@ -446,9 +449,7 @@ class Client(asyncio.Protocol):
             for q in self._queues[response_cls]:
                 q.put_nowait(item)
         elif item[0]:
-            # If we emit a response in a forest and nobody's around to hear it,
-            # shut it down and let close handle the exception
-            self._close(item[0])
+            self._error(item[0])
 
     #
     # Event subscriptions
