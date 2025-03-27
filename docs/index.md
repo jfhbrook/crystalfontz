@@ -1,15 +1,6 @@
-{% include-markdown "../README.md" %}
+# crystalfontz
 
-## API
-
-### ::: crystalfontz
-
-## Changelog
-
-{%
-    include-markdown "../CHANGELOG.md"
-    heading-offset=1
-%}
+`crystalfontz` is a Python library and CLI for interacting with [Crystalfontz](https://www.crystalfontz.com/) LCD displays. While it has an eye for supporting multiple devices, it was developed against a CFA533.
 
 ## Links
 
