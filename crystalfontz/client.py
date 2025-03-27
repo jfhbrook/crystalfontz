@@ -164,7 +164,7 @@ T = TypeVar(name="T")
 
 
 def timeout(
-    fn: Callable[..., Coroutine[None, None, T]]
+    fn: Callable[..., Coroutine[None, None, T]],
 ) -> Callable[..., Coroutine[None, None, T]]:
     @functools.wraps(fn)
     async def wrapper(self: Any, *args, **kwargs) -> T:
@@ -178,7 +178,7 @@ def timeout(
 
 
 def retry(
-    fn: Callable[..., Coroutine[None, None, T]]
+    fn: Callable[..., Coroutine[None, None, T]],
 ) -> Callable[..., Coroutine[None, None, T]]:
     @functools.wraps(fn)
     async def wrapper(self: Any, *args, **kwargs) -> T:
