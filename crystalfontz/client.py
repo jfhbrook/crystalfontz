@@ -241,7 +241,7 @@ class Client(asyncio.Protocol):
         self._receivers: Dict[Type[Response], List[Receiver[Response]]] = defaultdict(
             lambda: list()
         )
-        self._expecting: Set[Receiver[Any]] = set()
+        self._receiving: Set[Receiver[Any]] = set()
 
     @property
     def model(self: Self) -> str:
@@ -422,6 +422,8 @@ class Client(asyncio.Protocol):
             self._error(exc)
 
     def _error(self: Self, exc: Exception) -> None:
+        if self._receiving:
+            list(self._receiving)[0].put_nowait((None, exc))
         self._close(exc)
 
     def _packet_received(self: Self, packet: Packet) -> None:
@@ -468,7 +470,7 @@ class Client(asyncio.Protocol):
         methods or a ReportHandler are best handled with `client.expect`.
         """
 
-        rcv: Receiver[R] = Receiver(self._expecting)
+        rcv: Receiver[R] = Receiver(self._receiving)
         key = cast(Type[Response], cls)
         value = cast(Receiver[Response], rcv)
         self._receivers[key].append(value)

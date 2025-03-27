@@ -8,12 +8,12 @@ Result = Tuple[Exception, None] | Tuple[None, R]
 
 
 class Receiver(asyncio.Queue[Result[R]]):
-    def __init__(self: Self, expecting: "Set[Receiver[Any]]", maxsize=0) -> None:
+    def __init__(self: Self, receiving: "Set[Receiver[Any]]", maxsize=0) -> None:
         super().__init__(maxsize)
-        self._expecting = expecting
+        self._receiving = receiving
 
     async def get(self: Self) -> Result[R]:
-        self._expecting.add(self)
+        self._receiving.add(self)
         rv = await super().get()
-        self._expecting.remove(self)
+        self._receiving.remove(self)
         return rv
