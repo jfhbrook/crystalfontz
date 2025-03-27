@@ -1,4 +1,3 @@
-import asyncio
 from typing import Iterable, Optional, Protocol, Self, Set, Tuple, Type, TypeVar
 
 from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
@@ -9,6 +8,7 @@ from crystalfontz.device import Device, DeviceStatus
 from crystalfontz.gpio import GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
+from crystalfontz.receiver import Receiver
 from crystalfontz.response import (
     AtxPowerSwitchFunctionalitySet,
     BacklightSet,
@@ -57,9 +57,9 @@ class ClientProtocol(Protocol):
     _default_timeout: float
     _default_retry_times: int
 
-    def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[Result[R]]: ...
+    def subscribe(self: Self, cls: Type[R]) -> Receiver[R]: ...
 
-    def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[Result[R]]) -> None: ...
+    def unsubscribe(self: Self, cls: Type[R], receiver: Receiver[R]) -> None: ...
 
     async def ping(
         self: Self,

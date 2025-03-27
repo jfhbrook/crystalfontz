@@ -105,6 +105,7 @@ from crystalfontz.gpio import GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.packet import Packet, parse_packet, serialize_packet
+from crystalfontz.receiver import Receiver
 from crystalfontz.report import NoopReportHandler, ReportHandler
 from crystalfontz.response import (
     AtxPowerSwitchFunctionalitySet,
@@ -237,9 +238,10 @@ class Client(asyncio.Protocol):
 
         self._lock: asyncio.Lock = asyncio.Lock()
         self._expect: Optional[Type[Response]] = None
-        self._queues: Dict[Type[Response], List[asyncio.Queue[Result[Response]]]] = (
-            defaultdict(lambda: list())
+        self._receivers: Dict[Type[Response], List[Receiver[Response]]] = defaultdict(
+            lambda: list()
         )
+        self._expecting: Set[Receiver[Any]] = set()
 
     @property
     def model(self: Self) -> str:
@@ -297,11 +299,11 @@ class Client(asyncio.Protocol):
         self._transport = transport
         self._running = True
 
-        self._key_activity_queue: asyncio.Queue[Result[KeyActivityReport]] = (
-            self.subscribe(KeyActivityReport)
+        self._key_activity_queue: Receiver[KeyActivityReport] = self.subscribe(
+            KeyActivityReport
         )
-        self._temperature_queue: asyncio.Queue[Result[TemperatureReport]] = (
-            self.subscribe(TemperatureReport)
+        self._temperature_queue: Receiver[TemperatureReport] = self.subscribe(
+            TemperatureReport
         )
 
         self._key_activity_task: asyncio.Task[None] = self.loop.create_task(
@@ -427,7 +429,9 @@ class Client(asyncio.Protocol):
         try:
             res = Response.from_packet(packet)
             raw_res = (
-                RawResponse.from_packet(packet) if RawResponse in self._queues else None
+                RawResponse.from_packet(packet)
+                if RawResponse in self._receivers
+                else None
             )
         except ResponseDecodeError as exc:
             # We know the intended response type, so send it to any subscribers
@@ -445,9 +449,9 @@ class Client(asyncio.Protocol):
                 self._emit(RawResponse, (None, raw_res))
 
     def _emit(self: Self, response_cls: Type[Response], item: Result[Response]) -> None:
-        if response_cls in self._queues:
-            for q in self._queues[response_cls]:
-                q.put_nowait(item)
+        if response_cls in self._receivers:
+            for rcv in self._receivers[response_cls]:
+                rcv.put_nowait(item)
         elif item[0]:
             self._error(item[0])
 
@@ -455,22 +459,22 @@ class Client(asyncio.Protocol):
     # Event subscriptions
     #
 
-    def subscribe(self: Self, cls: Type[R]) -> asyncio.Queue[Result[R]]:
+    def subscribe(self: Self, cls: Type[R]) -> Receiver[R]:
         """
-        Subscribe to results of a given response class. Returns an
-        `asyncio.Queue[Tuple[Exception, None] | Tuple[None, Response]]`.
+        Subscribe to results of a given response class. Returns a
+        `Receiver[Response]`.
 
         This is a low level method. Most use cases not met by individual command
         methods or a ReportHandler are best handled with `client.expect`.
         """
 
-        q: asyncio.Queue[Result[R]] = asyncio.Queue()
+        rcv: Receiver[R] = Receiver(self._expecting)
         key = cast(Type[Response], cls)
-        value = cast(asyncio.Queue[Result[Response]], q)
-        self._queues[key].append(value)
-        return q
+        value = cast(Receiver[Response], rcv)
+        self._receivers[key].append(value)
+        return rcv
 
-    def unsubscribe(self: Self, cls: Type[R], q: asyncio.Queue[Result[R]]) -> None:
+    def unsubscribe(self: Self, cls: Type[R], receiver: Receiver[R]) -> None:
         """
         Unsubscribe from results of a given response class and queue. This queue is
         typically created by a call to `client.subscribe`.
@@ -481,13 +485,13 @@ class Client(asyncio.Protocol):
 
         key = cast(Type[Response], cls)
         value = [
-            q_
-            for q_ in self._queues[key]
-            if q_ != cast(asyncio.Queue[Result[Response]], q)
+            rcv
+            for rcv in self._receivers[key]
+            if rcv != cast(Receiver[Response], receiver)
         ]
 
-        cast_value = cast(List[asyncio.Queue[Result[Response]]], value)
-        self._queues[key] = cast_value
+        cast_value = cast(List[Receiver[Response]], value)
+        self._receivers[key] = cast_value
 
     @timeout
     async def expect(self: Self, cls: Type[R], timeout: Optional[float] = None) -> R:
@@ -1283,7 +1287,7 @@ class Client(asyncio.Protocol):
     async def _handle_report(
         self: Self,
         name: str,
-        queue: asyncio.Queue[Result[R]],
+        queue: Receiver[R],
         handler: ReportHandlerMethod,
     ) -> None:
         while True:
