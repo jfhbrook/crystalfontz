@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 class DbusClient(DbusInterface):
     """
-    A DBus client for the Crystalfontz LCD.
+    A DBus client for the Crystalfontz device.
     """
 
     def __init__(self: Self, bus: Optional[SdBus] = None) -> None:
@@ -146,7 +146,7 @@ def main(
     ctx: click.Context, log_level: LogLevel, output: OutputMode, user: bool
 ) -> None:
     """
-    Control your Crystalfontz LCD.
+    Control your Crystalfontz device.
     """
 
     logging.basicConfig(level=getattr(logging, log_level))

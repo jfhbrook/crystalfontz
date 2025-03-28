@@ -17,6 +17,7 @@ from typing import (
     Self,
     Tuple,
     Type,
+    TypeVar,
 )
 import warnings
 
@@ -356,22 +357,32 @@ class Echo:
 echo = Echo()
 
 AsyncCommand = Callable[..., Coroutine[None, None, None]]
-WrappedAsyncCommand = Callable[..., None]
-AsyncCommandDecorator = Callable[[AsyncCommand], WrappedAsyncCommand]
+SyncCommand = Callable[..., None]
+
+
+def async_command(fn: AsyncCommand) -> SyncCommand:
+    """
+    Run an async command handler.
+    """
+
+    @functools.wraps(fn)
+    def wrapped(*args, **kwargs) -> None:
+        try:
+            asyncio.run(fn(*args, **kwargs))
+        except KeyboardInterrupt:
+            pass
+
+    return wrapped
 
 
 def pass_client(
     run_forever: bool = False,
     report_handler_cls: Type[ReportHandler] = NoopReportHandler,
-) -> AsyncCommandDecorator:
-    """
-    Create a client and pass it to the decorated click handler.
-    """
-
-    def decorator(fn: AsyncCommand) -> WrappedAsyncCommand:
+) -> Callable[[AsyncCommand], AsyncCommand]:
+    def decorator(fn: AsyncCommand) -> AsyncCommand:
         @click.pass_obj
         @functools.wraps(fn)
-        def wrapped(obj: Obj, *args, **kwargs) -> None:
+        async def wrapped(obj: Obj, *args, **kwargs) -> None:
             port: str = obj.port
             model = obj.model
             hardware_rev = obj.hardware_rev
@@ -390,48 +401,50 @@ def pass_client(
             # Set the output mode for echo
             echo.mode = output
 
-            async def main() -> None:
-                try:
-                    client: Client = await create_connection(
-                        port,
-                        model=model,
-                        hardware_rev=hardware_rev,
-                        firmware_rev=firmware_rev,
-                        report_handler=report_handler,
-                        timeout=timeout if timeout is not None else DEFAULT_TIMEOUT,
-                        retry_times=(
-                            retry_times
-                            if retry_times is not None
-                            else DEFAULT_RETRY_TIMES
-                        ),
-                        baud_rate=baud_rate,
-                    )
-                except SerialException as exc:
-                    click.echo(exc)
-                    sys.exit(1)
-
-                # Giddyup!
-                try:
-                    await fn(client, *args, **kwargs)
-                except TimeoutError:
-                    echo(f"Command timed out after {timeout} seconds.")
-                    sys.exit(1)
-
-                # Close the client if we're done
-                if not run_forever:
-                    client.close()
-
-                # Await the client closing and surface any exceptions
-                await client.closed
-
             try:
-                asyncio.run(main())
-            except KeyboardInterrupt:
-                pass
+                client: Client = await create_connection(
+                    port,
+                    model=model,
+                    hardware_rev=hardware_rev,
+                    firmware_rev=firmware_rev,
+                    report_handler=report_handler,
+                    timeout=timeout if timeout is not None else DEFAULT_TIMEOUT,
+                    retry_times=(
+                        retry_times if retry_times is not None else DEFAULT_RETRY_TIMES
+                    ),
+                    baud_rate=baud_rate,
+                )
+
+                client: Client = await create_connection(port)
+            except SerialException as exc:
+                click.echo(exc)
+                sys.exit(1)
+
+            # Giddyup!
+            await fn(client, *args, **kwargs)
+
+            # Close the client if we're done
+            if not run_forever:
+                client.close()
+
+            # Await the client closing and surface any exceptions
+            await client.closed
 
         return wrapped
 
     return decorator
+
+
+R = TypeVar("R")
+
+
+def pass_config(fn: Callable[..., R]) -> Callable[..., R]:
+    @click.pass_obj
+    @functools.wraps(fn)
+    def wrapped(obj: Obj, *args, **kwargs) -> R:
+        return fn(obj.config, *args, **kwargs)
+
+    return wrapped
 
 
 @click.group()
@@ -552,57 +565,57 @@ def config() -> None:
 
 @config.command()
 @click.argument("name")
-@click.pass_obj
-def get(obj: Obj, name: str) -> None:
+@pass_config
+def get(config: Config, name: str) -> None:
     """
     Get a parameter from the configuration file.
     """
 
     try:
-        echo(obj.config.get(name))
+        echo(config.get(name))
     except ValueError as exc:
         echo(str(exc))
         sys.exit(1)
 
 
 @config.command()
-@click.pass_obj
-def show(obj: Obj) -> None:
+@pass_config
+def show(config: Config) -> None:
     """
     Show the current configuration.
     """
-    echo(obj.config)
+    echo(config)
 
 
 @config.command()
 @click.argument("name")
 @click.argument("value")
-@click.pass_obj
-def set(obj: Obj, name: str, value: str) -> None:
+@pass_config
+def set(config: Config, name: str, value: str) -> None:
     """
     Set a parameter in the configuration file.
     """
     try:
-        obj.config.set(name, value)
+        config.set(name, value)
     except ValueError as exc:
         echo(str(exc))
         sys.exit(1)
-    obj.config.to_file()
+    config.to_file()
 
 
 @config.command()
 @click.argument("name")
-@click.pass_obj
-def unset(obj: Obj, name: str) -> None:
+@pass_config
+def unset(config: Config, name: str) -> None:
     """
     Unset a parameter in the configuration file.
     """
     try:
-        obj.config.unset(name)
+        config.unset(name)
     except ValueError as exc:
         echo(str(exc))
         sys.exit(1)
-    obj.config.to_file()
+    config.to_file()
 
 
 @config.command()
@@ -613,10 +626,11 @@ def unset(obj: Obj, name: str) -> None:
 @click.option(
     "--save/--no-save", default=True, help="Whether or not to save the configuration"
 )
+@async_command
 @pass_client()
-@click.pass_obj
+@pass_config
 async def detect(
-    obj: Obj, client: Client, baud: bool, device: bool, save: bool
+    config: Config, client: Client, baud: bool, device: bool, save: bool
 ) -> None:
     """
     Detect device versions and baud rate.
@@ -629,23 +643,24 @@ async def detect(
             logger.debug(exc)
             sys.exit(1)
         else:
-            obj.config.baud_rate = client.baud_rate
+            config.baud_rate = client.baud_rate
 
     if device:
         await client.detect_device()
 
-        obj.config.model = client.model
-        obj.config.hardware_rev = client.hardware_rev
-        obj.config.firmware_rev = client.firmware_rev
+        config.model = client.model
+        config.hardware_rev = client.hardware_rev
+        config.firmware_rev = client.firmware_rev
 
     if save:
-        obj.config.to_file()
+        config.to_file()
     else:
-        echo(obj.config)
+        echo(config)
 
 
 @main.command()
 @click.option("--for", "for_", type=float, help="Amount of time to listen for reports")
+@async_command
 @pass_client(run_forever=True, report_handler_cls=CliReportHandler)
 async def listen(client: Client, for_: Optional[float]) -> None:
     """
@@ -662,6 +677,7 @@ async def listen(client: Client, for_: Optional[float]) -> None:
 
 @main.command(help="0 (0x00): Ping command")
 @click.argument("payload", type=BYTES)
+@async_command
 @pass_client()
 async def ping(client: Client, payload: bytes) -> None:
     pong = await client.ping(payload)
@@ -669,6 +685,7 @@ async def ping(client: Client, payload: bytes) -> None:
 
 
 @main.command(help="1 (0x01): Get Hardware & Firmware Version")
+@async_command
 @pass_client()
 async def versions(client: Client) -> None:
     versions = await client.versions()
@@ -682,12 +699,14 @@ def flash() -> None:
 
 @flash.command(name="write", help="2 (0x02): Write User Flash Area")
 @click.argument("data", type=BYTES)
+@async_command
 @pass_client()
 async def write_user_flash_area(client: Client, data: bytes) -> None:
     await client.write_user_flash_area(data)
 
 
 @flash.command(name="read", help="3 (0x03): Read User Flash Area")
+@async_command
 @pass_client()
 async def read_user_flash_area(client: Client) -> None:
     flash = await client.read_user_flash_area()
@@ -695,6 +714,7 @@ async def read_user_flash_area(client: Client) -> None:
 
 
 @main.command(help="4 (0x04): Store Current State as Boot State")
+@async_command
 @pass_client()
 async def store(client: Client) -> None:
     await client.store_boot_state()
@@ -706,24 +726,28 @@ def power() -> None:
 
 
 @power.command(help="Reboot the Crystalfontx LCD")
+@async_command
 @pass_client()
 async def reboot_lcd(client: Client) -> None:
     await client.reboot_lcd()
 
 
 @power.command(help="Reset the host, assuming ATX control is configured")
+@async_command
 @pass_client()
 async def reset_host(client: Client) -> None:
     await client.reset_host()
 
 
 @power.command(help="Turn the host's power off, assuming ATX control is configured")
+@async_command
 @pass_client()
 async def shutdown_host(client: Client) -> None:
     await client.shutdown_host()
 
 
 @main.command(help="6 (0x06): Clear LCD Screen")
+@async_command
 @pass_client()
 async def clear(client: Client) -> None:
     await client.clear_screen()
@@ -736,6 +760,7 @@ def line() -> None:
 
 @line.command(name="1", help="7 (0x07): Set LCD Contents, Line 1")
 @click.argument("line")
+@async_command
 @pass_client()
 async def set_line_1(client: Client, line: str) -> None:
     await client.set_line_1(line)
@@ -743,6 +768,7 @@ async def set_line_1(client: Client, line: str) -> None:
 
 @line.command(name="2", help="8 (0x08): Set LCD Contents, Line 2")
 @click.argument("line")
+@async_command
 @pass_client()
 async def set_line_2(client: Client, line: str) -> None:
     await client.set_line_2(line)
@@ -771,6 +797,7 @@ def lcd() -> None:
 
 @lcd.command(name="poke", help="10 (0x0A): Read 8 Bytes of LCD Memory")
 @click.argument("address", type=BYTE)
+@async_command
 @pass_client()
 async def read_lcd_memory(client: Client, address: int) -> None:
     memory = await client.read_lcd_memory(address)
@@ -785,6 +812,7 @@ def cursor() -> None:
 @cursor.command(name="position", help="11 (0x0B): Set LCD Cursor Position")
 @click.argument("row", type=BYTE)
 @click.argument("column", type=BYTE)
+@async_command
 @pass_client()
 async def set_cursor_position(client: Client, row: int, column: int) -> None:
     await client.set_cursor_position(row, column)
@@ -792,6 +820,7 @@ async def set_cursor_position(client: Client, row: int, column: int) -> None:
 
 @cursor.command(name="style", help="12 (0x0C): Set LCD Cursor Style")
 @click.argument("style", type=click.Choice([e.name for e in CursorStyle]))
+@async_command
 @pass_client()
 async def set_cursor_style(client: Client, style: str) -> None:
     await client.set_cursor_style(CursorStyle[style])
@@ -799,6 +828,7 @@ async def set_cursor_style(client: Client, style: str) -> None:
 
 @main.command(help="13 (0x0D): Set LCD Contrast")
 @click.argument("contrast", type=float)
+@async_command
 @pass_client()
 async def contrast(client: Client, contrast: float) -> None:
     await client.set_contrast(contrast)
@@ -807,6 +837,7 @@ async def contrast(client: Client, contrast: float) -> None:
 @main.command(help="14 (0x0E): Set LCD & Keypad Backlight")
 @click.argument("brightness", type=float)
 @click.option("--keypad", type=float)
+@async_command
 @pass_client()
 async def backlight(client: Client, brightness: float, keypad: Optional[float]) -> None:
     await client.set_backlight(brightness, keypad)
@@ -819,6 +850,7 @@ def dow() -> None:
 
 @dow.command(name="info", help="18 (0x12): Read DOW Device Information")
 @click.argument("index", type=BYTE)
+@async_command
 @pass_client()
 async def read_dow_device_information(client: Client, index: int) -> None:
     info = await client.read_dow_device_information(index)
@@ -832,6 +864,7 @@ def temperature() -> None:
 
 @temperature.command(name="reporting", help="19 (0x13): Set Up Temperature Reporting")
 @click.argument("enabled", nargs=-1)
+@async_command
 @pass_client()
 async def setup_temperature_reporting(client: Client, enabled: Tuple[int]) -> None:
     await client.setup_temperature_reporting(enabled)
@@ -841,6 +874,7 @@ async def setup_temperature_reporting(client: Client, enabled: Tuple[int]) -> No
 @click.argument("index", type=BYTE)
 @click.argument("bytes_to_read", type=BYTE)
 @click.option("--data_to_write", type=BYTES)
+@async_command
 @pass_client()
 async def dow_transaction(
     client: Client, index: int, bytes_to_read: int, data_to_write: Optional[bytes]
@@ -856,6 +890,7 @@ async def dow_transaction(
 @click.option("--column", "-c", type=BYTE, required=True)
 @click.option("--row", "-r", type=BYTE, required=True)
 @click.option("--units", "-U", type=click.Choice([e.name for e in TemperatureUnit]))
+@async_command
 @pass_client()
 async def setup_live_temperature_display(
     client: Client,
@@ -881,6 +916,7 @@ async def setup_live_temperature_display(
 @lcd.command(name="send", help="22 (0x16): Send Command Directly to the LCD Controller")
 @click.argument("location", type=click.Choice([e.name for e in LcdRegister]))
 @click.argument("data", type=BYTE)
+@async_command
 @pass_client()
 async def send_command_to_lcd_controler(
     client: Client, location: str, data: int
@@ -910,6 +946,7 @@ KEYPRESSES: Dict[str, KeyPress] = dict(
 @click.option(
     "--when-released", multiple=True, type=click.Choice(list(KEYPRESSES.keys()))
 )
+@async_command
 @pass_client()
 async def configure_key_reporting(
     client: Client, when_pressed: List[str], when_released: List[str]
@@ -921,6 +958,7 @@ async def configure_key_reporting(
 
 
 @keypad.command(name="poll", help="24 (0x18): Read Keypad, Polled Mode")
+@async_command
 @pass_client()
 async def poll_keypad(client: Client) -> None:
     polled = await client.poll_keypad()
@@ -942,6 +980,7 @@ async def poll_keypad(client: Client) -> None:
     type=float,
     help="Length of power on and off pulses in seconds",
 )
+@async_command
 @pass_client()
 async def atx(
     client: Client,
@@ -960,12 +999,14 @@ async def atx(
 
 @main.command(help="29 (0x1D): Enable/Disable and Reset the Watchdog")
 @click.argument("timeout_seconds", type=WATCHDOG_SETTING)
+@async_command
 @pass_client()
 async def watchdog(client: Client, timeout_seconds: int) -> None:
     await client.configure_watchdog(timeout_seconds)
 
 
 @main.command(help="30 (0x1E): Read Reporting & Status")
+@async_command
 @pass_client()
 async def status(client: Client) -> None:
     status = await client.read_status()
@@ -977,6 +1018,7 @@ async def status(client: Client) -> None:
 @click.argument("row", type=int)
 @click.argument("column", type=int)
 @click.argument("data")
+@async_command
 @pass_client()
 async def send(client: Client, row: int, column: int, data: str) -> None:
     await client.send_data(row, column, data)
@@ -990,6 +1032,7 @@ async def send(client: Client, row: int, column: int, data: str) -> None:
     help="Save the new baud rate to the configuration",
 )
 @click.pass_obj
+@async_command
 @pass_client()
 async def baud(client: Client, obj: Obj, rate: BaudRate, save: bool) -> None:
     await client.set_baud_rate(rate)
@@ -1012,6 +1055,7 @@ def gpio() -> None:
 @click.option("--function", type=FUNCTION, help="The GPIO pin's function")
 @click.option("--up", type=DRIVE_MODE, help="The GPIO pin's pull-up drive mode")
 @click.option("--down", type=DRIVE_MODE, help="The GPIO pin's pull-down drive mode")
+@async_command
 @pass_client()
 async def set_gpio(
     client: Client,
@@ -1044,6 +1088,7 @@ async def set_gpio(
     name="read", help="35 (0x23): Read GPIO Pin Levels and Configuration State"
 )
 @click.argument("index", type=BYTE)
+@async_command
 @pass_client()
 async def read_gpio(client: Client, index: int) -> None:
     res = await client.read_gpio(index)
@@ -1075,6 +1120,7 @@ async def run_effect(
 @click.option(
     "--pause", type=float, help="An amount of time to pause before starting the effect"
 )
+@async_command
 @pass_client()
 @click.pass_obj
 async def marquee(
@@ -1089,6 +1135,7 @@ async def marquee(
 
 @effects.command(help="Display a screensaver-like effect")
 @click.argument("text")
+@async_command
 @pass_client()
 @click.pass_obj
 async def screensaver(obj: Obj, client: Client, text: str) -> None:
