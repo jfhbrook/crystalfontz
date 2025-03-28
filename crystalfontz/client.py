@@ -422,7 +422,6 @@ class Client(asyncio.Protocol):
             self._error(exc)
 
     def _error(self: Self, exc: Exception) -> None:
-        print(self._receiving)
         if self._receiving:
             list(self._receiving)[0].put_nowait((exc, None))
         else:
