@@ -592,11 +592,13 @@ class Client(asyncio.Protocol):
         if pong.response != payload:
             raise ConnectionError(f"{pong.response} != {payload}")
 
-    async def detect_baud_rate(self: Self) -> None:
+    async def detect_baud_rate(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> None:
         baud_rate = self.baud_rate
         try:
             logger.info(f"Testing connection at {baud_rate} bps...")
-            await self.test_connection()
+            await self.test_connection(timeout, retry_times)
         except ConnectionError as exc:
             logger.debug(exc)
             other_baud_rate = OTHER_BAUD_RATE[baud_rate]
@@ -606,7 +608,7 @@ class Client(asyncio.Protocol):
                 f"Testing connection at {other_baud_rate} bps..."
             )
             try:
-                await self.test_connection()
+                await self.test_connection(timeout, retry_times)
             except ConnectionError as exc:
                 logger.info(
                     f"Connection failed for both {baud_rate} bps "
