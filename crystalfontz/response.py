@@ -29,9 +29,10 @@ class Response(ABC):
     __init__ method.
     """
 
+    @classmethod
     @abstractmethod
-    def __init__(self: Self, data: bytes) -> None:
-        raise NotImplementedError("__init__")
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
+        raise NotImplementedError("from_bytes")
 
     @classmethod
     def from_packet(cls: Type[Self], packet: Packet) -> "Response":
@@ -39,7 +40,7 @@ class Response(ABC):
         if code in RESPONSE_CLASSES:
             res_cls = RESPONSE_CLASSES[code]
             try:
-                return res_cls(data)
+                return res_cls.from_bytes(data)
             except Exception as exc:
                 raise ResponseDecodeError(res_cls, str(exc)) from exc
 
@@ -68,8 +69,10 @@ class RawResponse(Response):
 
 
 class Ack(Response):
-    def __init__(self: Self, data: bytes) -> None:
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
         assert_len(0, data)
+        return cls()
 
     def __str__(self: Self) -> str:
         return "Ack()"
@@ -95,8 +98,12 @@ class Pong(Response):
         response (bytes): The data sent in the ping command.
     """
 
-    def __init__(self: Self, data: bytes) -> None:
-        self.response = data
+    def __init__(self: Self, response: bytes) -> None:
+        self.response = response
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
+        return cls(data)
 
     def __str__(self: Self) -> str:
         return f"Pong({self.response})"
@@ -111,14 +118,18 @@ class Versions(Response):
         firmware_rev (str): The device's firmware revision.
     """
 
-    def __init__(self: Self, data: bytes) -> None:
+    def __init__(self: Self, model: str, hardware_rev: str, firmware_rev: str) -> None:
+        self.model: str = model
+        self.hardware_rev: str = hardware_rev.strip()
+        self.firmware_rev: str = firmware_rev.strip()
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
         decoded = data.decode("ascii")
         model, versions = decoded.split(":")
         hw_rev, fw_rev = versions.split(",")
 
-        self.model: str = model
-        self.hardware_rev: str = hw_rev.strip()
-        self.firmware_rev: str = fw_rev.strip()
+        return cls(model, hw_rev, fw_rev)
 
     def __str__(self: Self) -> str:
         return (
@@ -152,6 +163,10 @@ class UserFlashAreaRead(Response):
 
     def __init__(self: Self, data: bytes) -> None:
         self.data: bytes = data
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
+        return cls(data)
 
     def __str__(self: Self) -> str:
         return f"UserFlashAreaRead({self.data})"
@@ -201,10 +216,17 @@ class LcdMemory(Response):
         data (bytes): The data read from the address in LCD memory.
     """
 
-    def __init__(self: Self, data: bytes) -> None:
+    def __init__(self: Self, address: int, data: bytes) -> None:
+        self.address: int = address
+        self.data: bytes = data
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
         assert_len(9, data)
-        self.address: int = data[0]
-        self.data: bytes = data[1:]
+        address: int = data[0]
+        lcd_data: bytes = data[1:]
+
+        return cls(address, lcd_data)
 
     def __str__(self: Self) -> str:
         return f"LcdMemory(0x{self.address:02X}={self.data})"
@@ -248,9 +270,15 @@ class DowDeviceInformation(Response):
         rom_id (bytes): The ROM ID of the device.
     """
 
-    def __init__(self: Self, data: bytes) -> None:
-        self.index: int = data[0]
-        self.rom_id: bytes = data[1:]
+    def __init__(self: Self, index: int, rom_id: bytes) -> None:
+        self.index: int = index
+        self.rom_id: bytes = rom_id
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
+        index: int = data[0]
+        rom_id: bytes = data[1:]
+        return cls(index, rom_id)
 
     def __str__(self: Self) -> str:
         return f"DowDeviceInformation({self.index}={self.rom_id})"
@@ -277,10 +305,18 @@ class DowTransactionResult(Response):
         crc (int): The 1-wire CRC.
     """
 
-    def __init__(self: Self, data: bytes) -> None:
-        self.index = data[0]
-        self.data = data[1:-1]
-        self.crc = data[-1]
+    def __init__(self: Self, index: int, data: bytes, crc: int) -> None:
+        self.index = index
+        self.data = data
+        self.crc = crc
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
+        index = data[0]
+        txn_data = data[1:-1]
+        crc = data[-1]
+
+        return cls(index, txn_data, crc)
 
     def __str__(self: Self) -> str:
         return (
@@ -323,9 +359,14 @@ class KeypadPolled(Response):
         states (KeyStates): The keypad's key states.
     """
 
-    def __init__(self: Self, data: bytes) -> None:
+    def __init__(self: Self, states: KeyStates) -> None:
+        self.states = states
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
         assert_len(3, data)
-        self.states = KeyStates.from_bytes(data)
+        states = KeyStates.from_bytes(data)
+        return cls(states)
 
     def __str__(self: Self) -> str:
         return f"KeypadPolled(states={self.states})"
@@ -361,6 +402,10 @@ class StatusRead(Response):
     def __init__(self: Self, data: bytes) -> None:
         self.data: bytes = data
 
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
+        return cls(data)
+
     def __str__(self: Self) -> str:
         return f"StatusRead({self.data})"
 
@@ -393,11 +438,26 @@ class GpioRead(Response):
         settings (GpioSettings): Pin function select and drive mode.
     """
 
-    def __init__(self: Self, data: bytes) -> None:
-        self.index: int = data[0]
-        self.state: GpioState = GpioState.from_byte(data[1])
-        self.requested_level: int = data[2]
-        self.settings: GpioSettings = GpioSettings.from_byte(data[3])
+    def __init__(
+        self: Self,
+        index: int,
+        state: GpioState,
+        requested_level: int,
+        settings: GpioSettings,
+    ) -> None:
+        self.index: int = index
+        self.state: GpioState = state
+        self.requested_level: int = requested_level
+        self.settings: GpioSettings = settings
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
+        index: int = data[0]
+        state: GpioState = GpioState.from_byte(data[1])
+        requested_level: int = data[2]
+        settings: GpioSettings = GpioSettings.from_byte(data[3])
+
+        return cls(index, state, requested_level, settings)
 
     def __str__(self: Self) -> str:
         return (
@@ -430,10 +490,16 @@ class KeyActivityReport(Response):
         activity (KeyActivity): The reported key activity.
     """
 
-    def __init__(self: Self, data: bytes) -> None:
+    def __init__(self: Self, activity: KeyActivity) -> None:
+        self.activity: KeyActivity = activity
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
         assert_len(1, data)
 
-        self.activity: KeyActivity = KeyActivity.from_bytes(data)
+        activity: KeyActivity = KeyActivity.from_bytes(data)
+
+        return cls(activity)
 
     def __str__(self: Self) -> str:
         return f"KeyActivityReport({self.activity.name})"
@@ -456,18 +522,26 @@ class TemperatureReport(Response):
         fahrenheit (float): The temperature in fahrenheit.
     """
 
-    def __init__(self: Self, data: bytes) -> None:
+    def __init__(self: Self, index: int, celsius: float, fahrenheit: float) -> None:
+        self.index: int = index
+        self.celsius: float = celsius
+        self.fahrenheit: float = fahrenheit
+
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
         assert_len(4, data)
 
-        self.index: int = data[0]
+        index: int = data[0]
         value = struct.unpack(">H", data[1:3])[0]
         dow_crc_status = data[3]
 
         if dow_crc_status == 0:
             raise DecodeError("Bad CRC from temperature sensor")
 
-        self.celsius: float = value / 16.0
-        self.fahrenheit: float = (9 / 5 * self.celsius) + 32.0
+        celsius: float = value / 16.0
+        fahrenheit: float = (9 / 5 * celsius) + 32.0
+
+        return cls(index, celsius, fahrenheit)
 
     def __str__(self: Self) -> str:
         return (
