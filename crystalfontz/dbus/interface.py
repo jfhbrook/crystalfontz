@@ -3,11 +3,11 @@ import logging
 from typing import Optional, Self
 
 from sdbus import (  # pyright: ignore [reportMissingModuleSource]
-    dbus_method_async,
+    # dbus_method_async,
     dbus_property_async,
-    dbus_signal_async,
+    # dbus_signal_async,
     DbusInterfaceCommonAsync,
-    DbusUnprivilegedFlag,
+    # DbusUnprivilegedFlag,
 )
 
 from crystalfontz.client import Client, create_connection
