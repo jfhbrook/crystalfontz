@@ -120,8 +120,8 @@ class Versions(Response):
 
     def __init__(self: Self, model: str, hardware_rev: str, firmware_rev: str) -> None:
         self.model: str = model
-        self.hardware_rev: str = hardware_rev.strip()
-        self.firmware_rev: str = firmware_rev.strip()
+        self.hardware_rev: str = hardware_rev
+        self.firmware_rev: str = firmware_rev
 
     @classmethod
     def from_bytes(cls: Type[Self], data: bytes) -> Self:
@@ -129,7 +129,7 @@ class Versions(Response):
         model, versions = decoded.split(":")
         hw_rev, fw_rev = versions.split(",")
 
-        return cls(model, hw_rev, fw_rev)
+        return cls(model, hw_rev.strip(), fw_rev.strip())
 
     def __str__(self: Self) -> str:
         return (
