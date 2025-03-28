@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Optional, Self
+from typing import Optional, Self, Tuple
 
 from sdbus import (  # pyright: ignore [reportMissingModuleSource];; dbus_signal_async,
     dbus_method_async,
@@ -19,6 +19,9 @@ from crystalfontz.dbus.map import (
     retry_times_t,
     timeout_t,
 )
+from crystalfontz.error import ConnectionError
+
+Ok = bool
 
 logger = logging.getLogger(__name__)
 
@@ -93,3 +96,54 @@ class DbusInterface(  # type: ignore
             payload, load_timeout(timeout), load_retry_times(retry_times)
         )
         return pong.response
+
+    @dbus_method_async(f"{timeout_t}{retry_times_t}", "b", flags=DbusUnprivilegedFlag)
+    async def test_connection(self: Self, timeout: float, retry_times: int) -> Ok:
+        try:
+            await self.client.test_connection(
+                load_timeout(timeout), load_retry_times(retry_times)
+            )
+        except ConnectionError:
+            return False
+        else:
+            return True
+
+    # TODO: Should receive timeout and retry_times
+    @dbus_method_async("", baud_rate_t, flags=DbusUnprivilegedFlag)
+    async def detect_baud_rate(self: Self) -> int:
+        # Detect the baud rate, as you do
+        await self.client.detect_baud_rate()
+
+        # Save to the loaded config
+        self._config.baud_rate = self.client.baud_rate
+
+        # Return the new baud rate
+        return self.client.baud_rate
+
+    @dbus_method_async(
+        f"{timeout_t}{retry_times_t}", "(sss)", flags=DbusUnprivilegedFlag
+    )
+    async def versions(
+        self: Self,
+        timeout: float,
+        retry_times: int,
+    ) -> Tuple[str, str, str]:
+        versions = await self.client.versions(
+            load_timeout(timeout), load_retry_times(retry_times)
+        )
+        return (versions.model, versions.hardware_rev, versions.firmware_rev)
+
+    @dbus_method_async(
+        f"{timeout_t}{retry_times_t}", "(sss)", flags=DbusUnprivilegedFlag
+    )
+    async def detect_device(
+        self: Self, timeout: float, retry_times: int
+    ) -> Tuple[str, str, str]:
+        await self.client.detect_device(
+            load_timeout(timeout), load_retry_times(retry_times)
+        )
+        return (
+            self.client.device.model,
+            self.client.device.hardware_rev,
+            self.client.device.firmware_rev,
+        )

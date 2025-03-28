@@ -271,7 +271,57 @@ async def unset(staged: StagedConfig, name: str) -> None:
             warn_dirty()
 
 
-# TODO: Config detect
+@config.command()
+@click.option("--baud/--no-baud", default=True, help="Detect baud rate")
+@click.option(
+    "--device/--no-device", default=True, help="Detect device model and versions"
+)
+@click.option(
+    "--save/--no-save", default=True, help="Whether or not to save the configuration"
+)
+@async_command
+@pass_client
+@pass_config
+@click.pass_obj
+async def detect(
+    obj: Obj,
+    staged: StagedConfig,
+    client: DbusClient,
+    baud: bool,
+    device: bool,
+    save: bool,
+) -> None:
+    """
+    Detect device versions and baud rate.
+    """
+
+    baud_rate = -1
+    model = "<unknown>"
+    hardware_rev = "<unknown>"
+    firmware_rev = "<unknown>"
+
+    if baud:
+        baud_rate = await client.detect_baud_rate()
+
+    if device:
+        model, hardware_rev, firmware_rev = await client.detect_device(
+            none_timeout, none_retry_times
+        )
+
+    if save:
+        try:
+            run_config_command(obj, staged, ["set", "baud_rate", str(baud_rate)])
+            run_config_command(obj, staged, ["set", "model", model])
+            run_config_command(obj, staged, ["set", "hardware_rev", hardware_rev])
+            run_config_command(obj, staged, ["set", "firmware_rev", firmware_rev])
+        except ValueError as exc:
+            echo(str(exc))
+            sys.exit(1)
+        else:
+            staged.reload_target()
+        finally:
+            if staged.dirty:
+                warn_dirty()
 
 
 @main.command(help="0 (0x00): Ping command")
@@ -281,6 +331,16 @@ async def unset(staged: StagedConfig, name: str) -> None:
 async def ping(client: DbusClient, payload: bytes) -> None:
     pong = await client.ping(payload, none_timeout, none_retry_times)
     echo(pong)
+
+
+@main.command(help="1 (0x01): Get Hardware & Firmware Version")
+@async_command
+@pass_client
+async def versions(client: DbusClient) -> None:
+    model, hardware_rev, firmware_rev = await client.versions(
+        none_timeout, none_retry_times
+    )
+    echo(f"{model}: {hardware_rev}, {firmware_rev}")
 
 
 if __name__ == "__main__":
