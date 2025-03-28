@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Optional, Self
 
-from sdbus import (  # pyright: ignore [reportMissingModuleSource]
+from sdbus import (  # pyright: ignore [reportMissingModuleSource];
     # dbus_method_async,
     dbus_property_async,
     # dbus_signal_async,
@@ -31,7 +31,7 @@ class DbusInterface(  # type: ignore
     DbusInterfaceCommonAsync, interface_name=DBUS_NAME  # type: ignore
 ):
     """
-    A DBus interface for controlling the Plus Deck 2C PC Cassette Deck.
+    A DBus interface for controlling the Crystalfontz device.
     """
 
     def __init__(self: Self, client: Client, config_file: Optional[str] = None) -> None:
@@ -40,14 +40,24 @@ class DbusInterface(  # type: ignore
         self.client: Client = client
         self._client_lock: asyncio.Lock = asyncio.Lock()
 
-    # TODO: dbus type
-    @dbus_property_async("(ss)")
+    @dbus_property_async("(sssssqdq)")
     def config(self: Self) -> ConfigStruct:
         """
         The DBus service's currently loaded configuration.
         """
 
-        return (self._config.file or "", self._config.port)
+        config = self._config
+
+        return (
+            config.file or "",
+            config.port,
+            config.model,
+            config.hardware_rev or "",
+            config.firmware_rev or "",
+            config.baud_rate,
+            config.timeout,
+            config.retry_times,
+        )
 
     async def close(self: Self) -> None:
         """

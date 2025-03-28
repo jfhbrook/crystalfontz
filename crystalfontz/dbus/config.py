@@ -13,7 +13,15 @@ from crystalfontz.config import Config
 
 File = str
 Port = str
-ConfigStruct = Tuple[File, Port]
+Model = str
+HardwareRev = str
+FirmwareRev = str
+BaudRate = int
+Timeout = float
+RetryTimes = int
+ConfigStruct = Tuple[
+    File, Port, Model, HardwareRev, FirmwareRev, BaudRate, Timeout, RetryTimes
+]
 
 StageType = Literal["set"] | Literal["unset"] | None
 T = TypeVar("T")

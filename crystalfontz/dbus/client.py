@@ -40,9 +40,27 @@ class DbusClient(DbusInterface):
         Fetch the state of staged configuration changes.
         """
 
-        file, port = await self.config
+        (
+            file,
+            port,
+            model,
+            hardware_rev,
+            firmware_rev,
+            baud_rate,
+            timeout,
+            retry_times,
+        ) = await self.config
 
-        active_config: Config = cast(Any, Config)(file=file, port=port)
+        active_config: Config = cast(Any, Config)(
+            file=file,
+            port=port,
+            model=model,
+            hardware_rev=hardware_rev if hardware_rev else None,
+            firmware_rev=firmware_rev if firmware_rev else None,
+            baud_rate=baud_rate,
+            timeout=timeout,
+            retry_times=retry_times,
+        )
 
         return StagedConfig(
             target_config=Config.from_file(file),
