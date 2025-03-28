@@ -37,11 +37,11 @@ def test_parse_bytes(text, buffer) -> None:
 
 
 OBJECTS = [
-    Versions(b"CFA533: h1.4, u1v2"),
-    LcdMemory(b"\xff\x00\x01\x02\x03\x04\x05\x06\x07"),
-    DowDeviceInformation(b"\xff\x00\x01\x02\x03\x04\x05\x06\x07"),
-    DowTransactionResult(b"\xff\x01\x02\x03\x04\x05\x06\x07\xff"),
-    KeypadPolled(bytes([KP_UP, KP_UP, KP_UP])),
+    Versions.from_bytes(b"CFA533: h1.4, u1v2"),
+    LcdMemory.from_bytes(b"\xff\x00\x01\x02\x03\x04\x05\x06\x07"),
+    DowDeviceInformation.from_bytes(b"\xff\x00\x01\x02\x03\x04\x05\x06\x07"),
+    DowTransactionResult.from_bytes(b"\xff\x01\x02\x03\x04\x05\x06\x07\xff"),
+    KeypadPolled.from_bytes(bytes([KP_UP, KP_UP, KP_UP])),
     CFA533Status(
         temperature_sensors_enabled={1, 2},
         key_states=KeyStates(
@@ -66,7 +66,7 @@ OBJECTS = [
         cfa633_contrast=0.5,
         lcd_brightness=0.5,
     ),
-    GpioRead(bytes([0xFF, 0b0111, 0x11, 0b1101])),
+    GpioRead.from_bytes(bytes([0xFF, 0b0111, 0x11, 0b1101])),
     b"\01",
 ]
 

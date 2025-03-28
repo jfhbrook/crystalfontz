@@ -3,6 +3,9 @@
 - Improved error handling
   - Introduce `Receiver` type, a subclass of `asyncio.Queue`
   - Emit unmatched exceptions on expecting receivers instead of resolving `client.closed`
+- `Response` class API changes
+  - `Response.from_bytes` accepts bytes as from packets, rather than `__init__`
+  - `Response.__init__` accepts properties as arguments
 
 ## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
