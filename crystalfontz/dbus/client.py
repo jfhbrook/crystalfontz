@@ -14,11 +14,19 @@ from unittest.mock import Mock
 import click
 from sdbus import sd_bus_open_system, sd_bus_open_user, SdBus
 
-from crystalfontz.cli import async_command, AsyncCommand, echo, LogLevel, OutputMode
+from crystalfontz.cli import (
+    async_command,
+    AsyncCommand,
+    BYTES,
+    echo,
+    LogLevel,
+    OutputMode,
+)
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
+from crystalfontz.dbus.map import none_retry_times, none_timeout
 
 logger = logging.getLogger(__name__)
 
@@ -261,6 +269,18 @@ async def unset(staged: StagedConfig, name: str) -> None:
     finally:
         if staged.dirty:
             warn_dirty()
+
+
+# TODO: Config detect
+
+
+@main.command(help="0 (0x00): Ping command")
+@click.argument("payload", type=BYTES)
+@async_command
+@pass_client
+async def ping(client: DbusClient, payload: bytes) -> None:
+    pong = await client.ping(payload, none_timeout, none_retry_times)
+    echo(pong)
 
 
 if __name__ == "__main__":

@@ -2,17 +2,23 @@ import asyncio
 import logging
 from typing import Optional, Self
 
-from sdbus import (  # pyright: ignore [reportMissingModuleSource];
-    # dbus_method_async,
+from sdbus import (  # pyright: ignore [reportMissingModuleSource];; dbus_signal_async,
+    dbus_method_async,
     dbus_property_async,
-    # dbus_signal_async,
     DbusInterfaceCommonAsync,
-    # DbusUnprivilegedFlag,
+    DbusUnprivilegedFlag,
 )
 
 from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import ConfigStruct
+from crystalfontz.dbus.map import (
+    baud_rate_t,
+    load_retry_times,
+    load_timeout,
+    retry_times_t,
+    timeout_t,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +46,7 @@ class DbusInterface(  # type: ignore
         self.client: Client = client
         self._client_lock: asyncio.Lock = asyncio.Lock()
 
-    @dbus_property_async("(sssssqdq)")
+    @dbus_property_async(f"(sssss{baud_rate_t}{timeout_t}{retry_times_t})")
     def config(self: Self) -> ConfigStruct:
         """
         The DBus service's currently loaded configuration.
@@ -75,3 +81,15 @@ class DbusInterface(  # type: ignore
         """
 
         return self.client.closed
+
+    @dbus_method_async(f"y{timeout_t}{retry_times_t}", "y", flags=DbusUnprivilegedFlag)
+    async def ping(
+        self: Self,
+        payload: bytes,
+        timeout: float,
+        retry_times: int,
+    ) -> bytes:
+        pong = await self.client.ping(
+            payload, load_timeout(timeout), load_retry_times(retry_times)
+        )
+        return pong.response
