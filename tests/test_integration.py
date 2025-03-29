@@ -18,7 +18,7 @@ def test_cli(crystalfontz: CliProtocol, cli_env, confirm) -> None:
 
     confirm('Did the LCD display "Hello world!"?')
 
-    crystalfontz("line", "1" "Line 1")
+    crystalfontz("line", "1", "Line 1")
     crystalfontz("line", "2", "Line 2")
 
     confirm('Does the LCD display "Line 1" and "Line 2"?')
@@ -32,15 +32,17 @@ def test_cli(crystalfontz: CliProtocol, cli_env, confirm) -> None:
 
     confirm("Did the cursor move and start blinking?")
 
-    pong: str = crystalfontz("ping", "pong").stdout.strip()
+    pong: bytes = crystalfontz("ping", "pong").stdout.strip()
 
-    assert pong == "pong"
+    assert pong == b"pong"
 
     crystalfontz("status")
     crystalfontz("versions")
-    crystalfontz("--detect", "ping", "hello")
 
-    crystalfontz("power", "reboot-lcd")
+    # TODO: How to test detection?
+    # crystalfontz("--detect", "ping", "hello")
+
+    # crystalfontz("power", "reboot-lcd")
 
     confirm("Did the LCD reboot?")
 

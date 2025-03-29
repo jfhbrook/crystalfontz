@@ -11,20 +11,29 @@ class CliProtocol(Protocol):
     def __call__(self: Self, *argv: str, env=None) -> subprocess.CompletedProcess: ...
 
 
+class EnvFactoryProtocol(Protocol):
+    def __call__(
+        self: Self, env: Optional[Dict[str, str]] = None
+    ) -> Dict[str, str]: ...
+
+
 @pytest.fixture
-def cli_env(env: Optional[Dict[str, str]] = None) -> Dict[str, str]:
-    _env: Dict[str, str] = dict(os.environ)
+def cli_env() -> EnvFactoryProtocol:
+    def env_factory(env: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+        _env: Dict[str, str] = dict(os.environ)
 
-    if env:
-        _env.update(env)
+        if env:
+            _env.update(env)
 
-    if "CRYSTALFONTZ_LOG_LEVEL" not in _env:
-        _env["CRYSTALFONTZ_LOG_LEVEL"] = "INFO"
+        if "CRYSTALFONTZ_LOG_LEVEL" not in _env:
+            _env["CRYSTALFONTZ_LOG_LEVEL"] = "INFO"
 
-    if "CRYSTALFONTZ_PORT" not in _env:
-        _env["CRYSTALFONTZ_PORT"] = "/dev/ttyUSB0"
+        if "CRYSTALFONTZ_PORT" not in _env:
+            _env["CRYSTALFONTZ_PORT"] = "/dev/ttyUSB0"
 
-    return _env
+        return _env
+
+    return env_factory
 
 
 @pytest.fixture
