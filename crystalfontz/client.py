@@ -370,7 +370,6 @@ class Client(asyncio.Protocol):
         exc: Optional[Exception],
     ) -> Callable[[asyncio.Future[Tuple[None, None]]], None]:
         def callback(tasks_done: asyncio.Future[Tuple[None, None]]) -> None:
-            nonlocal exc
             task_exc = tasks_done.exception()
             try:
                 # The tasks should have failed with a CancelledError
