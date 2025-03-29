@@ -39,18 +39,19 @@ crystalfontz = "crystalfontz.cli:main"
 
 [dependency-groups]
 dev = [
-    "flake8",
-    "flake8-black",
-    "pytest",
-    "pytest-asyncio",
-    "black",
-    "isort",
-    "jupyter-console",
-    "mkdocs",
-    "mkdocs-include-markdown-plugin",
-    "mkdocstrings[python]",
-    "syrupy",
-    "validate-pyproject[all]",
+  "flake8",
+  "flake8-black",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-gak",
+  "black",
+  "isort",
+  "jupyter-console",
+  "mkdocs",
+  "mkdocs-include-markdown-plugin",
+  "mkdocstrings[python]",
+  "syrupy",
+  "validate-pyproject[all]",
 ]
 
 [tool.uv]
