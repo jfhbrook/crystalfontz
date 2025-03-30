@@ -1,9 +1,9 @@
-from typing import ClassVar, Optional, Protocol, Self, Tuple, Type, Union
+from typing import ClassVar, List, Optional, Protocol, Self, Tuple, Type, Union
 
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.device import Device
-from crystalfontz.response import Pong, UserFlashAreaRead, Versions
+from crystalfontz.response import LcdMemory, Pong, UserFlashAreaRead, Versions
 
 
 class TypeProtocol(Protocol):
@@ -24,6 +24,23 @@ def t(*args: Union[str, Type[TypeProtocol]]) -> str:
 
 def struct(*args: Union[str, Type[TypeProtocol]]) -> str:
     return t("(", *args, ")")
+
+
+def array(of: Union[str, Type[TypeProtocol]]) -> str:
+    return f"a{t(of)}"
+
+
+class BytesM:
+    t: ClassVar[str] = array("y")
+
+    @staticmethod
+    def load(buff: List[int]) -> bytes:
+        return bytes(buff)
+
+    # TODO: This may not be what the dbus client expects...
+    @staticmethod
+    def dump(buff: bytes) -> List[int]:
+        return list(buff)
 
 
 class ConfigFileM:
@@ -113,17 +130,21 @@ class PingM:
 
     @staticmethod
     def load(
-        payload: bytes, timeout: float, retry_times: int
+        payload: List[int], timeout: float, retry_times: int
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
-        return (payload, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+        return (
+            BytesM.load(payload),
+            TimeoutM.load(timeout),
+            RetryTimesM.load(retry_times),
+        )
 
 
 class PongM:
-    t: ClassVar[str] = "y"
+    t: ClassVar[str] = BytesM.t
 
     @staticmethod
-    def dump(pong: Pong) -> bytes:
-        return pong.response
+    def dump(pong: Pong) -> List[int]:
+        return BytesM.dump(pong.response)
 
 
 class OkM:
@@ -184,3 +205,26 @@ class SetLineM:
         line: bytes, timeout: float, retry_times: int
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
         return (line, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class ReadLcdMemoryM:
+    t: ClassVar[str] = t("n", TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        address: int, timeout: float, retry_times: int
+    ) -> Tuple[int, Optional[float], Optional[int]]:
+        return (address, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class LcdMemoryM:
+    t: ClassVar[str] = t("n", BytesM)
+
+    @staticmethod
+    def load(obj: Tuple[int, List[int]]) -> LcdMemory:
+        address, buff = obj
+        return LcdMemory(address, BytesM.load(buff))
+
+    @staticmethod
+    def dump(memory: LcdMemory) -> Tuple[int, List[int]]:
+        return (memory.address, BytesM.dump(memory.data))

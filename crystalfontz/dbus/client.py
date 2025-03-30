@@ -17,6 +17,7 @@ from sdbus import sd_bus_open_system, sd_bus_open_user, SdBus
 from crystalfontz.cli import (
     async_command,
     AsyncCommand,
+    BYTE,
     BYTES,
     echo,
     LogLevel,
@@ -26,7 +27,7 @@ from crystalfontz.config import Config
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
-from crystalfontz.dbus.map import RetryTimesM, TimeoutM, VersionsM
+from crystalfontz.dbus.map import BytesM, LcdMemoryM, RetryTimesM, TimeoutM, VersionsM
 
 logger = logging.getLogger(__name__)
 
@@ -344,8 +345,8 @@ async def listen(client: DbusClient, for_: Optional[float]) -> None:
 @async_command
 @pass_client
 async def ping(client: DbusClient, payload: bytes) -> None:
-    pong = await client.ping(payload, TimeoutM.none, RetryTimesM.none)
-    echo(pong)
+    pong = await client.ping(BytesM.dump(payload), TimeoutM.none, RetryTimesM.none)
+    echo(BytesM.load(pong))
 
 
 @main.command(help="1 (0x01): Get Hardware & Firmware Version")
@@ -436,6 +437,25 @@ async def set_line_1(client: DbusClient, line: str) -> None:
 @pass_client
 async def set_line_2(client: DbusClient, line: str) -> None:
     await client.set_line_2(line.encode("utf-8"), TimeoutM.none, RetryTimesM.none)
+
+
+@main.command(help="Interact with special characters")
+def character() -> None:
+    raise NotImplementedError("crystalfontzctl character")
+
+
+@main.group(help="Interact directly with the LCD controller")
+def lcd() -> None:
+    pass
+
+
+@lcd.command(name="poke", help="10 (0x0A): Read 8 Bytes of LCD Memory")
+@click.argument("address", type=BYTE)
+@async_command
+@pass_client
+async def read_lcd_memory(client: DbusClient, address: int) -> None:
+    memory = await client.read_lcd_memory(address, TimeoutM.none, RetryTimesM.none)
+    echo(LcdMemoryM.load(memory))
 
 
 if __name__ == "__main__":

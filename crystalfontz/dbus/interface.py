@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Optional, Self, Tuple
+from typing import List, Optional, Self, Tuple
 
 from sdbus import (  # pyright: ignore [reportMissingModuleSource];; dbus_signal_async,
     dbus_method_async,
@@ -16,9 +16,11 @@ from crystalfontz.dbus.map import (
     BaudRateM,
     ConfigM,
     DeviceM,
+    LcdMemoryM,
     OkM,
     PingM,
     PongM,
+    ReadLcdMemoryM,
     SetLineM,
     SimpleCommandM,
     UserFlashAreaReadM,
@@ -83,10 +85,10 @@ class DbusInterface(  # type: ignore
     @dbus_method_async(PingM.t, PongM.t, flags=DbusUnprivilegedFlag)
     async def ping(
         self: Self,
-        payload: bytes,
+        payload: List[int],
         timeout: float,
         retry_times: int,
-    ) -> bytes:
+    ) -> List[int]:
         pong = await self.client.ping(*PingM.load(payload, timeout, retry_times))
         return PongM.dump(pong)
 
@@ -209,3 +211,16 @@ class DbusInterface(  # type: ignore
         retry_times: int,
     ) -> None:
         await self.client.set_line_2(*SetLineM.load(line, timeout, retry_times))
+
+    @dbus_method_async(ReadLcdMemoryM.t, LcdMemoryM.t, flags=DbusUnprivilegedFlag)
+    async def read_lcd_memory(
+        self: Self,
+        address: int,
+        timeout: float,
+        retry_times: int,
+    ) -> Tuple[int, List[int]]:
+        memory = await self.client.read_lcd_memory(
+            *ReadLcdMemoryM.load(address, timeout, retry_times)
+        )
+
+        return LcdMemoryM.dump(memory)
