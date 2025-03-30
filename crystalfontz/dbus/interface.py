@@ -21,6 +21,7 @@ from crystalfontz.dbus.map import (
     PongM,
     SimpleCommandM,
     VersionsM,
+    WriteUserFlashAreaM,
 )
 from crystalfontz.error import ConnectionError
 
@@ -127,3 +128,11 @@ class DbusInterface(  # type: ignore
     ) -> Tuple[str, str, str]:
         await self.client.detect_device(*SimpleCommandM.load(timeout, retry_times))
         return DeviceM.dump(self.client.device)
+
+    @dbus_method_async(WriteUserFlashAreaM.t, "", flags=DbusUnprivilegedFlag)
+    async def write_user_flash_area(
+        self: Self, data: bytes, timeout: float, retry_times: int
+    ) -> None:
+        await self.client.write_user_flash_area(
+            *WriteUserFlashAreaM.load(data, timeout, retry_times)
+        )

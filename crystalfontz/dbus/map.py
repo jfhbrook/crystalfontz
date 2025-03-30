@@ -156,3 +156,13 @@ class DeviceM:
     @staticmethod
     def dump(device: Device) -> Tuple[str, str, str]:
         return (device.model, device.hardware_rev, device.firmware_rev)
+
+
+class WriteUserFlashAreaM:
+    t: ClassVar[str] = t("y", TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        data: bytes, timeout: float, retry_times: int
+    ) -> Tuple[bytes, Optional[float], Optional[int]]:
+        return (data, TimeoutM.load(timeout), RetryTimesM.load(retry_times))

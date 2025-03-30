@@ -341,5 +341,18 @@ async def versions(client: DbusClient) -> None:
     echo(VersionsM.load(versions))
 
 
+@main.group(help="Interact with the User Flash Area")
+def flash() -> None:
+    pass
+
+
+@flash.command(name="write", help="2 (0x02): Write User Flash Area")
+@click.argument("data", type=BYTES)
+@async_command
+@pass_client
+async def write_user_flash_area(client: DbusClient, data: bytes) -> None:
+    await client.write_user_flash_area(data, TimeoutM.none, RetryTimesM.none)
+
+
 if __name__ == "__main__":
     main()
