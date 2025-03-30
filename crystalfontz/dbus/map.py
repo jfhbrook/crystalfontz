@@ -4,7 +4,13 @@ from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.device import Device
-from crystalfontz.response import LcdMemory, Pong, UserFlashAreaRead, Versions
+from crystalfontz.response import (
+    DowDeviceInformation,
+    LcdMemory,
+    Pong,
+    UserFlashAreaRead,
+    Versions,
+)
 
 
 class TypeProtocol(Protocol):
@@ -58,6 +64,10 @@ class OptFloatM:
 
 
 class AddressM:
+    t: ClassVar[str] = "q"
+
+
+class IndexM:
     t: ClassVar[str] = "q"
 
 
@@ -312,3 +322,26 @@ class SetBacklightM:
             TimeoutM.load(timeout),
             RetryTimesM.load(retry_times),
         )
+
+
+class ReadDowDeviceInformationM:
+    t: ClassVar[str] = t(IndexM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        index: int, timeout: float, retry_times: int
+    ) -> Tuple[int, Optional[float], Optional[int]]:
+        return (index, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class DowDeviceInformationM:
+    t: ClassVar[str] = t(IndexM, BytesM)
+
+    @staticmethod
+    def load(info: Tuple[int, List[int]]) -> DowDeviceInformation:
+        index, rom_id = info
+        return DowDeviceInformation(index, BytesM.load(rom_id))
+
+    @staticmethod
+    def dump(info: DowDeviceInformation) -> Tuple[int, List[int]]:
+        return (info.index, BytesM.dump(info.rom_id))

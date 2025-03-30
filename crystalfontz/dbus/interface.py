@@ -16,10 +16,12 @@ from crystalfontz.dbus.map import (
     BaudRateM,
     ConfigM,
     DeviceM,
+    DowDeviceInformationM,
     LcdMemoryM,
     OkM,
     PingM,
     PongM,
+    ReadDowDeviceInformationM,
     ReadLcdMemoryM,
     SetBacklightM,
     SetContrastM,
@@ -274,3 +276,18 @@ class DbusInterface(  # type: ignore
         await self.client.set_backlight(
             *SetBacklightM.load(lcd_brightness, keypad_brightness, timeout, retry_times)
         )
+
+    @dbus_method_async(
+        ReadDowDeviceInformationM.t, DowDeviceInformationM.t, flags=DbusUnprivilegedFlag
+    )
+    async def read_dow_device_information(
+        self: Self,
+        index: int,
+        timeout: float,
+        retry_times: int,
+    ) -> Tuple[int, List[int]]:
+        info = await self.client.read_dow_device_information(
+            *ReadDowDeviceInformationM.load(index, timeout, retry_times)
+        )
+
+        return DowDeviceInformationM.dump(info)

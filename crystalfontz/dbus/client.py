@@ -31,6 +31,7 @@ from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
 from crystalfontz.dbus.map import (
     BytesM,
     CursorStyleM,
+    DowDeviceInformationM,
     LcdMemoryM,
     OptFloatM,
     RetryTimesM,
@@ -510,6 +511,22 @@ async def backlight(
     await client.set_backlight(
         brightness, OptFloatM.dump(keypad), TimeoutM.none, RetryTimesM.none
     )
+
+
+@main.group(help="DOW (Dallas One-Wire) capabilities")
+def dow() -> None:
+    pass
+
+
+@dow.command(name="info", help="18 (0x12): Read DOW Device Information")
+@click.argument("index", type=BYTE)
+@async_command
+@pass_client
+async def read_dow_device_information(client: DbusClient, index: int) -> None:
+    info = await client.read_dow_device_information(
+        index, TimeoutM.none, RetryTimesM.none
+    )
+    echo(DowDeviceInformationM.load(info))
 
 
 if __name__ == "__main__":
