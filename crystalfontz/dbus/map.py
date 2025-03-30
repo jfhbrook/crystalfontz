@@ -15,6 +15,7 @@ from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.device import Device
+from crystalfontz.lcd import LcdRegister
 from crystalfontz.response import (
     DowDeviceInformation,
     DowTransactionResult,
@@ -88,8 +89,12 @@ class PositionM:
     t: ClassVar[str] = "q"
 
 
+class ByteM:
+    t: ClassVar[str] = "y"
+
+
 class BytesM:
-    t: ClassVar[str] = array("y")
+    t: ClassVar[str] = array(ByteM)
 
     @staticmethod
     def load(buff: List[int]) -> bytes:
@@ -102,7 +107,7 @@ class BytesM:
 
 
 class OptBytesM:
-    t: ClassVar[str] = array("y")
+    t: ClassVar[str] = array(ByteM)
     none: ClassVar[List[int]] = list()
 
     @staticmethod
@@ -488,6 +493,38 @@ class SetupLiveTemperatureDisplayM:
         return (
             slot,
             TemperatureDisplayItemM.load(item),
+            TimeoutM.load(timeout),
+            RetryTimesM.load(retry_times),
+        )
+
+
+LCD_REGISTERS: Dict[bool, LcdRegister] = {
+    bool(register.value): register for register in LcdRegister
+}
+
+
+class LcdRegisterM:
+    t: ClassVar[str] = "b"
+
+    @staticmethod
+    def load(register: bool) -> LcdRegister:
+        return LCD_REGISTERS[register]
+
+    @staticmethod
+    def dump(register: LcdRegister) -> bool:
+        return bool(register.value)
+
+
+class SendCommandToLcdControllerM:
+    t: ClassVar[str] = t(LcdRegisterM, ByteM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        location: bool, data: int, timeout: float, retry_times: int
+    ) -> Tuple[LcdRegister, int, Optional[float], Optional[int]]:
+        return (
+            LcdRegisterM.load(location),
+            data,
             TimeoutM.load(timeout),
             RetryTimesM.load(retry_times),
         )

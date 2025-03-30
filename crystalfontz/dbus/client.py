@@ -34,6 +34,7 @@ from crystalfontz.dbus.map import (
     DowDeviceInformationM,
     DowTransactionResultM,
     LcdMemoryM,
+    LcdRegisterM,
     OptBytesM,
     OptFloatM,
     RetryTimesM,
@@ -41,6 +42,7 @@ from crystalfontz.dbus.map import (
     TimeoutM,
     VersionsM,
 )
+from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
 
 logger = logging.getLogger(__name__)
@@ -595,6 +597,20 @@ async def setup_live_temperature_display(
 
     await client.setup_live_temperature_display(
         slot, TemperatureDisplayItemM.dump(item), TimeoutM.none, RetryTimesM.none
+    )
+
+
+@lcd.command(name="send", help="22 (0x16): Send Command Directly to the LCD Controller")
+@click.argument("location", type=click.Choice([e.name for e in LcdRegister]))
+@click.argument("data", type=BYTE)
+@async_command
+@pass_client
+async def send_command_to_lcd_controler(
+    client: DbusClient, location: str, data: int
+) -> None:
+    register = LcdRegister[location]
+    await client.send_command_to_lcd_controller(
+        LcdRegisterM.dump(register), data, TimeoutM.none, RetryTimesM.none
     )
 
 

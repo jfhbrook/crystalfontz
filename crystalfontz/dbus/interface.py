@@ -25,6 +25,7 @@ from crystalfontz.dbus.map import (
     PongM,
     ReadDowDeviceInformationM,
     ReadLcdMemoryM,
+    SendCommandToLcdControllerM,
     SetBacklightM,
     SetContrastM,
     SetCursorPositionM,
@@ -336,4 +337,16 @@ class DbusInterface(  # type: ignore
     ) -> None:
         await self.client.setup_live_temperature_display(
             *SetupLiveTemperatureDisplayM.load(slot, item, timeout, retry_times)
+        )
+
+    @dbus_method_async(SendCommandToLcdControllerM.t, "", flags=DbusUnprivilegedFlag)
+    async def send_command_to_lcd_controller(
+        self: Self,
+        location: bool,
+        data: int,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.send_command_to_lcd_controller(
+            *SendCommandToLcdControllerM.load(location, data, timeout, retry_times)
         )
