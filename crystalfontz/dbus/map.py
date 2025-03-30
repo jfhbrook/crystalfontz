@@ -1,4 +1,7 @@
-from typing import ClassVar, Optional, Protocol, Type, Union
+from typing import ClassVar, Optional, Protocol, Tuple, Type, Union
+
+from crystalfontz.device import Device
+from crystalfontz.response import Pong, Versions
 
 
 class TypeProtocol(Protocol):
@@ -41,3 +44,65 @@ class RetryTimesM:
     @staticmethod
     def load(i: int) -> Optional[int]:
         return i if i >= 0 else None
+
+
+class PingM:
+    t: ClassVar[str] = t("y", TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        payload: bytes, timeout: float, retry_times: int
+    ) -> Tuple[bytes, Optional[float], Optional[int]]:
+        return (payload, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class PongM:
+    t: ClassVar[str] = "y"
+
+    @staticmethod
+    def dump(pong: Pong) -> bytes:
+        return pong.response
+
+
+class OkM:
+    t: ClassVar[str] = "b"
+
+
+class TestConnectionM:
+    t: ClassVar[str] = t(TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(timeout: float, retry_times: int) -> Tuple[Optional[float], Optional[int]]:
+        return (TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class GetVersionsM:
+    t: ClassVar[str] = t(TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(timeout: float, retry_times: int) -> Tuple[Optional[float], Optional[int]]:
+        return (TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class VersionsM:
+    t: ClassVar[str] = struct("sss")
+
+    @staticmethod
+    def dump(versions: Versions) -> Tuple[str, str, str]:
+        return (versions.model, versions.hardware_rev, versions.firmware_rev)
+
+
+class DetectDeviceM:
+    t: ClassVar[str] = t(TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(timeout: float, retry_times: int) -> Tuple[Optional[float], Optional[int]]:
+        return (TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class DeviceM:
+    t: ClassVar[str] = struct("sss")
+
+    @staticmethod
+    def dump(device: Device) -> Tuple[str, str, str]:
+        return (device.model, device.hardware_rev, device.firmware_rev)
