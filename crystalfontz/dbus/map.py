@@ -6,6 +6,7 @@ from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.device import Device
 from crystalfontz.response import (
     DowDeviceInformation,
+    DowTransactionResult,
     LcdMemory,
     Pong,
     UserFlashAreaRead,
@@ -86,6 +87,23 @@ class BytesM:
     @staticmethod
     def dump(buff: bytes) -> List[int]:
         return list(buff)
+
+
+class OptBytesM:
+    t: ClassVar[str] = array("y")
+    none: ClassVar[List[int]] = list()
+
+    @staticmethod
+    def load(buff: List[int]) -> Optional[bytes]:
+        if not buff:
+            return None
+        return BytesM.load(buff)
+
+    @classmethod
+    def dump(cls: Type[Self], buff: Optional[bytes]) -> List[int]:
+        if buff is None:
+            return cls.none
+        return BytesM.dump(buff)
 
 
 class ConfigFileM:
@@ -355,3 +373,36 @@ class SetupTemperatureReportingM:
         enabled: List[int], timeout: float, retry_times: int
     ) -> Tuple[List[int], Optional[float], Optional[int]]:
         return (enabled, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class DowTransactionM:
+    t: ClassVar[str] = t(IndexM, "n", BytesM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        index: int,
+        bytes_to_read: int,
+        data_to_write: List[int],
+        timeout: float,
+        retry_times: int,
+    ) -> Tuple[int, int, Optional[bytes], Optional[float], Optional[int]]:
+        return (
+            index,
+            bytes_to_read,
+            OptBytesM.load(data_to_write),
+            TimeoutM.load(timeout),
+            RetryTimesM.load(retry_times),
+        )
+
+
+class DowTransactionResultM:
+    t: ClassVar[str] = t(IndexM, BytesM, "q")
+
+    @staticmethod
+    def load(res: Tuple[int, List[int], int]) -> DowTransactionResult:
+        index, data, crc = res
+        return DowTransactionResult(index, BytesM.load(data), crc)
+
+    @staticmethod
+    def dump(res: DowTransactionResult) -> Tuple[int, List[int], int]:
+        return (res.index, BytesM.dump(res.data), res.crc)

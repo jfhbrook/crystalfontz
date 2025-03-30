@@ -32,7 +32,9 @@ from crystalfontz.dbus.map import (
     BytesM,
     CursorStyleM,
     DowDeviceInformationM,
+    DowTransactionResultM,
     LcdMemoryM,
+    OptBytesM,
     OptFloatM,
     RetryTimesM,
     TimeoutM,
@@ -542,6 +544,25 @@ async def setup_temperature_reporting(client: DbusClient, enabled: Tuple[int]) -
     await client.setup_temperature_reporting(
         list(enabled), TimeoutM.none, RetryTimesM.none
     )
+
+
+@dow.command(name="transaction", help="20 (0x14): Arbitrary DOW Transaction")
+@click.argument("index", type=BYTE)
+@click.argument("bytes_to_read", type=BYTE)
+@click.option("--data_to_write", type=BYTES)
+@async_command
+@pass_client
+async def dow_transaction(
+    client: DbusClient, index: int, bytes_to_read: int, data_to_write: Optional[bytes]
+) -> None:
+    res = await client.dow_transaction(
+        index,
+        bytes_to_read,
+        OptBytesM.dump(data_to_write),
+        TimeoutM.none,
+        RetryTimesM.none,
+    )
+    echo(DowTransactionResultM.load(res))
 
 
 if __name__ == "__main__":

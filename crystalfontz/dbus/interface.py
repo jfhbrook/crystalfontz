@@ -17,6 +17,8 @@ from crystalfontz.dbus.map import (
     ConfigM,
     DeviceM,
     DowDeviceInformationM,
+    DowTransactionM,
+    DowTransactionResultM,
     LcdMemoryM,
     OkM,
     PingM,
@@ -303,3 +305,22 @@ class DbusInterface(  # type: ignore
         await self.client.setup_temperature_reporting(
             *SetupTemperatureReportingM.load(enabled, timeout, retry_times)
         )
+
+    @dbus_method_async(
+        DowTransactionM.t, DowTransactionResultM.t, flags=DbusUnprivilegedFlag
+    )
+    async def dow_transaction(
+        self: Self,
+        index: int,
+        bytes_to_read: int,
+        data_to_write: List[int],
+        timeout: float,
+        retry_times: int,
+    ) -> Tuple[int, List[int], int]:
+        res = await self.client.dow_transaction(
+            *DowTransactionM.load(
+                index, bytes_to_read, data_to_write, timeout, retry_times
+            )
+        )
+
+        return DowTransactionResultM.dump(res)
