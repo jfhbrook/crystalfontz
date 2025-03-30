@@ -1,6 +1,7 @@
-from typing import ClassVar, List, Optional, Protocol, Self, Tuple, Type, Union
+from typing import ClassVar, Dict, List, Optional, Protocol, Self, Tuple, Type, Union
 
 from crystalfontz.config import Config
+from crystalfontz.cursor import CursorStyle
 from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.device import Device
 from crystalfontz.response import LcdMemory, Pong, UserFlashAreaRead, Versions
@@ -28,6 +29,14 @@ def struct(*args: Union[str, Type[TypeProtocol]]) -> str:
 
 def array(of: Union[str, Type[TypeProtocol]]) -> str:
     return f"a{t(of)}"
+
+
+class AddressM:
+    t: ClassVar[str] = "q"
+
+
+class PositionM:
+    t: ClassVar[str] = "q"
 
 
 class BytesM:
@@ -198,7 +207,7 @@ class UserFlashAreaReadM:
 
 
 class SetLineM:
-    t: ClassVar[str] = t("y", TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t(BytesM, TimeoutM, RetryTimesM)
 
     @staticmethod
     def load(
@@ -208,7 +217,7 @@ class SetLineM:
 
 
 class ReadLcdMemoryM:
-    t: ClassVar[str] = t("n", TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t(AddressM, TimeoutM, RetryTimesM)
 
     @staticmethod
     def load(
@@ -218,7 +227,7 @@ class ReadLcdMemoryM:
 
 
 class LcdMemoryM:
-    t: ClassVar[str] = t("n", BytesM)
+    t: ClassVar[str] = t("q", BytesM)
 
     @staticmethod
     def load(obj: Tuple[int, List[int]]) -> LcdMemory:
@@ -228,3 +237,42 @@ class LcdMemoryM:
     @staticmethod
     def dump(memory: LcdMemory) -> Tuple[int, List[int]]:
         return (memory.address, BytesM.dump(memory.data))
+
+
+class SetCursorPositionM:
+    t: ClassVar[str] = t(PositionM, PositionM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        row: int, column: int, timeout: float, retry_times: int
+    ) -> Tuple[int, int, Optional[float], Optional[int]]:
+        return (row, column, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+CURSOR_STYLES: Dict[int, CursorStyle] = {style.value: style for style in CursorStyle}
+
+
+class CursorStyleM:
+    t: ClassVar[str] = "q"
+
+    @staticmethod
+    def load(style: int) -> CursorStyle:
+        return CURSOR_STYLES[style]
+
+    @staticmethod
+    def dump(style: CursorStyle) -> int:
+        return style.value
+
+
+class SetCursorStyleM:
+    t: ClassVar[str] = t(CursorStyleM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        style: int, timeout: float, retry_times: int
+    ) -> Tuple[CursorStyle, Optional[float], Optional[int]]:
+        return (
+            CursorStyleM.load(style),
+            TimeoutM.load(timeout),
+            RetryTimesM.load(retry_times),
+        )

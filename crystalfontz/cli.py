@@ -787,7 +787,7 @@ def character() -> None:
     #    to be stateful to be useful, meaning the config file would likely
     #    need to support it in some capacity.
     #
-    raise NotImplementedError("crystalfontz special-character")
+    raise NotImplementedError("crystalfontz character")
 
 
 @main.group(help="Interact directly with the LCD controller")

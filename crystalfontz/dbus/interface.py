@@ -21,6 +21,8 @@ from crystalfontz.dbus.map import (
     PingM,
     PongM,
     ReadLcdMemoryM,
+    SetCursorPositionM,
+    SetCursorStyleM,
     SetLineM,
     SimpleCommandM,
     UserFlashAreaReadM,
@@ -224,3 +226,26 @@ class DbusInterface(  # type: ignore
         )
 
         return LcdMemoryM.dump(memory)
+
+    @dbus_method_async(SetCursorPositionM.t, "", flags=DbusUnprivilegedFlag)
+    async def set_cursor_position(
+        self: Self,
+        row: int,
+        column: int,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.set_cursor_position(
+            *SetCursorPositionM.load(row, column, timeout, retry_times)
+        )
+
+    @dbus_method_async(SetCursorStyleM.t, "", flags=DbusUnprivilegedFlag)
+    async def set_cursor_style(
+        self: Self,
+        style: int,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.set_cursor_style(
+            *SetCursorStyleM.load(style, timeout, retry_times)
+        )

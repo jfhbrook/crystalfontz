@@ -19,6 +19,7 @@ from crystalfontz.cli import (
     AsyncCommand,
     BYTE,
     BYTES,
+    CursorStyle,
     echo,
     LogLevel,
     OutputMode,
@@ -27,7 +28,14 @@ from crystalfontz.config import Config
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
-from crystalfontz.dbus.map import BytesM, LcdMemoryM, RetryTimesM, TimeoutM, VersionsM
+from crystalfontz.dbus.map import (
+    BytesM,
+    CursorStyleM,
+    LcdMemoryM,
+    RetryTimesM,
+    TimeoutM,
+    VersionsM,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -456,6 +464,30 @@ def lcd() -> None:
 async def read_lcd_memory(client: DbusClient, address: int) -> None:
     memory = await client.read_lcd_memory(address, TimeoutM.none, RetryTimesM.none)
     echo(LcdMemoryM.load(memory))
+
+
+@main.group(help="Interact with the LCD cursor")
+def cursor() -> None:
+    pass
+
+
+@cursor.command(name="position", help="11 (0x0B): Set LCD Cursor Position")
+@click.argument("row", type=BYTE)
+@click.argument("column", type=BYTE)
+@async_command
+@pass_client
+async def set_cursor_position(client: DbusClient, row: int, column: int) -> None:
+    await client.set_cursor_position(row, column, TimeoutM.none, RetryTimesM.none)
+
+
+@cursor.command(name="style", help="12 (0x0C): Set LCD Cursor Style")
+@click.argument("style", type=click.Choice([e.name for e in CursorStyle]))
+@async_command
+@pass_client
+async def set_cursor_style(client: DbusClient, style: str) -> None:
+    await client.set_cursor_style(
+        CursorStyleM.dump(CursorStyle[style]), TimeoutM.none, RetryTimesM.none
+    )
 
 
 if __name__ == "__main__":
