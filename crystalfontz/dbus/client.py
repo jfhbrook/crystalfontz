@@ -21,6 +21,7 @@ from crystalfontz.cli import (
     BYTES,
     CursorStyle,
     echo,
+    KEYPRESSES,
     LogLevel,
     OutputMode,
 )
@@ -611,6 +612,31 @@ async def send_command_to_lcd_controler(
     register = LcdRegister[location]
     await client.send_command_to_lcd_controller(
         LcdRegisterM.dump(register), data, TimeoutM.none, RetryTimesM.none
+    )
+
+
+@main.group(help="Interact with the keypad")
+def keypad() -> None:
+    pass
+
+
+@keypad.command(name="reporting", help="23 (0x17): Configure Key Reporting")
+@click.option(
+    "--when-pressed", multiple=True, type=click.Choice(list(KEYPRESSES.keys()))
+)
+@click.option(
+    "--when-released", multiple=True, type=click.Choice(list(KEYPRESSES.keys()))
+)
+@async_command
+@pass_client
+async def configure_key_reporting(
+    client: DbusClient, when_pressed: List[str], when_released: List[str]
+) -> None:
+    await client.configure_key_reporting(
+        [KEYPRESSES[name] for name in when_pressed],
+        [KEYPRESSES[name] for name in when_released],
+        TimeoutM.none,
+        RetryTimesM.none,
     )
 
 

@@ -6,6 +6,7 @@ from typing import (
     Optional,
     Protocol,
     Self,
+    Set,
     Tuple,
     Type,
     Union,
@@ -525,6 +526,24 @@ class SendCommandToLcdControllerM:
         return (
             LcdRegisterM.load(location),
             data,
+            TimeoutM.load(timeout),
+            RetryTimesM.load(retry_times),
+        )
+
+
+class ConfigureKeyReportingM:
+    t: ClassVar[str] = t(array(ByteM), array(ByteM), TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        when_pressed: List[int],
+        when_released: List[int],
+        timeout: float,
+        retry_times: int,
+    ) -> Tuple[Set[int], Set[int], Optional[float], Optional[int]]:
+        return (
+            set(when_pressed),
+            set(when_released),
             TimeoutM.load(timeout),
             RetryTimesM.load(retry_times),
         )

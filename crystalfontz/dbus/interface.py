@@ -15,6 +15,7 @@ from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.dbus.map import (
     BaudRateM,
     ConfigM,
+    ConfigureKeyReportingM,
     DeviceM,
     DowDeviceInformationM,
     DowTransactionM,
@@ -349,4 +350,18 @@ class DbusInterface(  # type: ignore
     ) -> None:
         await self.client.send_command_to_lcd_controller(
             *SendCommandToLcdControllerM.load(location, data, timeout, retry_times)
+        )
+
+    @dbus_method_async(ConfigureKeyReportingM.t, "", flags=DbusUnprivilegedFlag)
+    async def configure_key_reporting(
+        self: Self,
+        when_pressed: List[int],
+        when_released: List[int],
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.configure_key_reporting(
+            *ConfigureKeyReportingM.load(
+                when_pressed, when_released, timeout, retry_times
+            )
         )
