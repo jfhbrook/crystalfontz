@@ -26,6 +26,32 @@ def struct(*args: Union[str, Type[TypeProtocol]]) -> str:
     return t("(", *args, ")")
 
 
+class ConfigFileM:
+    t: ClassVar[str] = "s"
+    none: ClassVar[str] = ""
+
+    @classmethod
+    def dump(cls: Type[Self], file: Optional[str]) -> str:
+        return file or cls.none
+
+
+class PortM:
+    t: ClassVar[str] = "s"
+
+
+class ModelM:
+    t: ClassVar[str] = "s"
+
+
+class RevisionM:
+    t: ClassVar[str] = "s"
+    none: ClassVar[str] = ""
+
+    @classmethod
+    def dump(cls: Type[Self], revision: Optional[str]) -> str:
+        return revision or cls.none
+
+
 class BaudRateM:
     t: ClassVar[str] = "q"
 
@@ -56,27 +82,16 @@ class RetryTimesM:
         return r if r is not None else cls.none
 
 
-class ConfigFileM:
-    t: ClassVar[str] = "s"
-    none: ClassVar[str] = ""
-
-    @classmethod
-    def dump(cls: Type[Self], file: Optional[str]) -> str:
-        return file or cls.none
-
-
-class RevisionM:
-    t: ClassVar[str] = "s"
-    none: ClassVar[str] = ""
-
-    @classmethod
-    def dump(cls: Type[Self], revision: Optional[str]) -> str:
-        return revision or cls.none
-
-
 class ConfigM:
     t: ClassVar[str] = struct(
-        ConfigFileM, "ss", RevisionM.t, RevisionM.t, BaudRateM, TimeoutM, RetryTimesM
+        ConfigFileM,
+        PortM,
+        ModelM,
+        RevisionM,
+        RevisionM,
+        BaudRateM,
+        TimeoutM,
+        RetryTimesM,
     )
 
     @staticmethod
