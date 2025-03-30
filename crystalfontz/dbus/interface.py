@@ -14,6 +14,7 @@ from crystalfontz.config import Config
 from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.dbus.map import (
     BaudRateM,
+    ConfigM,
     DetectDeviceM,
     DeviceM,
     GetVersionsM,
@@ -21,7 +22,6 @@ from crystalfontz.dbus.map import (
     PingM,
     PongM,
     RetryTimesM,
-    struct,
     TestConnectionM,
     TimeoutM,
     VersionsM,
@@ -56,24 +56,13 @@ class DbusInterface(  # type: ignore
         self.client: Client = client
         self._client_lock: asyncio.Lock = asyncio.Lock()
 
-    @dbus_property_async(struct("sssss", BaudRateM, TimeoutM, RetryTimesM))
+    @dbus_property_async(ConfigM.t)
     def config(self: Self) -> ConfigStruct:
         """
         The DBus service's currently loaded configuration.
         """
 
-        config = self._config
-
-        return (
-            config.file or "",
-            config.port,
-            config.model,
-            config.hardware_rev or "",
-            config.firmware_rev or "",
-            config.baud_rate,
-            config.timeout,
-            config.retry_times,
-        )
+        return ConfigM.dump(self._config)
 
     async def close(self: Self) -> None:
         """

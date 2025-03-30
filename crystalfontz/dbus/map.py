@@ -1,5 +1,7 @@
-from typing import ClassVar, Optional, Protocol, Tuple, Type, Union
+from typing import ClassVar, Optional, Protocol, Self, Tuple, Type, Union
 
+from crystalfontz.config import Config
+from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.device import Device
 from crystalfontz.response import Pong, Versions
 
@@ -30,20 +32,65 @@ class BaudRateM:
 
 class TimeoutM:
     t: ClassVar[str] = "d"
-    none: float = -1.0
+    none: ClassVar[float] = -1.0
 
     @staticmethod
-    def load(d: float) -> Optional[float]:
-        return d if d >= 0 else None
+    def load(t: float) -> Optional[float]:
+        return t if t >= 0 else None
+
+    @classmethod
+    def dump(cls: Type[Self], t: Optional[float]) -> float:
+        return t if t is not None else cls.none
 
 
 class RetryTimesM:
     t: ClassVar[str] = "i"
-    none: int = -1
+    none: ClassVar[int] = -1
 
     @staticmethod
-    def load(i: int) -> Optional[int]:
-        return i if i >= 0 else None
+    def load(r: int) -> Optional[int]:
+        return r if r >= 0 else None
+
+    @classmethod
+    def dump(cls: Type[Self], r: Optional[int]) -> int:
+        return r if r is not None else cls.none
+
+
+class ConfigFileM:
+    t: ClassVar[str] = "s"
+    none: ClassVar[str] = ""
+
+    @classmethod
+    def dump(cls: Type[Self], file: Optional[str]) -> str:
+        return file or cls.none
+
+
+class RevisionM:
+    t: ClassVar[str] = "s"
+    none: ClassVar[str] = ""
+
+    @classmethod
+    def dump(cls: Type[Self], revision: Optional[str]) -> str:
+        return revision or cls.none
+
+
+class ConfigM:
+    t: ClassVar[str] = struct(
+        ConfigFileM, "ss", RevisionM.t, RevisionM.t, BaudRateM, TimeoutM, RetryTimesM
+    )
+
+    @staticmethod
+    def dump(config: Config) -> ConfigStruct:
+        return (
+            ConfigFileM.dump(config.file),
+            config.port,
+            config.model,
+            RevisionM.dump(config.hardware_rev),
+            RevisionM.dump(config.firmware_rev),
+            config.baud_rate,
+            TimeoutM.dump(config.timeout),
+            RetryTimesM.dump(config.retry_times),
+        )
 
 
 class PingM:
