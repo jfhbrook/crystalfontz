@@ -135,6 +135,10 @@ class VersionsM:
     t: ClassVar[str] = struct("sss")
 
     @staticmethod
+    def load(versions: Tuple[str, str, str]) -> Versions:
+        return Versions(*versions)
+
+    @staticmethod
     def dump(versions: Versions) -> Tuple[str, str, str]:
         return (versions.model, versions.hardware_rev, versions.firmware_rev)
 

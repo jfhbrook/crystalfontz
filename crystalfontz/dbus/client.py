@@ -26,7 +26,7 @@ from crystalfontz.config import Config
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
-from crystalfontz.dbus.map import RetryTimesM, TimeoutM
+from crystalfontz.dbus.map import RetryTimesM, TimeoutM, VersionsM
 
 logger = logging.getLogger(__name__)
 
@@ -337,10 +337,8 @@ async def ping(client: DbusClient, payload: bytes) -> None:
 @async_command
 @pass_client
 async def versions(client: DbusClient) -> None:
-    model, hardware_rev, firmware_rev = await client.versions(
-        TimeoutM.none, RetryTimesM.none
-    )
-    echo(f"{model}: {hardware_rev}, {firmware_rev}")
+    versions = await client.versions(TimeoutM.none, RetryTimesM.none)
+    echo(VersionsM.load(versions))
 
 
 if __name__ == "__main__":
