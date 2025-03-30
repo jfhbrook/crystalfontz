@@ -381,5 +381,19 @@ async def reboot_lcd(client: DbusClient) -> None:
     await client.reboot_lcd(TimeoutM.none, RetryTimesM.none)
 
 
+@power.command(help="Reset the host, assuming ATX control is configured")
+@async_command
+@pass_client
+async def reset_host(client: DbusClient) -> None:
+    await client.reset_host(TimeoutM.none, RetryTimesM.none)
+
+
+@power.command(help="Turn the host's power off, assuming ATX control is configured")
+@async_command
+@pass_client
+async def shutdown_host(client: DbusClient) -> None:
+    await client.shutdown_host(TimeoutM.none, RetryTimesM.none)
+
+
 if __name__ == "__main__":
     main()

@@ -166,3 +166,19 @@ class DbusInterface(  # type: ignore
         retry_times: int,
     ) -> None:
         await self.client.reboot_lcd(*SimpleCommandM.load(timeout, retry_times))
+
+    @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
+    async def reset_host(
+        self: Self,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.reset_host(*SimpleCommandM.load(timeout, retry_times))
+
+    @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
+    async def shutdown_host(
+        self: Self,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.shutdown_host(*SimpleCommandM.load(timeout, retry_times))
