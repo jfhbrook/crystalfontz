@@ -130,15 +130,7 @@ class OkM:
     t: ClassVar[str] = "b"
 
 
-class TestConnectionM:
-    t: ClassVar[str] = t(TimeoutM, RetryTimesM)
-
-    @staticmethod
-    def load(timeout: float, retry_times: int) -> Tuple[Optional[float], Optional[int]]:
-        return (TimeoutM.load(timeout), RetryTimesM.load(retry_times))
-
-
-class GetVersionsM:
+class SimpleCommandM:
     t: ClassVar[str] = t(TimeoutM, RetryTimesM)
 
     @staticmethod
@@ -156,14 +148,6 @@ class VersionsM:
     @staticmethod
     def dump(versions: Versions) -> Tuple[str, str, str]:
         return (versions.model, versions.hardware_rev, versions.firmware_rev)
-
-
-class DetectDeviceM:
-    t: ClassVar[str] = t(TimeoutM, RetryTimesM)
-
-    @staticmethod
-    def load(timeout: float, retry_times: int) -> Tuple[Optional[float], Optional[int]]:
-        return (TimeoutM.load(timeout), RetryTimesM.load(retry_times))
 
 
 class DeviceM:

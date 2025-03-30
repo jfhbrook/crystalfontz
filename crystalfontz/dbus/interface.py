@@ -15,15 +15,11 @@ from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.dbus.map import (
     BaudRateM,
     ConfigM,
-    DetectDeviceM,
     DeviceM,
-    GetVersionsM,
     OkM,
     PingM,
     PongM,
-    RetryTimesM,
-    TestConnectionM,
-    TimeoutM,
+    SimpleCommandM,
     VersionsM,
 )
 from crystalfontz.error import ConnectionError
@@ -91,11 +87,11 @@ class DbusInterface(  # type: ignore
         pong = await self.client.ping(*PingM.load(payload, timeout, retry_times))
         return PongM.dump(pong)
 
-    @dbus_method_async(TestConnectionM.t, OkM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SimpleCommandM.t, OkM.t, flags=DbusUnprivilegedFlag)
     async def test_connection(self: Self, timeout: float, retry_times: int) -> Ok:
         try:
             await self.client.test_connection(
-                *TestConnectionM.load(timeout, retry_times)
+                *SimpleCommandM.load(timeout, retry_times)
             )
         except ConnectionError:
             return False
@@ -114,20 +110,20 @@ class DbusInterface(  # type: ignore
         # Return the new baud rate
         return self.client.baud_rate
 
-    @dbus_method_async(GetVersionsM.t, VersionsM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SimpleCommandM.t, VersionsM.t, flags=DbusUnprivilegedFlag)
     async def versions(
         self: Self,
         timeout: float,
         retry_times: int,
     ) -> Tuple[str, str, str]:
-        versions = await self.client.versions(*GetVersionsM.load(timeout, retry_times))
+        versions = await self.client.versions(
+            *SimpleCommandM.load(timeout, retry_times)
+        )
         return VersionsM.dump(versions)
 
-    @dbus_method_async(DetectDeviceM.t, DeviceM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SimpleCommandM.t, DeviceM.t, flags=DbusUnprivilegedFlag)
     async def detect_device(
         self: Self, timeout: float, retry_times: int
     ) -> Tuple[str, str, str]:
-        await self.client.detect_device(
-            TimeoutM.load(timeout), RetryTimesM.load(retry_times)
-        )
+        await self.client.detect_device(*SimpleCommandM.load(timeout, retry_times))
         return DeviceM.dump(self.client.device)
