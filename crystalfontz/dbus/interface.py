@@ -15,6 +15,8 @@ from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.dbus.map import (
     BaudRateM,
     RetryTimesM,
+    struct,
+    t,
     TimeoutM,
 )
 from crystalfontz.error import ConnectionError
@@ -47,7 +49,7 @@ class DbusInterface(  # type: ignore
         self.client: Client = client
         self._client_lock: asyncio.Lock = asyncio.Lock()
 
-    @dbus_property_async(f"(sssss{BaudRateM.t}{TimeoutM.t}{RetryTimesM.t})")
+    @dbus_property_async(struct("sssss", BaudRateM, TimeoutM, RetryTimesM))
     def config(self: Self) -> ConfigStruct:
         """
         The DBus service's currently loaded configuration.
@@ -83,7 +85,7 @@ class DbusInterface(  # type: ignore
 
         return self.client.closed
 
-    @dbus_method_async(f"y{TimeoutM.t}{RetryTimesM.t}", "y", flags=DbusUnprivilegedFlag)
+    @dbus_method_async(t("y", TimeoutM, RetryTimesM), "y", flags=DbusUnprivilegedFlag)
     async def ping(
         self: Self,
         payload: bytes,
@@ -95,7 +97,7 @@ class DbusInterface(  # type: ignore
         )
         return pong.response
 
-    @dbus_method_async(f"{TimeoutM.t}{RetryTimesM.t}", "b", flags=DbusUnprivilegedFlag)
+    @dbus_method_async(t(TimeoutM, RetryTimesM), "b", flags=DbusUnprivilegedFlag)
     async def test_connection(self: Self, timeout: float, retry_times: int) -> Ok:
         try:
             await self.client.test_connection(
@@ -118,9 +120,7 @@ class DbusInterface(  # type: ignore
         # Return the new baud rate
         return self.client.baud_rate
 
-    @dbus_method_async(
-        f"{TimeoutM.t}{RetryTimesM.t}", "(sss)", flags=DbusUnprivilegedFlag
-    )
+    @dbus_method_async(t(TimeoutM, RetryTimesM), "(sss)", flags=DbusUnprivilegedFlag)
     async def versions(
         self: Self,
         timeout: float,
@@ -131,9 +131,7 @@ class DbusInterface(  # type: ignore
         )
         return (versions.model, versions.hardware_rev, versions.firmware_rev)
 
-    @dbus_method_async(
-        f"{TimeoutM.t}{RetryTimesM.t}", "(sss)", flags=DbusUnprivilegedFlag
-    )
+    @dbus_method_async(t(TimeoutM, RetryTimesM), "(sss)", flags=DbusUnprivilegedFlag)
     async def detect_device(
         self: Self, timeout: float, retry_times: int
     ) -> Tuple[str, str, str]:

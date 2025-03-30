@@ -1,12 +1,32 @@
-from typing import Optional
+from typing import ClassVar, Optional, Protocol, Type, Union
+
+
+class TypeProtocol(Protocol):
+    t: ClassVar[str]
+
+
+def t(*args: Union[str, Type[TypeProtocol]]) -> str:
+    type_ = ""
+
+    for arg in args:
+        if isinstance(arg, str):
+            type_ += arg
+        else:
+            type_ += arg.t
+
+    return type_
+
+
+def struct(*args: Union[str, Type[TypeProtocol]]) -> str:
+    return t("(", *args, ")")
 
 
 class BaudRateM:
-    t: str = "q"
+    t: ClassVar[str] = "q"
 
 
 class TimeoutM:
-    t: str = "d"
+    t: ClassVar[str] = "d"
     none: float = -1.0
 
     @staticmethod
@@ -15,7 +35,7 @@ class TimeoutM:
 
 
 class RetryTimesM:
-    t: str = "i"
+    t: ClassVar[str] = "i"
     none: int = -1
 
     @staticmethod
