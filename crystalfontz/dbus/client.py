@@ -395,5 +395,12 @@ async def shutdown_host(client: DbusClient) -> None:
     await client.shutdown_host(TimeoutM.none, RetryTimesM.none)
 
 
+@main.command(help="6 (0x06): Clear LCD Screen")
+@async_command
+@pass_client
+async def clear(client: DbusClient) -> None:
+    await client.clear_screen(TimeoutM.none, RetryTimesM.none)
+
+
 if __name__ == "__main__":
     main()

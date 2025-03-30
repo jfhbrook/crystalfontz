@@ -182,3 +182,11 @@ class DbusInterface(  # type: ignore
         retry_times: int,
     ) -> None:
         await self.client.shutdown_host(*SimpleCommandM.load(timeout, retry_times))
+
+    @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
+    async def clear_screen(
+        self: Self,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.clear_screen(*SimpleCommandM.load(timeout, retry_times))
