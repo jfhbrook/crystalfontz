@@ -28,6 +28,7 @@ from crystalfontz.dbus.map import (
     SetCursorPositionM,
     SetCursorStyleM,
     SetLineM,
+    SetupTemperatureReportingM,
     SimpleCommandM,
     UserFlashAreaReadM,
     VersionsM,
@@ -291,3 +292,14 @@ class DbusInterface(  # type: ignore
         )
 
         return DowDeviceInformationM.dump(info)
+
+    @dbus_method_async(SetupTemperatureReportingM.t, "", flags=DbusUnprivilegedFlag)
+    async def setup_temperature_reporting(
+        self: Self,
+        enabled: List[int],
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.setup_temperature_reporting(
+            *SetupTemperatureReportingM.load(enabled, timeout, retry_times)
+        )

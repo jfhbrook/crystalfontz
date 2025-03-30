@@ -8,7 +8,7 @@ import shlex
 import shutil
 import subprocess
 import sys
-from typing import Any, cast, List, Optional, Self
+from typing import Any, cast, List, Optional, Self, Tuple
 from unittest.mock import Mock
 
 import click
@@ -527,6 +527,21 @@ async def read_dow_device_information(client: DbusClient, index: int) -> None:
         index, TimeoutM.none, RetryTimesM.none
     )
     echo(DowDeviceInformationM.load(info))
+
+
+@main.group(help="Temperature reporting and live display")
+def temperature() -> None:
+    pass
+
+
+@temperature.command(name="reporting", help="19 (0x13): Set Up Temperature Reporting")
+@click.argument("enabled", nargs=-1)
+@async_command
+@pass_client
+async def setup_temperature_reporting(client: DbusClient, enabled: Tuple[int]) -> None:
+    await client.setup_temperature_reporting(
+        list(enabled), TimeoutM.none, RetryTimesM.none
+    )
 
 
 if __name__ == "__main__":

@@ -345,3 +345,13 @@ class DowDeviceInformationM:
     @staticmethod
     def dump(info: DowDeviceInformation) -> Tuple[int, List[int]]:
         return (info.index, BytesM.dump(info.rom_id))
+
+
+class SetupTemperatureReportingM:
+    t: ClassVar[str] = t(array("q"), TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        enabled: List[int], timeout: float, retry_times: int
+    ) -> Tuple[List[int], Optional[float], Optional[int]]:
+        return (enabled, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
