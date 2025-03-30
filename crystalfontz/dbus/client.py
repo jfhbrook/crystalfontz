@@ -37,9 +37,11 @@ from crystalfontz.dbus.map import (
     OptBytesM,
     OptFloatM,
     RetryTimesM,
+    TemperatureDisplayItemM,
     TimeoutM,
     VersionsM,
 )
+from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
 
 logger = logging.getLogger(__name__)
 
@@ -563,6 +565,37 @@ async def dow_transaction(
         RetryTimesM.none,
     )
     echo(DowTransactionResultM.load(res))
+
+
+@temperature.command(name="display", help="21 (0x15): Set Up Live Temperature Display")
+@click.argument("slot", type=BYTE)
+@click.argument("index", type=BYTE)
+@click.option("--n-digits", "-n", type=click.Choice(["3", "5"]), required=True)
+@click.option("--column", "-c", type=BYTE, required=True)
+@click.option("--row", "-r", type=BYTE, required=True)
+@click.option("--units", "-U", type=click.Choice([e.name for e in TemperatureUnit]))
+@async_command
+@pass_client
+async def setup_live_temperature_display(
+    client: DbusClient,
+    slot: int,
+    index: int,
+    n_digits: str,
+    column: int,
+    row: int,
+    units: str,
+) -> None:
+    item = TemperatureDisplayItem(
+        index=index,
+        n_digits=cast(Any, int(n_digits)),
+        column=column,
+        row=row,
+        units=TemperatureUnit[units],
+    )
+
+    await client.setup_live_temperature_display(
+        slot, TemperatureDisplayItemM.dump(item), TimeoutM.none, RetryTimesM.none
+    )
 
 
 if __name__ == "__main__":

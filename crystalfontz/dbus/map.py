@@ -1,4 +1,15 @@
-from typing import ClassVar, Dict, List, Optional, Protocol, Self, Tuple, Type, Union
+from typing import (
+    ClassVar,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    Self,
+    Tuple,
+    Type,
+    Union,
+)
 
 from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
@@ -12,6 +23,7 @@ from crystalfontz.response import (
     UserFlashAreaRead,
     Versions,
 )
+from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
 
 
 class TypeProtocol(Protocol):
@@ -406,3 +418,76 @@ class DowTransactionResultM:
     @staticmethod
     def dump(res: DowTransactionResult) -> Tuple[int, List[int], int]:
         return (res.index, BytesM.dump(res.data), res.crc)
+
+
+class TemperatureDigitsM:
+    t: ClassVar[str] = "n"
+
+    @staticmethod
+    def load(n_digits: int) -> Literal[3] | Literal[5]:
+        if n_digits != 3 or n_digits != 5:
+            raise ValueError("May display either 3 or 5 temperature digits")
+        return n_digits
+
+
+TEMPERATURE_UNITS: Dict[bool, TemperatureUnit] = {
+    bool(unit.value): unit for unit in TemperatureUnit
+}
+
+
+class TemperatureUnitM:
+    t: ClassVar[str] = "b"
+
+    @staticmethod
+    def load(unit: bool) -> TemperatureUnit:
+        return TEMPERATURE_UNITS[unit]
+
+    @staticmethod
+    def dump(unit: TemperatureUnit) -> bool:
+        return bool(unit.value)
+
+
+class TemperatureDisplayItemM:
+    t: ClassVar[str] = t(IndexM, TemperatureDigitsM, PositionM, PositionM, "b")
+
+    @staticmethod
+    def load(
+        item: Tuple[int, int, int, int, bool],
+    ) -> TemperatureDisplayItem:
+
+        index, n_digits, column, row, units = item
+        return TemperatureDisplayItem(
+            index,
+            TemperatureDigitsM.load(n_digits),
+            column,
+            row,
+            TemperatureUnitM.load(units),
+        )
+
+    @staticmethod
+    def dump(item: TemperatureDisplayItem) -> Tuple[int, int, int, int, bool]:
+        return (
+            item.index,
+            item.n_digits,
+            item.column,
+            item.row,
+            TemperatureUnitM.dump(item.units),
+        )
+
+
+class SetupLiveTemperatureDisplayM:
+    t: ClassVar[str] = t(IndexM, TemperatureDisplayItemM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        slot: int,
+        item: Tuple[int, int, int, int, bool],
+        timeout: float,
+        retry_times: int,
+    ) -> Tuple[int, TemperatureDisplayItem, Optional[float], Optional[int]]:
+        return (
+            slot,
+            TemperatureDisplayItemM.load(item),
+            TimeoutM.load(timeout),
+            RetryTimesM.load(retry_times),
+        )

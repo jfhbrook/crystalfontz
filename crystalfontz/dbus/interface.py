@@ -30,6 +30,7 @@ from crystalfontz.dbus.map import (
     SetCursorPositionM,
     SetCursorStyleM,
     SetLineM,
+    SetupLiveTemperatureDisplayM,
     SetupTemperatureReportingM,
     SimpleCommandM,
     UserFlashAreaReadM,
@@ -324,3 +325,15 @@ class DbusInterface(  # type: ignore
         )
 
         return DowTransactionResultM.dump(res)
+
+    @dbus_method_async(SetupLiveTemperatureDisplayM.t, "", flags=DbusUnprivilegedFlag)
+    async def setup_live_temperature_display(
+        self: Self,
+        slot: int,
+        item: Tuple[int, int, int, int, bool],
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.setup_live_temperature_display(
+            *SetupLiveTemperatureDisplayM.load(slot, item, timeout, retry_times)
+        )
