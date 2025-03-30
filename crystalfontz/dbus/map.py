@@ -1,15 +1,23 @@
 from typing import Optional
 
-baud_rate_t = "q"
-timeout_t = "d"
-none_timeout = -1.0
-retry_times_t = "i"
-none_retry_times = -1
+
+class BaudRateM:
+    t: str = "q"
 
 
-def load_timeout(d: float) -> Optional[float]:
-    return d if d >= 0 else None
+class TimeoutM:
+    t: str = "d"
+    none: float = -1.0
+
+    @staticmethod
+    def load(d: float) -> Optional[float]:
+        return d if d >= 0 else None
 
 
-def load_retry_times(i: int) -> Optional[int]:
-    return i if i >= 0 else None
+class RetryTimesM:
+    t: str = "i"
+    none: int = -1
+
+    @staticmethod
+    def load(i: int) -> Optional[int]:
+        return i if i >= 0 else None

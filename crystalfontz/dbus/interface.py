@@ -13,11 +13,9 @@ from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.dbus.map import (
-    baud_rate_t,
-    load_retry_times,
-    load_timeout,
-    retry_times_t,
-    timeout_t,
+    BaudRateM,
+    RetryTimesM,
+    TimeoutM,
 )
 from crystalfontz.error import ConnectionError
 
@@ -49,7 +47,7 @@ class DbusInterface(  # type: ignore
         self.client: Client = client
         self._client_lock: asyncio.Lock = asyncio.Lock()
 
-    @dbus_property_async(f"(sssss{baud_rate_t}{timeout_t}{retry_times_t})")
+    @dbus_property_async(f"(sssss{BaudRateM.t}{TimeoutM.t}{RetryTimesM.t})")
     def config(self: Self) -> ConfigStruct:
         """
         The DBus service's currently loaded configuration.
@@ -85,7 +83,7 @@ class DbusInterface(  # type: ignore
 
         return self.client.closed
 
-    @dbus_method_async(f"y{timeout_t}{retry_times_t}", "y", flags=DbusUnprivilegedFlag)
+    @dbus_method_async(f"y{TimeoutM.t}{RetryTimesM.t}", "y", flags=DbusUnprivilegedFlag)
     async def ping(
         self: Self,
         payload: bytes,
@@ -93,15 +91,15 @@ class DbusInterface(  # type: ignore
         retry_times: int,
     ) -> bytes:
         pong = await self.client.ping(
-            payload, load_timeout(timeout), load_retry_times(retry_times)
+            payload, TimeoutM.load(timeout), RetryTimesM.load(retry_times)
         )
         return pong.response
 
-    @dbus_method_async(f"{timeout_t}{retry_times_t}", "b", flags=DbusUnprivilegedFlag)
+    @dbus_method_async(f"{TimeoutM.t}{RetryTimesM.t}", "b", flags=DbusUnprivilegedFlag)
     async def test_connection(self: Self, timeout: float, retry_times: int) -> Ok:
         try:
             await self.client.test_connection(
-                load_timeout(timeout), load_retry_times(retry_times)
+                TimeoutM.load(timeout), RetryTimesM.load(retry_times)
             )
         except ConnectionError:
             return False
@@ -109,7 +107,7 @@ class DbusInterface(  # type: ignore
             return True
 
     # TODO: Should receive timeout and retry_times
-    @dbus_method_async("", baud_rate_t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async("", BaudRateM.t, flags=DbusUnprivilegedFlag)
     async def detect_baud_rate(self: Self) -> int:
         # Detect the baud rate, as you do
         await self.client.detect_baud_rate()
@@ -121,7 +119,7 @@ class DbusInterface(  # type: ignore
         return self.client.baud_rate
 
     @dbus_method_async(
-        f"{timeout_t}{retry_times_t}", "(sss)", flags=DbusUnprivilegedFlag
+        f"{TimeoutM.t}{RetryTimesM.t}", "(sss)", flags=DbusUnprivilegedFlag
     )
     async def versions(
         self: Self,
@@ -129,18 +127,18 @@ class DbusInterface(  # type: ignore
         retry_times: int,
     ) -> Tuple[str, str, str]:
         versions = await self.client.versions(
-            load_timeout(timeout), load_retry_times(retry_times)
+            TimeoutM.load(timeout), RetryTimesM.load(retry_times)
         )
         return (versions.model, versions.hardware_rev, versions.firmware_rev)
 
     @dbus_method_async(
-        f"{timeout_t}{retry_times_t}", "(sss)", flags=DbusUnprivilegedFlag
+        f"{TimeoutM.t}{RetryTimesM.t}", "(sss)", flags=DbusUnprivilegedFlag
     )
     async def detect_device(
         self: Self, timeout: float, retry_times: int
     ) -> Tuple[str, str, str]:
         await self.client.detect_device(
-            load_timeout(timeout), load_retry_times(retry_times)
+            TimeoutM.load(timeout), RetryTimesM.load(retry_times)
         )
         return (
             self.client.device.model,
