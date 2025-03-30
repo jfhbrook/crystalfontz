@@ -3,7 +3,7 @@ from typing import ClassVar, Optional, Protocol, Self, Tuple, Type, Union
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.device import Device
-from crystalfontz.response import Pong, Versions
+from crystalfontz.response import Pong, UserFlashAreaRead, Versions
 
 
 class TypeProtocol(Protocol):
@@ -166,3 +166,11 @@ class WriteUserFlashAreaM:
         data: bytes, timeout: float, retry_times: int
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
         return (data, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class UserFlashAreaReadM:
+    t: ClassVar[str] = "y"
+
+    @staticmethod
+    def dump(res: UserFlashAreaRead) -> bytes:
+        return res.data

@@ -354,5 +354,13 @@ async def write_user_flash_area(client: DbusClient, data: bytes) -> None:
     await client.write_user_flash_area(data, TimeoutM.none, RetryTimesM.none)
 
 
+@flash.command(name="read", help="3 (0x03): Read User Flash Area")
+@async_command
+@pass_client
+async def read_user_flash_area(client: DbusClient) -> None:
+    flash = await client.read_user_flash_area(TimeoutM.none, RetryTimesM.none)
+    echo(flash)
+
+
 if __name__ == "__main__":
     main()

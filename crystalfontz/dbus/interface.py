@@ -20,6 +20,7 @@ from crystalfontz.dbus.map import (
     PingM,
     PongM,
     SimpleCommandM,
+    UserFlashAreaReadM,
     VersionsM,
     WriteUserFlashAreaM,
 )
@@ -136,3 +137,16 @@ class DbusInterface(  # type: ignore
         await self.client.write_user_flash_area(
             *WriteUserFlashAreaM.load(data, timeout, retry_times)
         )
+
+    @dbus_method_async(
+        SimpleCommandM.t, UserFlashAreaReadM.t, flags=DbusUnprivilegedFlag
+    )
+    async def read_user_flash_area(
+        self: Self,
+        timeout: float,
+        retry_times: int,
+    ) -> bytes:
+        res = await self.client.read_user_flash_area(
+            *SimpleCommandM.load(timeout, retry_times)
+        )
+        return UserFlashAreaReadM.dump(res)
