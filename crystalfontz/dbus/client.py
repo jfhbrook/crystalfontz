@@ -369,5 +369,17 @@ async def store(client: DbusClient) -> None:
     await client.store_boot_state(TimeoutM.none, RetryTimesM.none)
 
 
+@main.group(help="5 (0x05): Reboot LCD, Reset Host, or Power Off Host")
+def power() -> None:
+    pass
+
+
+@power.command(help="Reboot the Crystalfontx LCD")
+@async_command
+@pass_client
+async def reboot_lcd(client: DbusClient) -> None:
+    await client.reboot_lcd(TimeoutM.none, RetryTimesM.none)
+
+
 if __name__ == "__main__":
     main()

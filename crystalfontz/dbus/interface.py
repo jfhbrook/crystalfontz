@@ -158,3 +158,11 @@ class DbusInterface(  # type: ignore
         retry_times: int,
     ) -> None:
         await self.client.store_boot_state(*SimpleCommandM.load(timeout, retry_times))
+
+    @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
+    async def reboot_lcd(
+        self: Self,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.reboot_lcd(*SimpleCommandM.load(timeout, retry_times))
