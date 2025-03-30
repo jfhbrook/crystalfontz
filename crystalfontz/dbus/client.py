@@ -417,5 +417,26 @@ async def clear(client: DbusClient) -> None:
     await client.clear_screen(TimeoutM.none, RetryTimesM.none)
 
 
+@main.group(help="Set LCD contents for a line")
+def line() -> None:
+    pass
+
+
+@line.command(name="1", help="7 (0x07): Set LCD Contents, Line 1")
+@click.argument("line")
+@async_command
+@pass_client
+async def set_line_1(client: DbusClient, line: str) -> None:
+    await client.set_line_1(line.encode("utf-8"), TimeoutM.none, RetryTimesM.none)
+
+
+@line.command(name="2", help="8 (0x08): Set LCD Contents, Line 2")
+@click.argument("line")
+@async_command
+@pass_client
+async def set_line_2(client: DbusClient, line: str) -> None:
+    await client.set_line_2(line.encode("utf-8"), TimeoutM.none, RetryTimesM.none)
+
+
 if __name__ == "__main__":
     main()

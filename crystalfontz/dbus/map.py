@@ -174,3 +174,13 @@ class UserFlashAreaReadM:
     @staticmethod
     def dump(res: UserFlashAreaRead) -> bytes:
         return res.data
+
+
+class SetLineM:
+    t: ClassVar[str] = t("y", TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        line: bytes, timeout: float, retry_times: int
+    ) -> Tuple[bytes, Optional[float], Optional[int]]:
+        return (line, TimeoutM.load(timeout), RetryTimesM.load(retry_times))

@@ -19,6 +19,7 @@ from crystalfontz.dbus.map import (
     OkM,
     PingM,
     PongM,
+    SetLineM,
     SimpleCommandM,
     UserFlashAreaReadM,
     VersionsM,
@@ -190,3 +191,21 @@ class DbusInterface(  # type: ignore
         retry_times: int,
     ) -> None:
         await self.client.clear_screen(*SimpleCommandM.load(timeout, retry_times))
+
+    @dbus_method_async(SetLineM.t, "", flags=DbusUnprivilegedFlag)
+    async def set_line_1(
+        self: Self,
+        line: bytes,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.set_line_1(*SetLineM.load(line, timeout, retry_times))
+
+    @dbus_method_async(SetLineM.t, "", flags=DbusUnprivilegedFlag)
+    async def set_line_2(
+        self: Self,
+        line: bytes,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.set_line_2(*SetLineM.load(line, timeout, retry_times))
