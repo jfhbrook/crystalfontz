@@ -324,6 +324,21 @@ async def detect(
                 warn_dirty()
 
 
+@main.command()
+@click.option("--for", "for_", type=float, help="Amount of time to listen for reports")
+@async_command
+@pass_client
+async def listen(client: DbusClient, for_: Optional[float]) -> None:
+    """
+    Listen for key and temperature reports.
+
+    To configure which reports to receive, use 'crystalfontz keypad reporting' and
+    'crystalfontz temperature reporting' respectively.
+    """
+
+    raise NotImplementedError("listen")
+
+
 @main.command(help="0 (0x00): Ping command")
 @click.argument("payload", type=BYTES)
 @async_command
