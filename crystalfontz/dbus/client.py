@@ -362,5 +362,12 @@ async def read_user_flash_area(client: DbusClient) -> None:
     echo(flash)
 
 
+@main.command(help="4 (0x04): Store Current State as Boot State")
+@async_command
+@pass_client
+async def store(client: DbusClient) -> None:
+    await client.store_boot_state(TimeoutM.none, RetryTimesM.none)
+
+
 if __name__ == "__main__":
     main()

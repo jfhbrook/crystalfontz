@@ -150,3 +150,11 @@ class DbusInterface(  # type: ignore
             *SimpleCommandM.load(timeout, retry_times)
         )
         return UserFlashAreaReadM.dump(res)
+
+    @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
+    async def store_boot_state(
+        self: Self,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.store_boot_state(*SimpleCommandM.load(timeout, retry_times))
