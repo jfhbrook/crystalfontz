@@ -32,6 +32,7 @@ from crystalfontz.dbus.map import (
     BytesM,
     CursorStyleM,
     LcdMemoryM,
+    OptFloatM,
     RetryTimesM,
     TimeoutM,
     VersionsM,
@@ -487,6 +488,27 @@ async def set_cursor_position(client: DbusClient, row: int, column: int) -> None
 async def set_cursor_style(client: DbusClient, style: str) -> None:
     await client.set_cursor_style(
         CursorStyleM.dump(CursorStyle[style]), TimeoutM.none, RetryTimesM.none
+    )
+
+
+@main.command(help="13 (0x0D): Set LCD Contrast")
+@click.argument("contrast", type=float)
+@async_command
+@pass_client
+async def contrast(client: DbusClient, contrast: float) -> None:
+    await client.set_contrast(contrast, TimeoutM.none, RetryTimesM.none)
+
+
+@main.command(help="14 (0x0E): Set LCD & Keypad Backlight")
+@click.argument("brightness", type=float)
+@click.option("--keypad", type=float)
+@async_command
+@pass_client
+async def backlight(
+    client: DbusClient, brightness: float, keypad: Optional[float]
+) -> None:
+    await client.set_backlight(
+        brightness, OptFloatM.dump(keypad), TimeoutM.none, RetryTimesM.none
     )
 
 

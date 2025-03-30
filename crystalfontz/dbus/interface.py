@@ -21,6 +21,8 @@ from crystalfontz.dbus.map import (
     PingM,
     PongM,
     ReadLcdMemoryM,
+    SetBacklightM,
+    SetContrastM,
     SetCursorPositionM,
     SetCursorStyleM,
     SetLineM,
@@ -248,4 +250,27 @@ class DbusInterface(  # type: ignore
     ) -> None:
         await self.client.set_cursor_style(
             *SetCursorStyleM.load(style, timeout, retry_times)
+        )
+
+    @dbus_method_async(SetContrastM.t, "", flags=DbusUnprivilegedFlag)
+    async def set_contrast(
+        self: Self,
+        contrast: float,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.set_contrast(
+            *SetContrastM.load(contrast, timeout, retry_times)
+        )
+
+    @dbus_method_async(SetBacklightM.t, "", flags=DbusUnprivilegedFlag)
+    async def set_backlight(
+        self: Self,
+        lcd_brightness: float,
+        keypad_brightness: float,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        await self.client.set_backlight(
+            *SetBacklightM.load(lcd_brightness, keypad_brightness, timeout, retry_times)
         )

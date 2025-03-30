@@ -31,6 +31,32 @@ def array(of: Union[str, Type[TypeProtocol]]) -> str:
     return f"a{t(of)}"
 
 
+class OptIntM:
+    t: ClassVar[str] = "i"
+    none: ClassVar[int] = -1
+
+    @staticmethod
+    def load(r: int) -> Optional[int]:
+        return r if r >= 0 else None
+
+    @classmethod
+    def dump(cls: Type[Self], r: Optional[int]) -> int:
+        return r if r is not None else cls.none
+
+
+class OptFloatM:
+    t: ClassVar[str] = "d"
+    none: ClassVar[float] = -1.0
+
+    @staticmethod
+    def load(t: float) -> Optional[float]:
+        return t if t >= 0 else None
+
+    @classmethod
+    def dump(cls: Type[Self], t: Optional[float]) -> float:
+        return t if t is not None else cls.none
+
+
 class AddressM:
     t: ClassVar[str] = "q"
 
@@ -82,30 +108,12 @@ class BaudRateM:
     t: ClassVar[str] = "q"
 
 
-class TimeoutM:
-    t: ClassVar[str] = "d"
-    none: ClassVar[float] = -1.0
-
-    @staticmethod
-    def load(t: float) -> Optional[float]:
-        return t if t >= 0 else None
-
-    @classmethod
-    def dump(cls: Type[Self], t: Optional[float]) -> float:
-        return t if t is not None else cls.none
+class TimeoutM(OptFloatM):
+    pass
 
 
-class RetryTimesM:
-    t: ClassVar[str] = "i"
-    none: ClassVar[int] = -1
-
-    @staticmethod
-    def load(r: int) -> Optional[int]:
-        return r if r >= 0 else None
-
-    @classmethod
-    def dump(cls: Type[Self], r: Optional[int]) -> int:
-        return r if r is not None else cls.none
+class RetryTimesM(OptIntM):
+    pass
 
 
 class ConfigM:
@@ -273,6 +281,34 @@ class SetCursorStyleM:
     ) -> Tuple[CursorStyle, Optional[float], Optional[int]]:
         return (
             CursorStyleM.load(style),
+            TimeoutM.load(timeout),
+            RetryTimesM.load(retry_times),
+        )
+
+
+class SetContrastM:
+    t: ClassVar[str] = t("d", TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        contrast: float, timeout: float, retry_times: int
+    ) -> Tuple[float, Optional[float], Optional[int]]:
+        return (contrast, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+
+
+class SetBacklightM:
+    t: ClassVar[str] = t("dd", TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        lcd_brightness: float,
+        keypad_brightness: float,
+        timeout: float,
+        retry_times: int,
+    ) -> Tuple[float, Optional[float], Optional[float], Optional[int]]:
+        return (
+            lcd_brightness,
+            OptFloatM.load(keypad_brightness),
             TimeoutM.load(timeout),
             RetryTimesM.load(retry_times),
         )
