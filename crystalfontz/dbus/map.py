@@ -58,11 +58,11 @@ class OptIntM:
     none: ClassVar[int] = -1
 
     @staticmethod
-    def load(r: int) -> Optional[int]:
+    def unpack(r: int) -> Optional[int]:
         return r if r >= 0 else None
 
     @classmethod
-    def dump(cls: Type[Self], r: Optional[int]) -> int:
+    def pack(cls: Type[Self], r: Optional[int]) -> int:
         return r if r is not None else cls.none
 
 
@@ -71,11 +71,11 @@ class OptFloatM:
     none: ClassVar[float] = -1.0
 
     @staticmethod
-    def load(t: float) -> Optional[float]:
+    def unpack(t: float) -> Optional[float]:
         return t if t >= 0 else None
 
     @classmethod
-    def dump(cls: Type[Self], t: Optional[float]) -> float:
+    def pack(cls: Type[Self], t: Optional[float]) -> float:
         return t if t is not None else cls.none
 
 
@@ -99,12 +99,12 @@ class BytesM:
     t: ClassVar[str] = array(ByteM)
 
     @staticmethod
-    def load(buff: List[int]) -> bytes:
+    def unpack(buff: List[int]) -> bytes:
         return bytes(buff)
 
     # TODO: This may not be what the dbus client expects...
     @staticmethod
-    def dump(buff: bytes) -> List[int]:
+    def pack(buff: bytes) -> List[int]:
         return list(buff)
 
 
@@ -113,16 +113,16 @@ class OptBytesM:
     none: ClassVar[List[int]] = list()
 
     @staticmethod
-    def load(buff: List[int]) -> Optional[bytes]:
+    def unpack(buff: List[int]) -> Optional[bytes]:
         if not buff:
             return None
-        return BytesM.load(buff)
+        return BytesM.unpack(buff)
 
     @classmethod
-    def dump(cls: Type[Self], buff: Optional[bytes]) -> List[int]:
+    def pack(cls: Type[Self], buff: Optional[bytes]) -> List[int]:
         if buff is None:
             return cls.none
-        return BytesM.dump(buff)
+        return BytesM.pack(buff)
 
 
 class ConfigFileM:
@@ -130,7 +130,7 @@ class ConfigFileM:
     none: ClassVar[str] = ""
 
     @classmethod
-    def dump(cls: Type[Self], file: Optional[str]) -> str:
+    def pack(cls: Type[Self], file: Optional[str]) -> str:
         return file or cls.none
 
 
@@ -147,7 +147,7 @@ class RevisionM:
     none: ClassVar[str] = ""
 
     @classmethod
-    def dump(cls: Type[Self], revision: Optional[str]) -> str:
+    def pack(cls: Type[Self], revision: Optional[str]) -> str:
         return revision or cls.none
 
 
@@ -176,16 +176,16 @@ class ConfigM:
     )
 
     @staticmethod
-    def dump(config: Config) -> ConfigStruct:
+    def pack(config: Config) -> ConfigStruct:
         return (
-            ConfigFileM.dump(config.file),
+            ConfigFileM.pack(config.file),
             config.port,
             config.model,
-            RevisionM.dump(config.hardware_rev),
-            RevisionM.dump(config.firmware_rev),
+            RevisionM.pack(config.hardware_rev),
+            RevisionM.pack(config.firmware_rev),
             config.baud_rate,
-            TimeoutM.dump(config.timeout),
-            RetryTimesM.dump(config.retry_times),
+            TimeoutM.pack(config.timeout),
+            RetryTimesM.pack(config.retry_times),
         )
 
 
@@ -193,13 +193,13 @@ class PingM:
     t: ClassVar[str] = t("y", TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         payload: List[int], timeout: float, retry_times: int
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
         return (
-            BytesM.load(payload),
-            TimeoutM.load(timeout),
-            RetryTimesM.load(retry_times),
+            BytesM.unpack(payload),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
         )
 
 
@@ -207,8 +207,8 @@ class PongM:
     t: ClassVar[str] = BytesM.t
 
     @staticmethod
-    def dump(pong: Pong) -> List[int]:
-        return BytesM.dump(pong.response)
+    def pack(pong: Pong) -> List[int]:
+        return BytesM.pack(pong.response)
 
 
 class OkM:
@@ -219,19 +219,21 @@ class SimpleCommandM:
     t: ClassVar[str] = t(TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(timeout: float, retry_times: int) -> Tuple[Optional[float], Optional[int]]:
-        return (TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+    def unpack(
+        timeout: float, retry_times: int
+    ) -> Tuple[Optional[float], Optional[int]]:
+        return (TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class VersionsM:
     t: ClassVar[str] = struct("sss")
 
     @staticmethod
-    def load(versions: Tuple[str, str, str]) -> Versions:
+    def unpack(versions: Tuple[str, str, str]) -> Versions:
         return Versions(*versions)
 
     @staticmethod
-    def dump(versions: Versions) -> Tuple[str, str, str]:
+    def pack(versions: Versions) -> Tuple[str, str, str]:
         return (versions.model, versions.hardware_rev, versions.firmware_rev)
 
 
@@ -239,7 +241,7 @@ class DeviceM:
     t: ClassVar[str] = struct("sss")
 
     @staticmethod
-    def dump(device: Device) -> Tuple[str, str, str]:
+    def pack(device: Device) -> Tuple[str, str, str]:
         return (device.model, device.hardware_rev, device.firmware_rev)
 
 
@@ -247,17 +249,17 @@ class WriteUserFlashAreaM:
     t: ClassVar[str] = t("y", TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         data: bytes, timeout: float, retry_times: int
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
-        return (data, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+        return (data, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class UserFlashAreaReadM:
     t: ClassVar[str] = "y"
 
     @staticmethod
-    def dump(res: UserFlashAreaRead) -> bytes:
+    def pack(res: UserFlashAreaRead) -> bytes:
         return res.data
 
 
@@ -265,43 +267,43 @@ class SetLineM:
     t: ClassVar[str] = t(BytesM, TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         line: bytes, timeout: float, retry_times: int
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
-        return (line, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+        return (line, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class ReadLcdMemoryM:
     t: ClassVar[str] = t(AddressM, TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         address: int, timeout: float, retry_times: int
     ) -> Tuple[int, Optional[float], Optional[int]]:
-        return (address, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+        return (address, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class LcdMemoryM:
     t: ClassVar[str] = t("q", BytesM)
 
     @staticmethod
-    def load(obj: Tuple[int, List[int]]) -> LcdMemory:
+    def unpack(obj: Tuple[int, List[int]]) -> LcdMemory:
         address, buff = obj
-        return LcdMemory(address, BytesM.load(buff))
+        return LcdMemory(address, BytesM.unpack(buff))
 
     @staticmethod
-    def dump(memory: LcdMemory) -> Tuple[int, List[int]]:
-        return (memory.address, BytesM.dump(memory.data))
+    def pack(memory: LcdMemory) -> Tuple[int, List[int]]:
+        return (memory.address, BytesM.pack(memory.data))
 
 
 class SetCursorPositionM:
     t: ClassVar[str] = t(PositionM, PositionM, TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         row: int, column: int, timeout: float, retry_times: int
     ) -> Tuple[int, int, Optional[float], Optional[int]]:
-        return (row, column, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+        return (row, column, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 CURSOR_STYLES: Dict[int, CursorStyle] = {style.value: style for style in CursorStyle}
@@ -311,11 +313,11 @@ class CursorStyleM:
     t: ClassVar[str] = "q"
 
     @staticmethod
-    def load(style: int) -> CursorStyle:
+    def unpack(style: int) -> CursorStyle:
         return CURSOR_STYLES[style]
 
     @staticmethod
-    def dump(style: CursorStyle) -> int:
+    def pack(style: CursorStyle) -> int:
         return style.value
 
 
@@ -323,13 +325,13 @@ class SetCursorStyleM:
     t: ClassVar[str] = t(CursorStyleM, TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         style: int, timeout: float, retry_times: int
     ) -> Tuple[CursorStyle, Optional[float], Optional[int]]:
         return (
-            CursorStyleM.load(style),
-            TimeoutM.load(timeout),
-            RetryTimesM.load(retry_times),
+            CursorStyleM.unpack(style),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
         )
 
 
@@ -337,17 +339,17 @@ class SetContrastM:
     t: ClassVar[str] = t("d", TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         contrast: float, timeout: float, retry_times: int
     ) -> Tuple[float, Optional[float], Optional[int]]:
-        return (contrast, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+        return (contrast, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class SetBacklightM:
     t: ClassVar[str] = t("dd", TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         lcd_brightness: float,
         keypad_brightness: float,
         timeout: float,
@@ -355,9 +357,9 @@ class SetBacklightM:
     ) -> Tuple[float, Optional[float], Optional[float], Optional[int]]:
         return (
             lcd_brightness,
-            OptFloatM.load(keypad_brightness),
-            TimeoutM.load(timeout),
-            RetryTimesM.load(retry_times),
+            OptFloatM.unpack(keypad_brightness),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
         )
 
 
@@ -365,40 +367,40 @@ class ReadDowDeviceInformationM:
     t: ClassVar[str] = t(IndexM, TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         index: int, timeout: float, retry_times: int
     ) -> Tuple[int, Optional[float], Optional[int]]:
-        return (index, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+        return (index, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class DowDeviceInformationM:
     t: ClassVar[str] = t(IndexM, BytesM)
 
     @staticmethod
-    def load(info: Tuple[int, List[int]]) -> DowDeviceInformation:
+    def unpack(info: Tuple[int, List[int]]) -> DowDeviceInformation:
         index, rom_id = info
-        return DowDeviceInformation(index, BytesM.load(rom_id))
+        return DowDeviceInformation(index, BytesM.unpack(rom_id))
 
     @staticmethod
-    def dump(info: DowDeviceInformation) -> Tuple[int, List[int]]:
-        return (info.index, BytesM.dump(info.rom_id))
+    def pack(info: DowDeviceInformation) -> Tuple[int, List[int]]:
+        return (info.index, BytesM.pack(info.rom_id))
 
 
 class SetupTemperatureReportingM:
     t: ClassVar[str] = t(array("q"), TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         enabled: List[int], timeout: float, retry_times: int
     ) -> Tuple[List[int], Optional[float], Optional[int]]:
-        return (enabled, TimeoutM.load(timeout), RetryTimesM.load(retry_times))
+        return (enabled, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class DowTransactionM:
     t: ClassVar[str] = t(IndexM, "n", BytesM, TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         index: int,
         bytes_to_read: int,
         data_to_write: List[int],
@@ -408,9 +410,9 @@ class DowTransactionM:
         return (
             index,
             bytes_to_read,
-            OptBytesM.load(data_to_write),
-            TimeoutM.load(timeout),
-            RetryTimesM.load(retry_times),
+            OptBytesM.unpack(data_to_write),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
         )
 
 
@@ -418,20 +420,20 @@ class DowTransactionResultM:
     t: ClassVar[str] = t(IndexM, BytesM, "q")
 
     @staticmethod
-    def load(res: Tuple[int, List[int], int]) -> DowTransactionResult:
+    def unpack(res: Tuple[int, List[int], int]) -> DowTransactionResult:
         index, data, crc = res
-        return DowTransactionResult(index, BytesM.load(data), crc)
+        return DowTransactionResult(index, BytesM.unpack(data), crc)
 
     @staticmethod
-    def dump(res: DowTransactionResult) -> Tuple[int, List[int], int]:
-        return (res.index, BytesM.dump(res.data), res.crc)
+    def pack(res: DowTransactionResult) -> Tuple[int, List[int], int]:
+        return (res.index, BytesM.pack(res.data), res.crc)
 
 
 class TemperatureDigitsM:
     t: ClassVar[str] = "n"
 
     @staticmethod
-    def load(n_digits: int) -> Literal[3] | Literal[5]:
+    def unpack(n_digits: int) -> Literal[3] | Literal[5]:
         if n_digits != 3 or n_digits != 5:
             raise ValueError("May display either 3 or 5 temperature digits")
         return n_digits
@@ -446,11 +448,11 @@ class TemperatureUnitM:
     t: ClassVar[str] = "b"
 
     @staticmethod
-    def load(unit: bool) -> TemperatureUnit:
+    def unpack(unit: bool) -> TemperatureUnit:
         return TEMPERATURE_UNITS[unit]
 
     @staticmethod
-    def dump(unit: TemperatureUnit) -> bool:
+    def pack(unit: TemperatureUnit) -> bool:
         return bool(unit.value)
 
 
@@ -458,27 +460,27 @@ class TemperatureDisplayItemM:
     t: ClassVar[str] = t(IndexM, TemperatureDigitsM, PositionM, PositionM, "b")
 
     @staticmethod
-    def load(
+    def unpack(
         item: Tuple[int, int, int, int, bool],
     ) -> TemperatureDisplayItem:
 
         index, n_digits, column, row, units = item
         return TemperatureDisplayItem(
             index,
-            TemperatureDigitsM.load(n_digits),
+            TemperatureDigitsM.unpack(n_digits),
             column,
             row,
-            TemperatureUnitM.load(units),
+            TemperatureUnitM.unpack(units),
         )
 
     @staticmethod
-    def dump(item: TemperatureDisplayItem) -> Tuple[int, int, int, int, bool]:
+    def pack(item: TemperatureDisplayItem) -> Tuple[int, int, int, int, bool]:
         return (
             item.index,
             item.n_digits,
             item.column,
             item.row,
-            TemperatureUnitM.dump(item.units),
+            TemperatureUnitM.pack(item.units),
         )
 
 
@@ -486,7 +488,7 @@ class SetupLiveTemperatureDisplayM:
     t: ClassVar[str] = t(IndexM, TemperatureDisplayItemM, TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         slot: int,
         item: Tuple[int, int, int, int, bool],
         timeout: float,
@@ -494,9 +496,9 @@ class SetupLiveTemperatureDisplayM:
     ) -> Tuple[int, TemperatureDisplayItem, Optional[float], Optional[int]]:
         return (
             slot,
-            TemperatureDisplayItemM.load(item),
-            TimeoutM.load(timeout),
-            RetryTimesM.load(retry_times),
+            TemperatureDisplayItemM.unpack(item),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
         )
 
 
@@ -509,11 +511,11 @@ class LcdRegisterM:
     t: ClassVar[str] = "b"
 
     @staticmethod
-    def load(register: bool) -> LcdRegister:
+    def unpack(register: bool) -> LcdRegister:
         return LCD_REGISTERS[register]
 
     @staticmethod
-    def dump(register: LcdRegister) -> bool:
+    def pack(register: LcdRegister) -> bool:
         return bool(register.value)
 
 
@@ -521,14 +523,14 @@ class SendCommandToLcdControllerM:
     t: ClassVar[str] = t(LcdRegisterM, ByteM, TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         location: bool, data: int, timeout: float, retry_times: int
     ) -> Tuple[LcdRegister, int, Optional[float], Optional[int]]:
         return (
-            LcdRegisterM.load(location),
+            LcdRegisterM.unpack(location),
             data,
-            TimeoutM.load(timeout),
-            RetryTimesM.load(retry_times),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
         )
 
 
@@ -536,7 +538,7 @@ class ConfigureKeyReportingM:
     t: ClassVar[str] = t(array(ByteM), array(ByteM), TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         when_pressed: List[int],
         when_released: List[int],
         timeout: float,
@@ -545,8 +547,8 @@ class ConfigureKeyReportingM:
         return (
             set(when_pressed),
             set(when_released),
-            TimeoutM.load(timeout),
-            RetryTimesM.load(retry_times),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
         )
 
 
@@ -554,7 +556,7 @@ class SpecialCharacterM:
     t: ClassVar[str] = "t"
 
     @staticmethod
-    def load(character: int) -> SpecialCharacter:
+    def unpack(character: int) -> SpecialCharacter:
         raise NotImplementedError("load")
 
 
@@ -562,7 +564,7 @@ class SetSpecialCharacterDataM:
     t: ClassVar[str] = t(IndexM, SpecialCharacterM, TimeoutM, RetryTimesM)
 
     @staticmethod
-    def load(
+    def unpack(
         index: int,
         character: int,
         timeout: float,
@@ -570,9 +572,9 @@ class SetSpecialCharacterDataM:
     ) -> Tuple[int, SpecialCharacter, Optional[float], Optional[int]]:
         return (
             index,
-            SpecialCharacterM.load(character),
-            TimeoutM.load(timeout),
-            RetryTimesM.load(retry_times),
+            SpecialCharacterM.unpack(character),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
         )
 
 

@@ -77,7 +77,7 @@ class DbusInterface(  # type: ignore
         The DBus service's currently loaded configuration.
         """
 
-        return ConfigM.dump(self._config)
+        return ConfigM.pack(self._config)
 
     async def close(self: Self) -> None:
         """
@@ -109,8 +109,8 @@ class DbusInterface(  # type: ignore
         The device will return the Ping Command to the host.
         """
 
-        pong = await self.client.ping(*PingM.load(payload, timeout, retry_times))
-        return PongM.dump(pong)
+        pong = await self.client.ping(*PingM.unpack(payload, timeout, retry_times))
+        return PongM.pack(pong)
 
     @dbus_method_async(SimpleCommandM.t, OkM.t, flags=DbusUnprivilegedFlag)
     async def test_connection(self: Self, timeout: float, retry_times: int) -> Ok:
@@ -120,7 +120,7 @@ class DbusInterface(  # type: ignore
 
         try:
             await self.client.test_connection(
-                *SimpleCommandM.load(timeout, retry_times)
+                *SimpleCommandM.unpack(timeout, retry_times)
             )
         except ConnectionError:
             return False
@@ -135,7 +135,7 @@ class DbusInterface(  # type: ignore
         """
 
         # Detect the baud rate, as you do
-        await self.client.detect_baud_rate(*SimpleCommandM.load(timeout, retry_times))
+        await self.client.detect_baud_rate(*SimpleCommandM.unpack(timeout, retry_times))
 
         # Save to the loaded config
         self._config.baud_rate = self.client.baud_rate
@@ -157,9 +157,9 @@ class DbusInterface(  # type: ignore
         """
 
         versions = await self.client.versions(
-            *SimpleCommandM.load(timeout, retry_times)
+            *SimpleCommandM.unpack(timeout, retry_times)
         )
-        return VersionsM.dump(versions)
+        return VersionsM.pack(versions)
 
     @dbus_method_async(SimpleCommandM.t, DeviceM.t, flags=DbusUnprivilegedFlag)
     async def detect_device(
@@ -171,8 +171,8 @@ class DbusInterface(  # type: ignore
         device you're using.
         """
 
-        await self.client.detect_device(*SimpleCommandM.load(timeout, retry_times))
-        return DeviceM.dump(self.client.device)
+        await self.client.detect_device(*SimpleCommandM.unpack(timeout, retry_times))
+        return DeviceM.pack(self.client.device)
 
     @dbus_method_async(WriteUserFlashAreaM.t, "", flags=DbusUnprivilegedFlag)
     async def write_user_flash_area(
@@ -187,7 +187,7 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.write_user_flash_area(
-            *WriteUserFlashAreaM.load(data, timeout, retry_times)
+            *WriteUserFlashAreaM.unpack(data, timeout, retry_times)
         )
 
     @dbus_method_async(
@@ -207,9 +207,9 @@ class DbusInterface(  # type: ignore
         """
 
         res = await self.client.read_user_flash_area(
-            *SimpleCommandM.load(timeout, retry_times)
+            *SimpleCommandM.unpack(timeout, retry_times)
         )
-        return UserFlashAreaReadM.dump(res)
+        return UserFlashAreaReadM.pack(res)
 
     @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
     async def store_boot_state(
@@ -243,7 +243,7 @@ class DbusInterface(  # type: ignore
         to receive the data.
         """
 
-        await self.client.store_boot_state(*SimpleCommandM.load(timeout, retry_times))
+        await self.client.store_boot_state(*SimpleCommandM.unpack(timeout, retry_times))
 
     @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
     async def reboot_lcd(
@@ -259,7 +259,7 @@ class DbusInterface(  # type: ignore
         also be useful to re-enumerate the devices on the One-Wire bus.
         """
 
-        await self.client.reboot_lcd(*SimpleCommandM.load(timeout, retry_times))
+        await self.client.reboot_lcd(*SimpleCommandM.unpack(timeout, retry_times))
 
     @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
     async def reset_host(
@@ -274,7 +274,7 @@ class DbusInterface(  # type: ignore
         information, review your device's datasheet.
         """
 
-        await self.client.reset_host(*SimpleCommandM.load(timeout, retry_times))
+        await self.client.reset_host(*SimpleCommandM.unpack(timeout, retry_times))
 
     @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
     async def shutdown_host(
@@ -290,7 +290,7 @@ class DbusInterface(  # type: ignore
         For more information, review your device's datasheet.
         """
 
-        await self.client.shutdown_host(*SimpleCommandM.load(timeout, retry_times))
+        await self.client.shutdown_host(*SimpleCommandM.unpack(timeout, retry_times))
 
     @dbus_method_async(SimpleCommandM.t, "", flags=DbusUnprivilegedFlag)
     async def clear_screen(
@@ -305,7 +305,7 @@ class DbusInterface(  # type: ignore
         cursor to the left-most column of the top line.
         """
 
-        await self.client.clear_screen(*SimpleCommandM.load(timeout, retry_times))
+        await self.client.clear_screen(*SimpleCommandM.unpack(timeout, retry_times))
 
     @dbus_method_async(SetLineM.t, "", flags=DbusUnprivilegedFlag)
     async def set_line_1(
@@ -324,7 +324,7 @@ class DbusInterface(  # type: ignore
         `client.send_data`.
         """
 
-        await self.client.set_line_1(*SetLineM.load(line, timeout, retry_times))
+        await self.client.set_line_1(*SetLineM.unpack(line, timeout, retry_times))
 
     @dbus_method_async(SetLineM.t, "", flags=DbusUnprivilegedFlag)
     async def set_line_2(
@@ -343,7 +343,7 @@ class DbusInterface(  # type: ignore
         `client.send_data`.
         """
 
-        await self.client.set_line_2(*SetLineM.load(line, timeout, retry_times))
+        await self.client.set_line_2(*SetLineM.unpack(line, timeout, retry_times))
 
     @dbus_method_async(SetSpecialCharacterDataM.t, "", flags=DbusUnprivilegedFlag)
     async def set_special_character_data(
@@ -360,7 +360,7 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.send_command(
-            *SetSpecialCharacterDataM.load(index, character, timeout, retry_times)
+            *SetSpecialCharacterDataM.unpack(index, character, timeout, retry_times)
         )
 
     @dbus_method_async(SetSpecialCharacterEncodingM.t, "", flags=DbusUnprivilegedFlag)
@@ -391,10 +391,10 @@ class DbusInterface(  # type: ignore
         """
 
         memory = await self.client.read_lcd_memory(
-            *ReadLcdMemoryM.load(address, timeout, retry_times)
+            *ReadLcdMemoryM.unpack(address, timeout, retry_times)
         )
 
-        return LcdMemoryM.dump(memory)
+        return LcdMemoryM.pack(memory)
 
     @dbus_method_async(SetCursorPositionM.t, "", flags=DbusUnprivilegedFlag)
     async def set_cursor_position(
@@ -412,7 +412,7 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.set_cursor_position(
-            *SetCursorPositionM.load(row, column, timeout, retry_times)
+            *SetCursorPositionM.unpack(row, column, timeout, retry_times)
         )
 
     @dbus_method_async(SetCursorStyleM.t, "", flags=DbusUnprivilegedFlag)
@@ -430,7 +430,7 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.set_cursor_style(
-            *SetCursorStyleM.load(style, timeout, retry_times)
+            *SetCursorStyleM.unpack(style, timeout, retry_times)
         )
 
     @dbus_method_async(SetContrastM.t, "", flags=DbusUnprivilegedFlag)
@@ -447,7 +447,7 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.set_contrast(
-            *SetContrastM.load(contrast, timeout, retry_times)
+            *SetContrastM.unpack(contrast, timeout, retry_times)
         )
 
     @dbus_method_async(SetBacklightM.t, "", flags=DbusUnprivilegedFlag)
@@ -465,7 +465,9 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.set_backlight(
-            *SetBacklightM.load(lcd_brightness, keypad_brightness, timeout, retry_times)
+            *SetBacklightM.unpack(
+                lcd_brightness, keypad_brightness, timeout, retry_times
+            )
         )
 
     @dbus_method_async(
@@ -489,10 +491,10 @@ class DbusInterface(  # type: ignore
         """
 
         info = await self.client.read_dow_device_information(
-            *ReadDowDeviceInformationM.load(index, timeout, retry_times)
+            *ReadDowDeviceInformationM.unpack(index, timeout, retry_times)
         )
 
-        return DowDeviceInformationM.dump(info)
+        return DowDeviceInformationM.pack(info)
 
     @dbus_method_async(SetupTemperatureReportingM.t, "", flags=DbusUnprivilegedFlag)
     async def setup_temperature_reporting(
@@ -509,7 +511,7 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.setup_temperature_reporting(
-            *SetupTemperatureReportingM.load(enabled, timeout, retry_times)
+            *SetupTemperatureReportingM.unpack(enabled, timeout, retry_times)
         )
 
     @dbus_method_async(
@@ -535,12 +537,12 @@ class DbusInterface(  # type: ignore
         """
 
         res = await self.client.dow_transaction(
-            *DowTransactionM.load(
+            *DowTransactionM.unpack(
                 index, bytes_to_read, data_to_write, timeout, retry_times
             )
         )
 
-        return DowTransactionResultM.dump(res)
+        return DowTransactionResultM.pack(res)
 
     @dbus_method_async(SetupLiveTemperatureDisplayM.t, "", flags=DbusUnprivilegedFlag)
     async def setup_live_temperature_display(
@@ -560,7 +562,7 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.setup_live_temperature_display(
-            *SetupLiveTemperatureDisplayM.load(slot, item, timeout, retry_times)
+            *SetupLiveTemperatureDisplayM.unpack(slot, item, timeout, retry_times)
         )
 
     @dbus_method_async(SendCommandToLcdControllerM.t, "", flags=DbusUnprivilegedFlag)
@@ -581,7 +583,7 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.send_command_to_lcd_controller(
-            *SendCommandToLcdControllerM.load(location, data, timeout, retry_times)
+            *SendCommandToLcdControllerM.unpack(location, data, timeout, retry_times)
         )
 
     @dbus_method_async(ConfigureKeyReportingM.t, "", flags=DbusUnprivilegedFlag)
@@ -601,7 +603,7 @@ class DbusInterface(  # type: ignore
         """
 
         await self.client.configure_key_reporting(
-            *ConfigureKeyReportingM.load(
+            *ConfigureKeyReportingM.unpack(
                 when_pressed, when_released, timeout, retry_times
             )
         )

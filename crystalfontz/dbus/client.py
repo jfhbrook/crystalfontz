@@ -366,8 +366,8 @@ async def listen(client: DbusClient, for_: Optional[float]) -> None:
 @async_command
 @pass_client
 async def ping(client: DbusClient, payload: bytes) -> None:
-    pong = await client.ping(BytesM.dump(payload), TimeoutM.none, RetryTimesM.none)
-    echo(BytesM.load(pong))
+    pong = await client.ping(BytesM.pack(payload), TimeoutM.none, RetryTimesM.none)
+    echo(BytesM.unpack(pong))
 
 
 @main.command(help="1 (0x01): Get Hardware & Firmware Version")
@@ -375,7 +375,7 @@ async def ping(client: DbusClient, payload: bytes) -> None:
 @pass_client
 async def versions(client: DbusClient) -> None:
     versions = await client.versions(TimeoutM.none, RetryTimesM.none)
-    echo(VersionsM.load(versions))
+    echo(VersionsM.unpack(versions))
 
 
 @main.group(help="Interact with the User Flash Area")
@@ -476,7 +476,7 @@ def lcd() -> None:
 @pass_client
 async def read_lcd_memory(client: DbusClient, address: int) -> None:
     memory = await client.read_lcd_memory(address, TimeoutM.none, RetryTimesM.none)
-    echo(LcdMemoryM.load(memory))
+    echo(LcdMemoryM.unpack(memory))
 
 
 @main.group(help="Interact with the LCD cursor")
@@ -499,7 +499,7 @@ async def set_cursor_position(client: DbusClient, row: int, column: int) -> None
 @pass_client
 async def set_cursor_style(client: DbusClient, style: str) -> None:
     await client.set_cursor_style(
-        CursorStyleM.dump(CursorStyle[style]), TimeoutM.none, RetryTimesM.none
+        CursorStyleM.pack(CursorStyle[style]), TimeoutM.none, RetryTimesM.none
     )
 
 
@@ -520,7 +520,7 @@ async def backlight(
     client: DbusClient, brightness: float, keypad: Optional[float]
 ) -> None:
     await client.set_backlight(
-        brightness, OptFloatM.dump(keypad), TimeoutM.none, RetryTimesM.none
+        brightness, OptFloatM.pack(keypad), TimeoutM.none, RetryTimesM.none
     )
 
 
@@ -537,7 +537,7 @@ async def read_dow_device_information(client: DbusClient, index: int) -> None:
     info = await client.read_dow_device_information(
         index, TimeoutM.none, RetryTimesM.none
     )
-    echo(DowDeviceInformationM.load(info))
+    echo(DowDeviceInformationM.unpack(info))
 
 
 @main.group(help="Temperature reporting and live display")
@@ -569,11 +569,11 @@ async def dow_transaction(
     res = await client.dow_transaction(
         index,
         bytes_to_read,
-        OptBytesM.dump(data_to_write),
+        OptBytesM.pack(data_to_write),
         TimeoutM.none,
         RetryTimesM.none,
     )
-    echo(DowTransactionResultM.load(res))
+    echo(DowTransactionResultM.unpack(res))
 
 
 @temperature.command(name="display", help="21 (0x15): Set Up Live Temperature Display")
@@ -603,7 +603,7 @@ async def setup_live_temperature_display(
     )
 
     await client.setup_live_temperature_display(
-        slot, TemperatureDisplayItemM.dump(item), TimeoutM.none, RetryTimesM.none
+        slot, TemperatureDisplayItemM.pack(item), TimeoutM.none, RetryTimesM.none
     )
 
 
@@ -617,7 +617,7 @@ async def send_command_to_lcd_controler(
 ) -> None:
     register = LcdRegister[location]
     await client.send_command_to_lcd_controller(
-        LcdRegisterM.dump(register), data, TimeoutM.none, RetryTimesM.none
+        LcdRegisterM.pack(register), data, TimeoutM.none, RetryTimesM.none
     )
 
 
