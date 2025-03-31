@@ -13,6 +13,7 @@ from typing import (
 )
 
 from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
+from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
@@ -155,6 +156,12 @@ class RevisionM:
 
 class BaudRateM:
     t: ClassVar[str] = "q"
+
+    @staticmethod
+    def unpack(baud_rate: int) -> BaudRate:
+        if baud_rate != 19200 and baud_rate != 115200:
+            raise ValueError("baud rate must be 19200 or 115200")
+        return baud_rate
 
 
 class TimeoutM(OptFloatM):
@@ -654,6 +661,20 @@ class SendDataM:
             row,
             column,
             BytesM.unpack(data),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
+        )
+
+
+class SetBaudRateM:
+    t: ClassVar[str] = t(BaudRateM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def unpack(
+        baud_rate: int, timeout: float, retry_times: int
+    ) -> Tuple[BaudRate, Optional[float], Optional[int]]:
+        return (
+            BaudRateM.unpack(baud_rate),
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )

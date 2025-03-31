@@ -32,6 +32,7 @@ from crystalfontz.dbus.map import (
     SendDataM,
     SetAtxPowerSwitchFunctionalityM,
     SetBacklightM,
+    SetBaudRateM,
     SetContrastM,
     SetCursorPositionM,
     SetCursorStyleM,
@@ -718,4 +719,25 @@ class DbusInterface(  # type: ignore
 
         await self.client.send_data(
             *SendDataM.unpack(row, column, data, timeout, retry_times)
+        )
+
+    @dbus_method_async(SetBaudRateM.t, "", flags=DbusUnprivilegedFlag)
+    async def set_baud_rate(
+        self: Self,
+        baud_rate: int,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        """
+        33 (0x21): Set Baud Rate
+
+        This command will change the device's baud rate. This method sends the baud
+        rate command, waits for a positive acknowledgement from the device at the old
+        baud rate, and then switches to the new baud rate. The baud rate must be saved
+        by a call to `client.store_boot_state` if you want the device to power up at
+        the new baud rate.
+        """
+
+        await self.client.set_baud_rate(
+            *SetBaudRateM.unpack(baud_rate, timeout, retry_times)
         )

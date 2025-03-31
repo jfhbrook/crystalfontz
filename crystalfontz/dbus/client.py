@@ -19,9 +19,11 @@ from sdbus import (  # pyright: ignore [reportMissingModuleSource]
 )
 
 from crystalfontz.atx import AtxPowerSwitchFunction
+from crystalfontz.baud import BaudRate
 from crystalfontz.cli import (
     async_command,
     AsyncCommand,
+    BAUD_RATE,
     BYTE,
     BYTES,
     CursorStyle,
@@ -709,6 +711,36 @@ async def send(client: DbusClient, row: int, column: int, data: bytes) -> None:
     await client.send_data(
         row, column, BytesM.pack(data), TimeoutM.none, RetryTimesM.none
     )
+
+
+@main.command(help="33 (0x21): Set Baud Rate")
+@click.argument("rate", type=BAUD_RATE)
+@click.option(
+    "--save/--no-save",
+    default=False,
+    help="Save the new baud rate to the configuration",
+)
+@async_command
+@pass_client
+@pass_config
+@click.pass_obj
+async def baud(
+    obj: Obj, staged: StagedConfig, client: DbusClient, rate: BaudRate, save: bool
+) -> None:
+    await client.set_baud_rate(rate, TimeoutM.none, RetryTimesM.none)
+
+    if save:
+        logger.info(f"Saving baud rate {rate} to {staged.target_config.file}")
+        try:
+            run_config_command(obj, staged, ["set", "baud_rate", str(rate)])
+        except ValueError as exc:
+            echo(str(exc))
+            sys.exit(1)
+        else:
+            staged.reload_target()
+        finally:
+            if staged.dirty:
+                warn_dirty()
 
 
 if __name__ == "__main__":
