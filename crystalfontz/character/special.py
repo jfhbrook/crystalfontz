@@ -38,7 +38,7 @@ class SpecialCharacter:
     def from_bytes(cls: Type[Self], character: bytes) -> Self:
         raise NotImplementedError("from_bytes")
 
-    def as_bytes(self: Self, device: DeviceProtocol) -> bytes:
+    def to_bytes(self: Self, device: DeviceProtocol) -> bytes:
         character: BitArray = BitArray()
 
         for i, row in enumerate(self.pixels):

@@ -151,7 +151,7 @@ class SetSpecialCharacterData(Command):
     ) -> None:
         device.character_rom.validate_special_character_index(index)
         self.index: int = index
-        self.character: bytes = character.as_bytes(device)
+        self.character: bytes = character.to_bytes(device)
 
     def to_packet(self: Self) -> Packet:
         data = self.index.to_bytes(1, "big") + self.character
