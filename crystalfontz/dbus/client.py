@@ -699,5 +699,17 @@ async def status(_client: DbusClient) -> None:
     raise NotImplementedError("status")
 
 
+@main.command(help="31 (0x1F): Send Data to LCD")
+@click.argument("row", type=int)
+@click.argument("column", type=int)
+@click.argument("data", type=BYTES)
+@async_command
+@pass_client
+async def send(client: DbusClient, row: int, column: int, data: bytes) -> None:
+    await client.send_data(
+        row, column, BytesM.pack(data), TimeoutM.none, RetryTimesM.none
+    )
+
+
 if __name__ == "__main__":
     main()

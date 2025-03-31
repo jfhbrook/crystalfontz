@@ -641,3 +641,19 @@ class ConfigureWatchdogM:
 
 class StatusM:
     t: ClassVar[str] = ""
+
+
+class SendDataM:
+    t: ClassVar[str] = t(PositionM, PositionM, BytesM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def unpack(
+        row: int, column: int, data: List[int], timeout: float, retry_times: int
+    ) -> Tuple[int, int, bytes, Optional[float], Optional[int]]:
+        return (
+            row,
+            column,
+            BytesM.unpack(data),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
+        )

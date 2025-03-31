@@ -29,6 +29,7 @@ from crystalfontz.dbus.map import (
     ReadDowDeviceInformationM,
     ReadLcdMemoryM,
     SendCommandToLcdControllerM,
+    SendDataM,
     SetAtxPowerSwitchFunctionalityM,
     SetBacklightM,
     SetContrastM,
@@ -699,3 +700,22 @@ class DbusInterface(  # type: ignore
         """
 
         raise NotImplementedError("read_status")
+
+    @dbus_method_async(SendDataM.t, "", flags=DbusUnprivilegedFlag)
+    async def send_data(
+        self: Self,
+        row: int,
+        column: int,
+        data: List[int],
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        """
+        31 (0x1F): Send Data to LCD
+
+        This command allows data to be placed at any position on the LCD.
+        """
+
+        await self.client.send_data(
+            *SendDataM.unpack(row, column, data, timeout, retry_times)
+        )
