@@ -13,6 +13,7 @@ from typing import (
 )
 
 from crystalfontz.config import Config
+from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.device import Device
@@ -547,3 +548,33 @@ class ConfigureKeyReportingM:
             TimeoutM.load(timeout),
             RetryTimesM.load(retry_times),
         )
+
+
+class SpecialCharacterM:
+    t: ClassVar[str] = "t"
+
+    @staticmethod
+    def load(character: int) -> SpecialCharacter:
+        raise NotImplementedError("load")
+
+
+class SetSpecialCharacterDataM:
+    t: ClassVar[str] = t(IndexM, SpecialCharacterM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def load(
+        index: int,
+        character: int,
+        timeout: float,
+        retry_times: int,
+    ) -> Tuple[int, SpecialCharacter, Optional[float], Optional[int]]:
+        return (
+            index,
+            SpecialCharacterM.load(character),
+            TimeoutM.load(timeout),
+            RetryTimesM.load(retry_times)
+        )
+
+
+class SetSpecialCharacterEncodingM:
+    t: ClassVar[str] = "sy"

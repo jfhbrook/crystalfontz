@@ -19,7 +19,6 @@ class SpecialCharacter:
 
     @classmethod
     def from_str(cls: Type[Self], character: str) -> Self:
-
         lines = character.split("\n")
         if lines[0] == "":
             lines = lines[1:]
@@ -34,6 +33,10 @@ class SpecialCharacter:
         pixels = [row + [0 for _ in range(0, width - len(row))] for row in pixels]
 
         return cls(pixels)
+
+    @classmethod
+    def from_bytes(cls: Type[Self], character: bytes) -> Self:
+        raise NotImplementedError("from_bytes")
 
     def as_bytes(self: Self, device: DeviceProtocol) -> bytes:
         character: BitArray = BitArray()

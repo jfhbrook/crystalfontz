@@ -32,6 +32,8 @@ from crystalfontz.dbus.map import (
     SetCursorPositionM,
     SetCursorStyleM,
     SetLineM,
+    SetSpecialCharacterDataM,
+    SetSpecialCharacterEncodingM,
     SetupLiveTemperatureDisplayM,
     SetupTemperatureReportingM,
     SimpleCommandM,
@@ -344,7 +346,38 @@ class DbusInterface(  # type: ignore
 
         await self.client.set_line_2(*SetLineM.load(line, timeout, retry_times))
 
-    # TODO: Special character methods
+    @dbus_method_async(SetSpecialCharacterDataM.t, "", flags=DbusUnprivilegedFlag)
+    async def set_special_character_data(
+        self: Self,
+        index: int,
+        character: int,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        """
+        9 (0x09): Set LCD Special Character Data
+
+        Sets the font definition for one of the special characters (CGRAM).
+        """
+
+        await self.client.send_command(
+            *SetSpecialCharacterDataM.load(index, character, timeout, retry_times)
+        )
+
+    @dbus_method_async(SetSpecialCharacterEncodingM.t, "", flags=DbusUnprivilegedFlag)
+    def set_special_character_encoding(
+        self: Self,
+        character: str,
+        index: int,
+    ) -> None:
+        """
+        Configure a unicode character to encode to the index of a given special
+        character on CGRAM.
+        """
+
+        self.client.device.character_rom.set_encoding(character, index)
+
+
 
     @dbus_method_async(ReadLcdMemoryM.t, LcdMemoryM.t, flags=DbusUnprivilegedFlag)
     async def read_lcd_memory(
