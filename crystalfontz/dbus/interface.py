@@ -657,6 +657,7 @@ class DbusInterface(  # type: ignore
             *SetAtxPowerSwitchFunctionalityM.unpack(settings, timeout, retry_times)
         )
 
+    @dbus_method_async(ConfigureWatchdogM.t, "", flags=DbusUnprivilegedFlag)
     async def configure_watchdog(
         self: Self,
         timeout_seconds: int,
