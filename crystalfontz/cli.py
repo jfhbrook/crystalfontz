@@ -759,18 +759,18 @@ def line() -> None:
 
 
 @line.command(name="1", help="7 (0x07): Set LCD Contents, Line 1")
-@click.argument("line")
+@click.argument("line", type=BYTES)
 @async_command
 @pass_client()
-async def set_line_1(client: Client, line: str) -> None:
+async def set_line_1(client: Client, line: bytes) -> None:
     await client.set_line_1(line)
 
 
 @line.command(name="2", help="8 (0x08): Set LCD Contents, Line 2")
-@click.argument("line")
+@click.argument("line", type=BYTES)
 @async_command
 @pass_client()
-async def set_line_2(client: Client, line: str) -> None:
+async def set_line_2(client: Client, line: bytes) -> None:
     await client.set_line_2(line)
 
 
