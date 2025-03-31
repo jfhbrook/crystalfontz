@@ -647,6 +647,14 @@ async def configure_key_reporting(
     )
 
 
+@keypad.command(name="poll", help="24 (0x18): Read Keypad, Polled Mode")
+@async_command
+@pass_client
+async def poll_keypad(client: DbusClient) -> None:
+    polled = await client.poll_keypad(TimeoutM.none, RetryTimesM.none)
+    echo(polled)
+
+
 @main.command(help="28 (0x1C): Set ATX Power Switch Functionality")
 @click.argument(
     "function", nargs=-1, type=click.Choice([e.name for e in AtxPowerSwitchFunction])

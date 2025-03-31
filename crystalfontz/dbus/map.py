@@ -22,6 +22,7 @@ from crystalfontz.lcd import LcdRegister
 from crystalfontz.response import (
     DowDeviceInformation,
     DowTransactionResult,
+    KeypadPolled,
     LcdMemory,
     Pong,
     UserFlashAreaRead,
@@ -583,8 +584,20 @@ class SetSpecialCharacterEncodingM:
     t: ClassVar[str] = "sy"
 
 
+class KeypadPolledM:
+    t: ClassVar[str] = array(struct("bbb"))
+
+    @staticmethod
+    def pack(polled: KeypadPolled) -> List[Tuple[bool, bool, bool]]:
+        raise NotImplementedError("pack")
+
+    @staticmethod
+    def unpack(polled: List[Tuple[bool, bool, bool]]) -> KeypadPolled:
+        raise NotImplementedError("unpack")
+
+
 class AtxPowerSwitchFunctionalitySettingsM:
-    t: ClassVar[str] = ""
+    t: ClassVar[str] = t(array("s"), "bd")
 
     @staticmethod
     def unpack(

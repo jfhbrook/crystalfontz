@@ -20,6 +20,7 @@ from crystalfontz.dbus.map import (
     DowDeviceInformationM,
     DowTransactionM,
     DowTransactionResultM,
+    KeypadPolledM,
     LcdMemoryM,
     OkM,
     PingM,
@@ -608,6 +609,27 @@ class DbusInterface(  # type: ignore
                 when_pressed, when_released, timeout, retry_times
             )
         )
+
+    @dbus_method_async(SimpleCommandM.t, KeypadPolledM.t, flags=DbusUnprivilegedFlag)
+    async def poll_keypad(
+        self: Self,
+        timeout: float,
+        retry_times: int,
+    ) -> List[Tuple[bool, bool, bool]]:
+        """
+        24 (0x18): Read Keypad, Polled Mode
+
+        In some situations, it may be convenient for the host to poll the device for
+        key activity. This command allows the host to detect which keys are currently
+        pressed, which keys have been pressed since the last poll, and which keys have
+        been released since the last poll.
+        """
+
+        polled = await self.client.poll_keypad(
+            *SimpleCommandM.unpack(timeout, retry_times)
+        )
+
+        return KeypadPolledM.pack(polled)
 
     @dbus_method_async(
         SetAtxPowerSwitchFunctionalityM.t, "", flags=DbusUnprivilegedFlag
