@@ -692,5 +692,12 @@ async def watchdog(client: DbusClient, timeout_seconds: int) -> None:
     await client.configure_watchdog(timeout_seconds, TimeoutM.none, RetryTimesM.none)
 
 
+@main.command(help="30 (0x1E): Read Reporting & Status")
+@async_command
+@pass_client
+async def status(_client: DbusClient) -> None:
+    raise NotImplementedError("status")
+
+
 if __name__ == "__main__":
     main()

@@ -679,3 +679,20 @@ class DbusInterface(  # type: ignore
         await self.client.configure_watchdog(
             *ConfigureWatchdogM.unpack(timeout_seconds, timeout, retry_times)
         )
+
+    async def read_status(
+        self: Self,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        """
+        30 (0x1E): Read Reporting & Status
+
+        This command can be used to verify the current items configured to report to
+        the host, as well as some other miscellaneous status information. Please
+        note that the information returned is not identical between devices, and may
+        in fact vary between firmware versions of the same model. As such, the return
+        value of this function is not type-safe.
+        """
+
+        raise NotImplementedError("read_status")
