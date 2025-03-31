@@ -377,8 +377,6 @@ class DbusInterface(  # type: ignore
 
         self.client.device.character_rom.set_encoding(character, index)
 
-
-
     @dbus_method_async(ReadLcdMemoryM.t, LcdMemoryM.t, flags=DbusUnprivilegedFlag)
     async def read_lcd_memory(
         self: Self,

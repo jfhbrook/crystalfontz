@@ -12,8 +12,8 @@ from typing import (
     Union,
 )
 
-from crystalfontz.config import Config
 from crystalfontz.character import SpecialCharacter
+from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.dbus.config import ConfigStruct
 from crystalfontz.device import Device
@@ -572,7 +572,7 @@ class SetSpecialCharacterDataM:
             index,
             SpecialCharacterM.load(character),
             TimeoutM.load(timeout),
-            RetryTimesM.load(retry_times)
+            RetryTimesM.load(retry_times),
         )
 
 

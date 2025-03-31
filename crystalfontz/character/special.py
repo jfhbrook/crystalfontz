@@ -34,10 +34,6 @@ class SpecialCharacter:
 
         return cls(pixels)
 
-    @classmethod
-    def from_bytes(cls: Type[Self], character: bytes) -> Self:
-        raise NotImplementedError("from_bytes")
-
     def to_bytes(self: Self, device: DeviceProtocol) -> bytes:
         character: BitArray = BitArray()
 
