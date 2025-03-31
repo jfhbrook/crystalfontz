@@ -594,6 +594,11 @@ class Client(asyncio.Protocol):
     async def detect_baud_rate(
         self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
     ) -> None:
+        """
+        Detect the device's configured baud rate by testing the connection at each
+        potential baud setting.
+        """
+
         baud_rate = self.baud_rate
         try:
             logger.info(f"Testing connection at {baud_rate} bps...")
@@ -1079,6 +1084,7 @@ class Client(asyncio.Protocol):
         HD44780 are not exposed by the CFA533's command set. This command allows you
         to access the CFA533's LCD controller directly.
         """
+
         return await self.send_command(
             SendCommandToLcdController(location, data),
             CommandSentToLcdController,
