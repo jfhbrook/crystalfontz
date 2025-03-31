@@ -1017,10 +1017,10 @@ async def status(client: Client) -> None:
 @main.command(help="31 (0x1F): Send Data to LCD")
 @click.argument("row", type=int)
 @click.argument("column", type=int)
-@click.argument("data")
+@click.argument("data", type=BYTES)
 @async_command
 @pass_client()
-async def send(client: Client, row: int, column: int, data: str) -> None:
+async def send(client: Client, row: int, column: int, data: bytes) -> None:
     await client.send_data(row, column, data)
 
 
