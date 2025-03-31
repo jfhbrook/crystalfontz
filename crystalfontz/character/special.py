@@ -14,8 +14,8 @@ class SpecialCharacter:
     character that can be stored in user flash.
     """
 
-    def __init__(self: Self, pixels: List[List[int]]) -> None:
-        self.pixels: List[List[int]] = pixels
+    def __init__(self: Self, pixels: List[List[bool]]) -> None:
+        self.pixels: List[List[bool]] = pixels
 
     @classmethod
     def from_str(cls: Type[Self], character: str) -> Self:
@@ -25,12 +25,10 @@ class SpecialCharacter:
         if lines[-1] == "":
             lines = lines[0:-1]
 
-        pixels: List[List[int]] = [
-            [0 if c == " " else 1 for c in line] for line in lines
-        ]
+        pixels: List[List[bool]] = [[c != " " for c in line] for line in lines]
 
         width = max([len(row) for row in pixels])
-        pixels = [row + [0 for _ in range(0, width - len(row))] for row in pixels]
+        pixels = [row + [False for _ in range(0, width - len(row))] for row in pixels]
 
         return cls(pixels)
 

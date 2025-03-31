@@ -7,7 +7,9 @@
   - `Response.from_bytes` accepts bytes as from packets, rather than `__init__`
   - `Response.__init__` accepts properties as arguments
 - Expose `timeout` and `retry_times` in `detect_baud_rate`
-- Move `SpecialCharacter#as_bytes` to `SpecialCharacter#to_bytes`
+- `SpecialCharacter` API changes
+  - Rename `as_bytes` method to `to_bytes`
+  - Store character as `List[List[bool]]` instead of `List[List[int]]`
 
 ## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
