@@ -29,6 +29,7 @@ from crystalfontz.cli import (
     KEYPRESSES,
     LogLevel,
     OutputMode,
+    WATCHDOG_SETTING,
 )
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import StagedConfig
@@ -681,6 +682,14 @@ async def atx(
     await client.set_atx_power_switch_functionality(
         (function, auto_polarity, power_pulse_length), TimeoutM.none, RetryTimesM.none
     )
+
+
+@main.command(help="29 (0x1D): Enable/Disable and Reset the Watchdog")
+@click.argument("timeout_seconds", type=WATCHDOG_SETTING)
+@async_command
+@pass_client
+async def watchdog(client: DbusClient, timeout_seconds: int) -> None:
+    await client.configure_watchdog(timeout_seconds, TimeoutM.none, RetryTimesM.none)
 
 
 if __name__ == "__main__":

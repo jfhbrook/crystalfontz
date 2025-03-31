@@ -623,3 +623,17 @@ class SetAtxPowerSwitchFunctionalityM:
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )
+
+
+class ConfigureWatchdogM:
+    t: ClassVar[str] = t(ByteM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def unpack(
+        timeout_seconds: int, timeout: float, retry_times: int
+    ) -> Tuple[int, Optional[float], Optional[int]]:
+        return (
+            timeout_seconds,
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
+        )

@@ -16,6 +16,7 @@ from crystalfontz.dbus.map import (
     BaudRateM,
     ConfigM,
     ConfigureKeyReportingM,
+    ConfigureWatchdogM,
     DeviceM,
     DowDeviceInformationM,
     DowTransactionM,
@@ -653,4 +654,28 @@ class DbusInterface(  # type: ignore
 
         await self.client.set_atx_power_switch_functionality(
             *SetAtxPowerSwitchFunctionalityM.unpack(settings, timeout, retry_times)
+        )
+
+    async def configure_watchdog(
+        self: Self,
+        timeout_seconds: int,
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        """
+        29 (0x1D): Enable/Disable and Reset the Watchdog
+
+        Some high-availability systems use hardware watchdog timers to ensure that
+        a software or hardware failure does not result in an extended system outage.
+        Once the host system has booted, a system monitor program is started. The
+        system monitor program would enable the watchdog timer on the device. If the
+        system monitor program fails to reset the device's watchdog timer, the device
+        will reset the host system.
+
+        The GPIO pins used for ATX control must not be configured as user GPIO. For
+        more details, review your device's datasheet.
+        """
+
+        await self.client.configure_watchdog(
+            *ConfigureWatchdogM.unpack(timeout_seconds, timeout, retry_times)
         )
