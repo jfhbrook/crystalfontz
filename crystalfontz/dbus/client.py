@@ -549,7 +549,12 @@ def temperature() -> None:
 @click.argument("enabled", nargs=-1)
 @async_command
 @pass_client
-async def setup_temperature_reporting(client: DbusClient, enabled: Tuple[int]) -> None:
+async def setup_temperature_reporting(
+    client: DbusClient, enabled: Tuple[int, ...]
+) -> None:
+    # TODO: Confirm this says "tuple"
+    print(type(enabled))
+
     await client.setup_temperature_reporting(
         list(enabled), TimeoutM.none, RetryTimesM.none
     )

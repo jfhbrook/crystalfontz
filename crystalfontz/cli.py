@@ -866,7 +866,7 @@ def temperature() -> None:
 @click.argument("enabled", nargs=-1)
 @async_command
 @pass_client()
-async def setup_temperature_reporting(client: Client, enabled: Tuple[int]) -> None:
+async def setup_temperature_reporting(client: Client, enabled: Tuple[int, ...]) -> None:
     await client.setup_temperature_reporting(enabled)
 
 
