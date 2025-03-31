@@ -323,7 +323,7 @@ async def detect(
     firmware_rev = "<unknown>"
 
     if baud:
-        baud_rate = await client.detect_baud_rate()
+        baud_rate = await client.detect_baud_rate(TimeoutM.none, RetryTimesM.none)
 
     if device:
         model, hardware_rev, firmware_rev = await client.detect_device(
@@ -552,9 +552,6 @@ def temperature() -> None:
 async def setup_temperature_reporting(
     client: DbusClient, enabled: Tuple[int, ...]
 ) -> None:
-    # TODO: Confirm this says "tuple"
-    print(type(enabled))
-
     await client.setup_temperature_reporting(
         list(enabled), TimeoutM.none, RetryTimesM.none
     )

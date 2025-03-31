@@ -127,16 +127,15 @@ class DbusInterface(  # type: ignore
         else:
             return True
 
-    # TODO: Should receive timeout and retry_times
-    @dbus_method_async("", BaudRateM.t, flags=DbusUnprivilegedFlag)
-    async def detect_baud_rate(self: Self) -> int:
+    @dbus_method_async(SimpleCommandM.t, BaudRateM.t, flags=DbusUnprivilegedFlag)
+    async def detect_baud_rate(self: Self, timeout: float, retry_times: int) -> int:
         """
         Detect the device's configured baud rate by testing the connection at each
         potential baud setting.
         """
 
         # Detect the baud rate, as you do
-        await self.client.detect_baud_rate()
+        await self.client.detect_baud_rate(*SimpleCommandM.load(timeout, retry_times))
 
         # Save to the loaded config
         self._config.baud_rate = self.client.baud_rate
