@@ -40,6 +40,7 @@ from crystalfontz.dbus.map import (
     SetupLiveTemperatureDisplayM,
     SetupTemperatureReportingM,
     SimpleCommandM,
+    StatusM,
     UserFlashAreaReadM,
     VersionsM,
     WriteUserFlashAreaM,
@@ -680,6 +681,7 @@ class DbusInterface(  # type: ignore
             *ConfigureWatchdogM.unpack(timeout_seconds, timeout, retry_times)
         )
 
+    @dbus_method_async(SimpleCommandM.t, StatusM.t, flags=DbusUnprivilegedFlag)
     async def read_status(
         self: Self,
         timeout: float,

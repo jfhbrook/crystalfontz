@@ -637,3 +637,7 @@ class ConfigureWatchdogM:
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )
+
+
+class StatusM:
+    t: ClassVar[str] = ""
