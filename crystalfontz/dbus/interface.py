@@ -27,6 +27,7 @@ from crystalfontz.dbus.map import (
     ReadDowDeviceInformationM,
     ReadLcdMemoryM,
     SendCommandToLcdControllerM,
+    SetAtxPowerSwitchFunctionalityM,
     SetBacklightM,
     SetContrastM,
     SetCursorPositionM,
@@ -606,4 +607,28 @@ class DbusInterface(  # type: ignore
             *ConfigureKeyReportingM.unpack(
                 when_pressed, when_released, timeout, retry_times
             )
+        )
+
+    @dbus_method_async(
+        SetAtxPowerSwitchFunctionalityM.t, "", flags=DbusUnprivilegedFlag
+    )
+    async def set_atx_power_switch_functionality(
+        self: Self,
+        settings: Tuple[List[str], bool, float],
+        timeout: float,
+        retry_times: int,
+    ) -> None:
+        """
+        28 (0x1C): Set ATX Power Switch Functionality
+
+        The combination of this device with the Crystalfontz WR-PWR-Y14 cable can
+        be used to replace the function of the power and reset switches in a standard
+        ATX-compatible system.
+
+        This functionality comes with a number of caveats. Please review your device's
+        datasheet for more information.
+        """
+
+        await self.client.set_atx_power_switch_functionality(
+            *SetAtxPowerSwitchFunctionalityM.unpack(settings, timeout, retry_times)
         )

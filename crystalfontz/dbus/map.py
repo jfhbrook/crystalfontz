@@ -12,6 +12,7 @@ from typing import (
     Union,
 )
 
+from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
@@ -580,3 +581,32 @@ class SetSpecialCharacterDataM:
 
 class SetSpecialCharacterEncodingM:
     t: ClassVar[str] = "sy"
+
+
+class AtxPowerSwitchFunctionalitySettingsM:
+    t: ClassVar[str] = ""
+
+    @staticmethod
+    def unpack(
+        settings: Tuple[List[str], bool, float],
+    ) -> AtxPowerSwitchFunctionalitySettings:
+        functions, auto_polarity, power_pulse_length = settings
+        return AtxPowerSwitchFunctionalitySettings(
+            functions={AtxPowerSwitchFunction[name] for name in functions},
+            auto_polarity=auto_polarity,
+            power_pulse_length_seconds=power_pulse_length,
+        )
+
+
+class SetAtxPowerSwitchFunctionalityM:
+    t: ClassVar[str] = t(AtxPowerSwitchFunctionalitySettingsM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def unpack(
+        settings: Tuple[List[str], bool, float], timeout: float, retry_times: int
+    ) -> Tuple[AtxPowerSwitchFunctionalitySettings, Optional[float], Optional[int]]:
+        return (
+            AtxPowerSwitchFunctionalitySettingsM.unpack(settings),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
+        )

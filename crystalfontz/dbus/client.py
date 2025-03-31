@@ -18,6 +18,7 @@ from sdbus import (  # pyright: ignore [reportMissingModuleSource]
     SdBus,
 )
 
+from crystalfontz.atx import AtxPowerSwitchFunction
 from crystalfontz.cli import (
     async_command,
     AsyncCommand,
@@ -643,6 +644,34 @@ async def configure_key_reporting(
         [KEYPRESSES[name] for name in when_released],
         TimeoutM.none,
         RetryTimesM.none,
+    )
+
+
+@main.command(help="28 (0x1C): Set ATX Power Switch Functionality")
+@click.argument(
+    "function", nargs=-1, type=click.Choice([e.name for e in AtxPowerSwitchFunction])
+)
+@click.option(
+    "--auto-polarity/--no-auto-polarity",
+    type=bool,
+    default=False,
+    help="Whether or not to automatically detect polarity for reset and power",
+)
+@click.option(
+    "--power-pulse-length",
+    type=float,
+    help="Length of power on and off pulses in seconds",
+)
+@async_command
+@pass_client
+async def atx(
+    client: DbusClient,
+    function: List[str],
+    auto_polarity: bool,
+    power_pulse_length: float,
+) -> None:
+    await client.set_atx_power_switch_functionality(
+        (function, auto_polarity, power_pulse_length), TimeoutM.none, RetryTimesM.none
     )
 
 
