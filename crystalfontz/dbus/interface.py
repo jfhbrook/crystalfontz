@@ -12,20 +12,13 @@ from sdbus import (  # pyright: ignore [reportMissingModuleSource];; dbus_signal
 from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import ConfigStruct
-from crystalfontz.dbus.map import (
-    BaudRateM,
-    ConfigM,
+from crystalfontz.dbus.map.base import OkM
+from crystalfontz.dbus.map.baud import BaudRateM
+from crystalfontz.dbus.map.command import (
     ConfigureKeyReportingM,
     ConfigureWatchdogM,
-    DeviceM,
-    DowDeviceInformationM,
     DowTransactionM,
-    DowTransactionResultM,
-    KeypadPolledM,
-    LcdMemoryM,
-    OkM,
     PingM,
-    PongM,
     ReadDowDeviceInformationM,
     ReadLcdMemoryM,
     SendCommandToLcdControllerM,
@@ -42,10 +35,21 @@ from crystalfontz.dbus.map import (
     SetupLiveTemperatureDisplayM,
     SetupTemperatureReportingM,
     SimpleCommandM,
+    WriteUserFlashAreaM,
+)
+from crystalfontz.dbus.map.config import ConfigM
+from crystalfontz.dbus.map.device import (
+    DeviceM,
     StatusM,
+)
+from crystalfontz.dbus.map.response import (
+    DowDeviceInformationM,
+    DowTransactionResultM,
+    KeypadPolledM,
+    LcdMemoryM,
+    PongM,
     UserFlashAreaReadM,
     VersionsM,
-    WriteUserFlashAreaM,
 )
 from crystalfontz.error import ConnectionError
 
