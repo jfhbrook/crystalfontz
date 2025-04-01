@@ -58,38 +58,73 @@ from typing import List
 
 from crystalfontz.dbus.map.base import (
     BytesM,
+    BytesT,
     OptBytesM,
+    OptBytesT,
     OptPosFloatM,
+    OptPosFloatT,
     RetryTimesM,
+    RetryTimesT,
     TimeoutM,
+    TimeoutT,
 )
-from crystalfontz.dbus.map.config import ConfigM
-from crystalfontz.dbus.map.cursor import CursorStyleM
-from crystalfontz.dbus.map.lcd import LcdRegisterM
+from crystalfontz.dbus.map.config import ConfigM, ConfigT
+from crystalfontz.dbus.map.cursor import CursorStyleM, CursorStyleT
+from crystalfontz.dbus.map.keys import KeyPressT, KeyStatesT, KeyStateT
+from crystalfontz.dbus.map.lcd import LcdRegisterM, LcdRegisterT
 from crystalfontz.dbus.map.response import (
     DowDeviceInformationM,
+    DowDeviceInformationT,
     DowTransactionResultM,
+    DowTransactionResultT,
     KeypadPolledM,
+    KeypadPolledT,
     LcdMemoryM,
+    LcdMemoryT,
     PongM,
+    PongT,
     VersionsM,
+    VersionsT,
 )
-from crystalfontz.dbus.map.temperature import TemperatureDisplayItemM
+from crystalfontz.dbus.map.temperature import (
+    TemperatureDisplayItemM,
+    TemperatureDisplayItemT,
+    TemperatureUnitT,
+)
 
 __all__: List[str] = [
     "BytesM",
+    "BytesT",
     "ConfigM",
+    "ConfigT",
     "CursorStyleM",
+    "CursorStyleT",
     "DowDeviceInformationM",
+    "DowDeviceInformationT",
     "DowTransactionResultM",
+    "DowTransactionResultT",
     "KeypadPolledM",
+    "KeypadPolledT",
+    "KeyPressT",
+    "KeyStateT",
+    "KeyStatesT",
     "LcdMemoryM",
+    "LcdMemoryT",
     "LcdRegisterM",
+    "LcdRegisterT",
     "OptBytesM",
+    "OptBytesT",
     "OptPosFloatM",
+    "OptPosFloatT",
     "PongM",
+    "PongT",
     "RetryTimesM",
+    "RetryTimesT",
+    "TemperatureUnitT",
     "TemperatureDisplayItemM",
+    "TemperatureDisplayItemT",
     "TimeoutM",
+    "TimeoutT",
     "VersionsM",
+    "VersionsT",
 ]
