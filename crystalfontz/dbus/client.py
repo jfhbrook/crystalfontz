@@ -35,10 +35,9 @@ from crystalfontz.cli import (
 )
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import StagedConfig
-from crystalfontz.dbus.error import handle_dbus_error
-from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
-from crystalfontz.dbus.map import (
+from crystalfontz.dbus.domain import (
     BytesM,
+    ConfigM,
     CursorStyleM,
     DowDeviceInformationM,
     DowTransactionResultM,
@@ -52,7 +51,8 @@ from crystalfontz.dbus.map import (
     TimeoutM,
     VersionsM,
 )
-from crystalfontz.dbus.map.config import ConfigM
+from crystalfontz.dbus.error import handle_dbus_error
+from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import (
     TemperatureDigits,

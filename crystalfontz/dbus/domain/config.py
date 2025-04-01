@@ -1,7 +1,7 @@
 from typing import Any, cast, ClassVar, Optional, Self, Tuple, Type
 
 from crystalfontz.config import Config
-from crystalfontz.dbus.map.base import (
+from crystalfontz.dbus.domain.base import (
     ModelM,
     ModelT,
     RetryTimesM,
@@ -12,7 +12,7 @@ from crystalfontz.dbus.map.base import (
     TimeoutM,
     TimeoutT,
 )
-from crystalfontz.dbus.map.baud import BaudRateM, BaudRateT
+from crystalfontz.dbus.domain.baud import BaudRateM, BaudRateT
 
 FileT = str
 

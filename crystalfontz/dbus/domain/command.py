@@ -4,11 +4,11 @@ from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
-from crystalfontz.dbus.map.atx import (
+from crystalfontz.dbus.domain.atx import (
     AtxPowerSwitchFunctionalitySettingsM,
     AtxPowerSwitchFunctionalitySettingsT,
 )
-from crystalfontz.dbus.map.base import (
+from crystalfontz.dbus.domain.base import (
     AddressM,
     AddressT,
     array,
@@ -32,12 +32,12 @@ from crystalfontz.dbus.map.base import (
     Uint16M,
     Uint16T,
 )
-from crystalfontz.dbus.map.baud import BaudRateM, BaudRateT
-from crystalfontz.dbus.map.character import SpecialCharacterM, SpecialCharacterT
-from crystalfontz.dbus.map.cursor import CursorStyleM, CursorStyleT
-from crystalfontz.dbus.map.keys import KeyPressM, KeyPressT
-from crystalfontz.dbus.map.lcd import LcdRegisterM, LcdRegisterT
-from crystalfontz.dbus.map.temperature import (
+from crystalfontz.dbus.domain.baud import BaudRateM, BaudRateT
+from crystalfontz.dbus.domain.character import SpecialCharacterM, SpecialCharacterT
+from crystalfontz.dbus.domain.cursor import CursorStyleM, CursorStyleT
+from crystalfontz.dbus.domain.keys import KeyPressM, KeyPressT
+from crystalfontz.dbus.domain.lcd import LcdRegisterM, LcdRegisterT
+from crystalfontz.dbus.domain.temperature import (
     TemperatureDisplayItemM,
     TemperatureDisplayItemT,
 )

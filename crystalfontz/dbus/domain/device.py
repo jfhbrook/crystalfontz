@@ -1,6 +1,6 @@
 from typing import ClassVar, Tuple
 
-from crystalfontz.dbus.map.base import (
+from crystalfontz.dbus.domain.base import (
     BytesM,
     BytesT,
     ModelM,

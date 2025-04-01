@@ -1,6 +1,6 @@
 from typing import ClassVar, Tuple
 
-from crystalfontz.dbus.map.base import ByteM, struct
+from crystalfontz.dbus.domain.base import ByteM, struct
 from crystalfontz.keys import KeyState, KeyStates
 
 KeyPressT = int

@@ -11,8 +11,8 @@ from sdbus import (  # pyright: ignore [reportMissingModuleSource];; dbus_signal
 
 from crystalfontz.client import Client, create_connection
 from crystalfontz.config import Config
-from crystalfontz.dbus.map.atx import AtxPowerSwitchFunctionalitySettingsT
-from crystalfontz.dbus.map.base import (
+from crystalfontz.dbus.domain.atx import AtxPowerSwitchFunctionalitySettingsT
+from crystalfontz.dbus.domain.base import (
     AddressT,
     BytesT,
     ByteT,
@@ -23,9 +23,9 @@ from crystalfontz.dbus.map.base import (
     RetryTimesT,
     TimeoutT,
 )
-from crystalfontz.dbus.map.baud import BaudRateM, BaudRateT
-from crystalfontz.dbus.map.character import SpecialCharacterT
-from crystalfontz.dbus.map.command import (
+from crystalfontz.dbus.domain.baud import BaudRateM, BaudRateT
+from crystalfontz.dbus.domain.character import SpecialCharacterT
+from crystalfontz.dbus.domain.command import (
     ConfigureKeyReportingM,
     ConfigureWatchdogM,
     DowTransactionM,
@@ -48,16 +48,16 @@ from crystalfontz.dbus.map.command import (
     SimpleCommandM,
     WriteUserFlashAreaM,
 )
-from crystalfontz.dbus.map.config import ConfigM, ConfigT
-from crystalfontz.dbus.map.device import (
+from crystalfontz.dbus.domain.config import ConfigM, ConfigT
+from crystalfontz.dbus.domain.device import (
     DeviceM,
     DeviceStatusM,
     DeviceStatusT,
     DeviceT,
 )
-from crystalfontz.dbus.map.keys import KeyPressT
-from crystalfontz.dbus.map.lcd import LcdRegisterT
-from crystalfontz.dbus.map.response import (
+from crystalfontz.dbus.domain.keys import KeyPressT
+from crystalfontz.dbus.domain.lcd import LcdRegisterT
+from crystalfontz.dbus.domain.response import (
     DowDeviceInformationM,
     DowDeviceInformationT,
     DowTransactionResultM,
@@ -73,7 +73,7 @@ from crystalfontz.dbus.map.response import (
     VersionsM,
     VersionsT,
 )
-from crystalfontz.dbus.map.temperature import TemperatureDisplayItemT
+from crystalfontz.dbus.domain.temperature import TemperatureDisplayItemT
 from crystalfontz.error import ConnectionError
 
 Ok = bool

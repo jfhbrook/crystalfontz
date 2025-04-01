@@ -1,6 +1,6 @@
 from typing import ClassVar, Tuple
 
-from crystalfontz.dbus.map.base import (
+from crystalfontz.dbus.domain.base import (
     AddressM,
     AddressT,
     BytesM,
@@ -15,7 +15,7 @@ from crystalfontz.dbus.map.base import (
     Uint16M,
     Uint16T,
 )
-from crystalfontz.dbus.map.keys import KeyStatesM, KeyStatesT
+from crystalfontz.dbus.domain.keys import KeyStatesM, KeyStatesT
 from crystalfontz.response import (
     DowDeviceInformation,
     DowTransactionResult,

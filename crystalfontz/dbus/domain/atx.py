@@ -1,7 +1,7 @@
 from typing import ClassVar, List, Tuple
 
 from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
-from crystalfontz.dbus.map.base import array, t
+from crystalfontz.dbus.domain.base import array, t
 
 AtxPowerSwitchFunctionT = str
 AtxPowerSwitchFunctionalitySettingsT = Tuple[List[str], bool, float]

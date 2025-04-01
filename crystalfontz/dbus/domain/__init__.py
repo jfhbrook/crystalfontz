@@ -1,22 +1,29 @@
 """
-Map values between crystalfontz's domain model and dbus types.
+Represent entities in the crystalfontz domain model with dbus-compatible types, and
+map between the crystalfontz and dbus domains.
 
 While these classes don't all implement the same protocols, they do follow
 a number of important conventions.
 
 ## Naming Conventions
 
-Mappers have `M` appended to their class names. For example, the mapper for `bytes`
-is called `BytesM`.
+In general classes corresponding to entities share their names, but with a postfix
+naming convention.
 
-Otherwise, classes corresponding to a type share their names. For example, the mapper
-for a `Versions` response is named `VersionsM`.
+Dbus types corresponding to entities in the crystalfontz domain have `T` appended
+to them. For instance, the dbus type corresponding to `bytes` is `BytesT`,  which
+corresponds to the "ay" dbus type signature. This applies to more complex entities
+as well - for instance, the dbus type corresponding to the `Versions` response is
+`VersionsT`.
+
+Mappers - classes that map between entities and dbus types - have `M` appended to
+their names. For intance, the mapper for `bytes` and `BytesT` is called `BytesM`.
 
 ## `pack` methods and `none` properties
 
 Mappers which support it have a `pack` class method, which takes objects from the
-crystalfontz domain and convert them into dbus data types. For instance, `BytesM`
-packs a `bytes` value into a `List[int]`, which corresponds to the `ay` dbus type.
+crystalfontz domain and converts them into dbus data types. For instance, `BytesM`
+packs a `bytes` value into a `BytesT`.
 
 Additionally, mappers representing optional data have a property called `none`,
 which contains the value that the dbus client canonically interprets as `None`.
@@ -28,35 +35,28 @@ dbus client. For example, if you were to call `dbus_client.ping`, it would look 
 this:
 
 ```py
-pong: List[int] = await dbus_client.ping(
+pong: PongT = await dbus_client.ping(
     BytesM.pack(b"Hello world!"), TimeoutM.none, RetryTimesM.none
 )
 ```
 
 ## `unpack` methods
 
-Many dbus client methods return sensible values - in fact, most methods return `None`.
-However, for non-trivial response types, you may wish to unpack the responses
-back into the crystalfontz domain. For example, the `ping` command returns a
-`List[int]`, and you will probably want to convert it back into a `Pong` object:
+Dbus client methods will not only *be called* with dbus-compatible types, but
+will return dbus-compatible types as well. Sometimes these are sensible - in fact,
+most methods return `None`. However, for non-trivial response types, you will likely
+want to *unpack* them back into the crystalfontz domain. For example, the `ping`
+command returns a `PongT`, and you will probably want to unpack it into a `Pong`
+object:
 
 ```py
 print(PongM.unpack(pong).response)
 ```
-
-Alternately, the `Pong` response is simple enough that calling `BytesM.unpack` is
-sufficient. But there may be stronger motivations for other response types, which have
-more complicated structures or rich reprs.
-
-## `t` property
-
-The `t` property encodes the dbus signature corresponding to the type. Users will
-typically not need to use this property, but it may be considered as documentation.
 """
 
 from typing import List
 
-from crystalfontz.dbus.map.base import (
+from crystalfontz.dbus.domain.base import (
     BytesM,
     BytesT,
     OptBytesM,
@@ -68,11 +68,11 @@ from crystalfontz.dbus.map.base import (
     TimeoutM,
     TimeoutT,
 )
-from crystalfontz.dbus.map.config import ConfigM, ConfigT
-from crystalfontz.dbus.map.cursor import CursorStyleM, CursorStyleT
-from crystalfontz.dbus.map.keys import KeyPressT, KeyStatesT, KeyStateT
-from crystalfontz.dbus.map.lcd import LcdRegisterM, LcdRegisterT
-from crystalfontz.dbus.map.response import (
+from crystalfontz.dbus.domain.config import ConfigM, ConfigT
+from crystalfontz.dbus.domain.cursor import CursorStyleM, CursorStyleT
+from crystalfontz.dbus.domain.keys import KeyPressT, KeyStatesT, KeyStateT
+from crystalfontz.dbus.domain.lcd import LcdRegisterM, LcdRegisterT
+from crystalfontz.dbus.domain.response import (
     DowDeviceInformationM,
     DowDeviceInformationT,
     DowTransactionResultM,
@@ -86,7 +86,7 @@ from crystalfontz.dbus.map.response import (
     VersionsM,
     VersionsT,
 )
-from crystalfontz.dbus.map.temperature import (
+from crystalfontz.dbus.domain.temperature import (
     TemperatureDisplayItemM,
     TemperatureDisplayItemT,
     TemperatureUnitT,

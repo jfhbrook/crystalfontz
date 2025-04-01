@@ -1,6 +1,6 @@
 from typing import ClassVar, Dict, Tuple
 
-from crystalfontz.dbus.map.base import IndexM, PositionM, t
+from crystalfontz.dbus.domain.base import IndexM, PositionM, t
 from crystalfontz.temperature import (
     TemperatureDigits,
     TemperatureDisplayItem,
