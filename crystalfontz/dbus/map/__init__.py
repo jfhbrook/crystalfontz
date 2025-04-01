@@ -59,7 +59,7 @@ from typing import List
 from crystalfontz.dbus.map.base import (
     BytesM,
     OptBytesM,
-    OptFloatM,
+    OptPosFloatM,
     RetryTimesM,
     TimeoutM,
 )
@@ -86,7 +86,7 @@ __all__: List[str] = [
     "LcdMemoryM",
     "LcdRegisterM",
     "OptBytesM",
-    "OptFloatM",
+    "OptPosFloatM",
     "PongM",
     "RetryTimesM",
     "TemperatureDisplayItemM",

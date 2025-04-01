@@ -2,6 +2,8 @@ from typing import ClassVar, Dict
 
 from crystalfontz.lcd import LcdRegister
 
+LcdRegisterT = bool
+
 LCD_REGISTERS: Dict[bool, LcdRegister] = {
     bool(register.value): register for register in LcdRegister
 }
@@ -15,9 +17,9 @@ class LcdRegisterM:
     t: ClassVar[str] = "b"
 
     @staticmethod
-    def unpack(register: bool) -> LcdRegister:
-        return LCD_REGISTERS[register]
+    def pack(register: LcdRegister) -> LcdRegisterT:
+        return bool(register.value)
 
     @staticmethod
-    def pack(register: LcdRegister) -> bool:
-        return bool(register.value)
+    def unpack(register: LcdRegisterT) -> LcdRegister:
+        return LCD_REGISTERS[register]

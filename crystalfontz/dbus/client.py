@@ -46,7 +46,7 @@ from crystalfontz.dbus.map import (
     LcdMemoryM,
     LcdRegisterM,
     OptBytesM,
-    OptFloatM,
+    OptPosFloatM,
     RetryTimesM,
     TemperatureDisplayItemM,
     TimeoutM,
@@ -54,7 +54,11 @@ from crystalfontz.dbus.map import (
 )
 from crystalfontz.dbus.map.config import ConfigM
 from crystalfontz.lcd import LcdRegister
-from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
+from crystalfontz.temperature import (
+    TemperatureDigits,
+    TemperatureDisplayItem,
+    TemperatureUnit,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -312,9 +316,10 @@ async def detect(
         baud_rate = await client.detect_baud_rate(TimeoutM.none, RetryTimesM.none)
 
     if device:
-        model, hardware_rev, firmware_rev = await client.detect_device(
-            TimeoutM.none, RetryTimesM.none
-        )
+        device_t = await client.detect_device(TimeoutM.none, RetryTimesM.none)
+        model = device_t[0]
+        hardware_rev = device_t[1]
+        firmware_rev = device_t[2]
 
     if save:
         try:
@@ -374,7 +379,9 @@ def flash() -> None:
 @async_command
 @pass_client
 async def write_user_flash_area(client: DbusClient, data: bytes) -> None:
-    await client.write_user_flash_area(data, TimeoutM.none, RetryTimesM.none)
+    await client.write_user_flash_area(
+        BytesM.pack(data), TimeoutM.none, RetryTimesM.none
+    )
 
 
 @flash.command(name="read", help="3 (0x03): Read User Flash Area")
@@ -435,7 +442,7 @@ def line() -> None:
 @async_command
 @pass_client
 async def set_line_1(client: DbusClient, line: bytes) -> None:
-    await client.set_line_1(line, TimeoutM.none, RetryTimesM.none)
+    await client.set_line_1(BytesM.pack(line), TimeoutM.none, RetryTimesM.none)
 
 
 @line.command(name="2", help="8 (0x08): Set LCD Contents, Line 2")
@@ -443,7 +450,7 @@ async def set_line_1(client: DbusClient, line: bytes) -> None:
 @async_command
 @pass_client
 async def set_line_2(client: DbusClient, line: bytes) -> None:
-    await client.set_line_2(line, TimeoutM.none, RetryTimesM.none)
+    await client.set_line_2(BytesM.pack(line), TimeoutM.none, RetryTimesM.none)
 
 
 @main.command(help="Interact with special characters")
@@ -506,7 +513,7 @@ async def backlight(
     client: DbusClient, brightness: float, keypad: Optional[float]
 ) -> None:
     await client.set_backlight(
-        brightness, OptFloatM.pack(keypad), TimeoutM.none, RetryTimesM.none
+        brightness, OptPosFloatM.pack(keypad), TimeoutM.none, RetryTimesM.none
     )
 
 
@@ -582,7 +589,7 @@ async def setup_live_temperature_display(
 ) -> None:
     item = TemperatureDisplayItem(
         index=index,
-        n_digits=cast(Any, int(n_digits)),
+        n_digits=cast(TemperatureDigits, int(n_digits)),
         column=column,
         row=row,
         units=TemperatureUnit[units],

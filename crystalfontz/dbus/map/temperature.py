@@ -1,18 +1,26 @@
-from typing import ClassVar, Dict, Literal, Tuple
+from typing import ClassVar, Dict, Tuple
 
 from crystalfontz.dbus.map.base import IndexM, PositionM, t
-from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
+from crystalfontz.temperature import (
+    TemperatureDigits,
+    TemperatureDisplayItem,
+    TemperatureUnit,
+)
+
+TemperatureDigitsT = int
 
 
 class TemperatureDigitsM:
     t: ClassVar[str] = "n"
 
     @staticmethod
-    def unpack(n_digits: int) -> Literal[3] | Literal[5]:
+    def unpack(n_digits: TemperatureDigitsT) -> TemperatureDigits:
         if n_digits != 3 or n_digits != 5:
             raise ValueError("May display either 3 or 5 temperature digits")
         return n_digits
 
+
+TemperatureUnitT = bool
 
 TEMPERATURE_UNITS: Dict[bool, TemperatureUnit] = {
     bool(unit.value): unit for unit in TemperatureUnit
@@ -23,12 +31,15 @@ class TemperatureUnitM:
     t: ClassVar[str] = "b"
 
     @staticmethod
-    def unpack(unit: bool) -> TemperatureUnit:
-        return TEMPERATURE_UNITS[unit]
+    def pack(unit: TemperatureUnit) -> TemperatureUnitT:
+        return bool(unit.value)
 
     @staticmethod
-    def pack(unit: TemperatureUnit) -> bool:
-        return bool(unit.value)
+    def unpack(unit: TemperatureUnitT) -> TemperatureUnit:
+        return TEMPERATURE_UNITS[unit]
+
+
+TemperatureDisplayItemT = Tuple[int, TemperatureDigitsT, int, int, TemperatureUnitT]
 
 
 class TemperatureDisplayItemM:
@@ -39,8 +50,18 @@ class TemperatureDisplayItemM:
     t: ClassVar[str] = t(IndexM, TemperatureDigitsM, PositionM, PositionM, "b")
 
     @staticmethod
+    def pack(item: TemperatureDisplayItem) -> TemperatureDisplayItemT:
+        return (
+            item.index,
+            item.n_digits,
+            item.column,
+            item.row,
+            TemperatureUnitM.pack(item.units),
+        )
+
+    @staticmethod
     def unpack(
-        item: Tuple[int, int, int, int, bool],
+        item: TemperatureDisplayItemT,
     ) -> TemperatureDisplayItem:
 
         index, n_digits, column, row, units = item
@@ -50,14 +71,4 @@ class TemperatureDisplayItemM:
             column,
             row,
             TemperatureUnitM.unpack(units),
-        )
-
-    @staticmethod
-    def pack(item: TemperatureDisplayItem) -> Tuple[int, int, int, int, bool]:
-        return (
-            item.index,
-            item.n_digits,
-            item.column,
-            item.row,
-            TemperatureUnitM.pack(item.units),
         )

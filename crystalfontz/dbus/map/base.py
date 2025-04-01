@@ -33,7 +33,14 @@ def array(of: Union[str, Type[TypeProtocol]]) -> str:
     return f"a{t(of)}"
 
 
-class OptIntM:
+class NoneM:
+    t: ClassVar[str] = ""
+
+
+OptUintT = int
+
+
+class OptUintM:
     """
     Map optional positive integers to and from dbus types.
 
@@ -41,18 +48,21 @@ class OptIntM:
     """
 
     t: ClassVar[str] = "i"
-    none: ClassVar[int] = -1
+    none: ClassVar[OptUintT] = -1
 
     @staticmethod
-    def unpack(r: int) -> Optional[int]:
+    def unpack(r: OptUintT) -> Optional[int]:
         return r if r >= 0 else None
 
     @classmethod
-    def pack(cls: Type[Self], r: Optional[int]) -> int:
+    def pack(cls: Type[Self], r: Optional[int]) -> OptUintT:
         return r if r is not None else cls.none
 
 
-class OptFloatM:
+OptPosFloatT = float
+
+
+class OptPosFloatM:
     """
     Map optional positive floats to and from dbus types.
 
@@ -60,31 +70,53 @@ class OptFloatM:
     """
 
     t: ClassVar[str] = "d"
-    none: ClassVar[float] = -1.0
+    none: ClassVar[OptPosFloatT] = -1.0
 
     @staticmethod
-    def unpack(t: float) -> Optional[float]:
+    def unpack(t: OptPosFloatT) -> Optional[float]:
         return t if t >= 0 else None
 
     @classmethod
-    def pack(cls: Type[Self], t: Optional[float]) -> float:
+    def pack(cls: Type[Self], t: Optional[float]) -> OptPosFloatT:
         return t if t is not None else cls.none
 
 
-class AddressM:
+Uint16T = int
+
+
+class Uint16M:
     t: ClassVar[str] = "q"
 
 
-class IndexM:
-    t: ClassVar[str] = "q"
+AddressT = Uint16T
 
 
-class PositionM:
-    t: ClassVar[str] = "q"
+class AddressM(Uint16M):
+    t: ClassVar[str] = Uint16M.t
+
+
+IndexT = Uint16T
+
+
+class IndexM(Uint16T):
+    t: ClassVar[str] = Uint16M.t
+
+
+PositionT = Uint16T
+
+
+class PositionM(Uint16T):
+    t: ClassVar[str] = Uint16M.t
+
+
+ByteT = int
 
 
 class ByteM:
     t: ClassVar[str] = "y"
+
+
+BytesT = List[int]
 
 
 class BytesM:
@@ -95,13 +127,16 @@ class BytesM:
     t: ClassVar[str] = array(ByteM)
 
     @staticmethod
-    def unpack(buff: List[int]) -> bytes:
+    def unpack(buff: BytesT) -> bytes:
         return bytes(buff)
 
     # TODO: This may not be what the dbus client expects...
     @staticmethod
-    def pack(buff: bytes) -> List[int]:
+    def pack(buff: bytes) -> BytesT:
         return list(buff)
+
+
+OptBytesT = BytesT
 
 
 class OptBytesM:
@@ -109,23 +144,49 @@ class OptBytesM:
     Map optional bytes to and from dbus types.
     """
 
-    t: ClassVar[str] = array(ByteM)
-    none: ClassVar[List[int]] = list()
+    t: ClassVar[str] = BytesM.t
+    none: ClassVar[BytesT] = list()
 
     @staticmethod
-    def unpack(buff: List[int]) -> Optional[bytes]:
+    def unpack(buff: BytesT) -> Optional[bytes]:
         if not buff:
             return None
         return BytesM.unpack(buff)
 
     @classmethod
-    def pack(cls: Type[Self], buff: Optional[bytes]) -> List[int]:
+    def pack(cls: Type[Self], buff: Optional[bytes]) -> BytesT:
         if buff is None:
             return cls.none
         return BytesM.pack(buff)
 
 
-class TimeoutM(OptFloatM):
+ModelT = str
+
+
+class ModelM:
+    t: ClassVar[str] = "s"
+
+
+RevisionT = str
+
+
+class RevisionM:
+    t: ClassVar[str] = "s"
+    none: ClassVar[str] = ""
+
+    @classmethod
+    def pack(cls: Type[Self], revision: Optional[str]) -> str:
+        return revision or cls.none
+
+    @classmethod
+    def unpack(cls: Type[Self], revision: str) -> Optional[str]:
+        return revision if revision != cls.none else None
+
+
+TimeoutT = float
+
+
+class TimeoutM(OptPosFloatM):
     """
     Map timeout parameters to and from dbus types.
 
@@ -135,7 +196,10 @@ class TimeoutM(OptFloatM):
     pass
 
 
-class RetryTimesM(OptIntM):
+RetryTimesT = int
+
+
+class RetryTimesM(OptUintM):
     """
     Map retry times parameters to and from dbus types.
 

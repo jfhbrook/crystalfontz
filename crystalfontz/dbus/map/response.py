@@ -1,7 +1,21 @@
-from typing import ClassVar, List, Tuple
+from typing import ClassVar, Tuple
 
-from crystalfontz.dbus.map.base import BytesM, IndexM, struct, t
-from crystalfontz.dbus.map.keys import DbusKeyStates, KeyStatesM
+from crystalfontz.dbus.map.base import (
+    AddressM,
+    AddressT,
+    BytesM,
+    BytesT,
+    IndexM,
+    IndexT,
+    ModelM,
+    ModelT,
+    RevisionM,
+    RevisionT,
+    t,
+    Uint16M,
+    Uint16T,
+)
+from crystalfontz.dbus.map.keys import KeyStatesM, KeyStatesT
 from crystalfontz.response import (
     DowDeviceInformation,
     DowTransactionResult,
@@ -12,6 +26,8 @@ from crystalfontz.response import (
     Versions,
 )
 
+PongT = BytesT
+
 
 class PongM:
     """
@@ -21,12 +37,15 @@ class PongM:
     t: ClassVar[str] = BytesM.t
 
     @staticmethod
-    def pack(pong: Pong) -> List[int]:
+    def pack(pong: Pong) -> PongT:
         return BytesM.pack(pong.response)
 
     @staticmethod
-    def unpack(pong: List[int]) -> Pong:
+    def unpack(pong: BytesT) -> Pong:
         return Pong(BytesM.unpack(pong))
+
+
+VersionsT = Tuple[ModelT, RevisionT, RevisionT]
 
 
 class VersionsM:
@@ -34,23 +53,33 @@ class VersionsM:
     Map versions to and from dbus types.
     """
 
-    t: ClassVar[str] = struct("sss")
+    t: ClassVar[str] = t(ModelM, RevisionM, RevisionM)
 
     @staticmethod
-    def unpack(versions: Tuple[str, str, str]) -> Versions:
+    def pack(versions: Versions) -> VersionsT:
+        return (versions.model, versions.hardware_rev, versions.firmware_rev)
+
+    @staticmethod
+    def unpack(versions: VersionsT) -> Versions:
         return Versions(*versions)
 
-    @staticmethod
-    def pack(versions: Versions) -> Tuple[str, str, str]:
-        return (versions.model, versions.hardware_rev, versions.firmware_rev)
+
+UserFlashAreaReadT = BytesT
 
 
 class UserFlashAreaReadM:
-    t: ClassVar[str] = "y"
+    t: ClassVar[str] = BytesM.t
 
     @staticmethod
-    def pack(res: UserFlashAreaRead) -> bytes:
-        return res.data
+    def pack(res: UserFlashAreaRead) -> UserFlashAreaReadT:
+        return BytesM.pack(res.data)
+
+    @staticmethod
+    def unpack(res: UserFlashAreaReadT) -> UserFlashAreaRead:
+        return UserFlashAreaRead(BytesM.unpack(res))
+
+
+LcdMemoryT = Tuple[AddressT, BytesT]
 
 
 class LcdMemoryM:
@@ -58,16 +87,19 @@ class LcdMemoryM:
     Map LcdMemory to and from dbus types.
     """
 
-    t: ClassVar[str] = t("q", BytesM)
+    t: ClassVar[str] = t(AddressM, BytesM)
 
     @staticmethod
-    def unpack(obj: Tuple[int, List[int]]) -> LcdMemory:
+    def pack(memory: LcdMemory) -> LcdMemoryT:
+        return (memory.address, BytesM.pack(memory.data))
+
+    @staticmethod
+    def unpack(obj: LcdMemoryT) -> LcdMemory:
         address, buff = obj
         return LcdMemory(address, BytesM.unpack(buff))
 
-    @staticmethod
-    def pack(memory: LcdMemory) -> Tuple[int, List[int]]:
-        return (memory.address, BytesM.pack(memory.data))
+
+DowDeviceInformationT = Tuple[IndexT, BytesT]
 
 
 class DowDeviceInformationM:
@@ -78,13 +110,16 @@ class DowDeviceInformationM:
     t: ClassVar[str] = t(IndexM, BytesM)
 
     @staticmethod
-    def unpack(info: Tuple[int, List[int]]) -> DowDeviceInformation:
+    def pack(info: DowDeviceInformation) -> DowDeviceInformationT:
+        return (info.index, BytesM.pack(info.rom_id))
+
+    @staticmethod
+    def unpack(info: DowDeviceInformationT) -> DowDeviceInformation:
         index, rom_id = info
         return DowDeviceInformation(index, BytesM.unpack(rom_id))
 
-    @staticmethod
-    def pack(info: DowDeviceInformation) -> Tuple[int, List[int]]:
-        return (info.index, BytesM.pack(info.rom_id))
+
+DowTransactionResultT = Tuple[IndexT, BytesT, Uint16T]
 
 
 class DowTransactionResultM:
@@ -92,16 +127,19 @@ class DowTransactionResultM:
     Map DowTransactionResult to and from dbus types.
     """
 
-    t: ClassVar[str] = t(IndexM, BytesM, "q")
+    t: ClassVar[str] = t(IndexM, BytesM, Uint16M)
 
     @staticmethod
-    def unpack(res: Tuple[int, List[int], int]) -> DowTransactionResult:
+    def unpack(res: DowTransactionResultT) -> DowTransactionResult:
         index, data, crc = res
         return DowTransactionResult(index, BytesM.unpack(data), crc)
 
     @staticmethod
-    def pack(res: DowTransactionResult) -> Tuple[int, List[int], int]:
+    def pack(res: DowTransactionResult) -> DowTransactionResultT:
         return (res.index, BytesM.pack(res.data), res.crc)
+
+
+KeypadPolledT = KeyStatesT
 
 
 class KeypadPolledM:
@@ -109,12 +147,12 @@ class KeypadPolledM:
     Map KeypadPolled to and from dbus types.
     """
 
-    t: ClassVar[str] = struct(struct("bbb") * 6)
+    t: ClassVar[str] = KeyStatesM.t
 
     @staticmethod
-    def pack(polled: KeypadPolled) -> DbusKeyStates:
+    def pack(polled: KeypadPolled) -> KeyStatesT:
         return KeyStatesM.pack(polled.states)
 
     @staticmethod
-    def unpack(polled: DbusKeyStates) -> KeypadPolled:
+    def unpack(polled: KeyStatesT) -> KeypadPolled:
         return KeypadPolled(KeyStatesM.unpack(polled))

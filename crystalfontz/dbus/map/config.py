@@ -1,12 +1,23 @@
-from typing import Any, cast, ClassVar, Optional, Self, Type
+from typing import Any, cast, ClassVar, Optional, Self, Tuple, Type
 
 from crystalfontz.config import Config
-from crystalfontz.dbus.config import ConfigStruct
-from crystalfontz.dbus.map.base import RetryTimesM, struct, TimeoutM
-from crystalfontz.dbus.map.baud import BaudRateM
+from crystalfontz.dbus.map.base import (
+    ModelM,
+    ModelT,
+    RetryTimesM,
+    RetryTimesT,
+    RevisionM,
+    RevisionT,
+    struct,
+    TimeoutM,
+    TimeoutT,
+)
+from crystalfontz.dbus.map.baud import BaudRateM, BaudRateT
+
+FileT = str
 
 
-class ConfigFileM:
+class FileM:
     t: ClassVar[str] = "s"
     none: ClassVar[str] = ""
 
@@ -15,25 +26,16 @@ class ConfigFileM:
         return file or cls.none
 
 
+PortT = str
+
+
 class PortM:
     t: ClassVar[str] = "s"
 
 
-class ModelM:
-    t: ClassVar[str] = "s"
-
-
-class RevisionM:
-    t: ClassVar[str] = "s"
-    none: ClassVar[str] = ""
-
-    @classmethod
-    def pack(cls: Type[Self], revision: Optional[str]) -> str:
-        return revision or cls.none
-
-    @classmethod
-    def unpack(cls: Type[Self], revision: str) -> Optional[str]:
-        return revision if revision != cls.none else None
+ConfigT = Tuple[
+    FileT, PortT, ModelT, RevisionT, RevisionT, BaudRateT, TimeoutT, RetryTimesT
+]
 
 
 class ConfigM:
@@ -42,7 +44,7 @@ class ConfigM:
     """
 
     t: ClassVar[str] = struct(
-        ConfigFileM,
+        FileM,
         PortM,
         ModelM,
         RevisionM,
@@ -53,9 +55,9 @@ class ConfigM:
     )
 
     @staticmethod
-    def pack(config: Config) -> ConfigStruct:
+    def pack(config: Config) -> ConfigT:
         return (
-            ConfigFileM.pack(config.file),
+            FileM.pack(config.file),
             config.port,
             config.model,
             RevisionM.pack(config.hardware_rev),
@@ -66,7 +68,7 @@ class ConfigM:
         )
 
     @staticmethod
-    def unpack(config: ConfigStruct) -> Config:
+    def unpack(config: ConfigT) -> Config:
         (
             file,
             port,

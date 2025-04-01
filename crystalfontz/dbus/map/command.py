@@ -4,25 +4,44 @@ from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
 from crystalfontz.baud import BaudRate
 from crystalfontz.character import SpecialCharacter
 from crystalfontz.cursor import CursorStyle
-from crystalfontz.dbus.map.atx import AtxPowerSwitchFunctionalitySettingsM
+from crystalfontz.dbus.map.atx import (
+    AtxPowerSwitchFunctionalitySettingsM,
+    AtxPowerSwitchFunctionalitySettingsT,
+)
 from crystalfontz.dbus.map.base import (
     AddressM,
+    AddressT,
     array,
     ByteM,
     BytesM,
+    BytesT,
+    ByteT,
     IndexM,
+    IndexT,
     OptBytesM,
-    OptFloatM,
+    OptBytesT,
+    OptPosFloatM,
+    OptPosFloatT,
     PositionM,
+    PositionT,
     RetryTimesM,
+    RetryTimesT,
     t,
     TimeoutM,
+    TimeoutT,
+    Uint16M,
+    Uint16T,
 )
-from crystalfontz.dbus.map.baud import BaudRateM
-from crystalfontz.dbus.map.character import SpecialCharacterM
-from crystalfontz.dbus.map.cursor import CursorStyleM
-from crystalfontz.dbus.map.lcd import LcdRegisterM
-from crystalfontz.dbus.map.temperature import TemperatureDisplayItemM
+from crystalfontz.dbus.map.baud import BaudRateM, BaudRateT
+from crystalfontz.dbus.map.character import SpecialCharacterM, SpecialCharacterT
+from crystalfontz.dbus.map.cursor import CursorStyleM, CursorStyleT
+from crystalfontz.dbus.map.keys import KeyPressM, KeyPressT
+from crystalfontz.dbus.map.lcd import LcdRegisterM, LcdRegisterT
+from crystalfontz.dbus.map.temperature import (
+    TemperatureDisplayItemM,
+    TemperatureDisplayItemT,
+)
+from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import TemperatureDisplayItem
 
@@ -32,7 +51,7 @@ class SimpleCommandM:
 
     @staticmethod
     def unpack(
-        timeout: float, retry_times: int
+        timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[Optional[float], Optional[int]]:
         return (TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
@@ -42,7 +61,7 @@ class PingM:
 
     @staticmethod
     def unpack(
-        payload: List[int], timeout: float, retry_times: int
+        payload: BytesT, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
         return (
             BytesM.unpack(payload),
@@ -56,9 +75,13 @@ class WriteUserFlashAreaM:
 
     @staticmethod
     def unpack(
-        data: bytes, timeout: float, retry_times: int
+        data: BytesT, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
-        return (data, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
+        return (
+            BytesM.unpack(data),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
+        )
 
 
 class SetLineM:
@@ -66,9 +89,13 @@ class SetLineM:
 
     @staticmethod
     def unpack(
-        line: bytes, timeout: float, retry_times: int
+        line: BytesT, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
-        return (line, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
+        return (
+            BytesM.unpack(line),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
+        )
 
 
 class ReadLcdMemoryM:
@@ -76,7 +103,7 @@ class ReadLcdMemoryM:
 
     @staticmethod
     def unpack(
-        address: int, timeout: float, retry_times: int
+        address: AddressT, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[int, Optional[float], Optional[int]]:
         return (address, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
@@ -86,7 +113,7 @@ class SetCursorPositionM:
 
     @staticmethod
     def unpack(
-        row: int, column: int, timeout: float, retry_times: int
+        row: int, column: int, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[int, int, Optional[float], Optional[int]]:
         return (row, column, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
@@ -96,7 +123,7 @@ class SetCursorStyleM:
 
     @staticmethod
     def unpack(
-        style: int, timeout: float, retry_times: int
+        style: CursorStyleT, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[CursorStyle, Optional[float], Optional[int]]:
         return (
             CursorStyleM.unpack(style),
@@ -110,24 +137,24 @@ class SetContrastM:
 
     @staticmethod
     def unpack(
-        contrast: float, timeout: float, retry_times: int
+        contrast: float, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[float, Optional[float], Optional[int]]:
         return (contrast, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class SetBacklightM:
-    t: ClassVar[str] = t("dd", TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t("d", OptPosFloatM, TimeoutM, RetryTimesM)
 
     @staticmethod
     def unpack(
         lcd_brightness: float,
-        keypad_brightness: float,
-        timeout: float,
-        retry_times: int,
+        keypad_brightness: OptPosFloatT,
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
     ) -> Tuple[float, Optional[float], Optional[float], Optional[int]]:
         return (
             lcd_brightness,
-            OptFloatM.unpack(keypad_brightness),
+            OptPosFloatM.unpack(keypad_brightness),
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )
@@ -138,31 +165,31 @@ class ReadDowDeviceInformationM:
 
     @staticmethod
     def unpack(
-        index: int, timeout: float, retry_times: int
+        index: IndexT, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[int, Optional[float], Optional[int]]:
         return (index, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class SetupTemperatureReportingM:
-    t: ClassVar[str] = t(array("q"), TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t(array(IndexM), TimeoutM, RetryTimesM)
 
     @staticmethod
     def unpack(
-        enabled: List[int], timeout: float, retry_times: int
+        enabled: List[IndexT], timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[List[int], Optional[float], Optional[int]]:
         return (enabled, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))
 
 
 class DowTransactionM:
-    t: ClassVar[str] = t(IndexM, "n", BytesM, TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t(IndexM, Uint16M, BytesM, TimeoutM, RetryTimesM)
 
     @staticmethod
     def unpack(
-        index: int,
-        bytes_to_read: int,
-        data_to_write: List[int],
-        timeout: float,
-        retry_times: int,
+        index: IndexT,
+        bytes_to_read: Uint16T,
+        data_to_write: OptBytesT,
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
     ) -> Tuple[int, int, Optional[bytes], Optional[float], Optional[int]]:
         return (
             index,
@@ -178,10 +205,10 @@ class SetupLiveTemperatureDisplayM:
 
     @staticmethod
     def unpack(
-        slot: int,
-        item: Tuple[int, int, int, int, bool],
-        timeout: float,
-        retry_times: int,
+        slot: IndexT,
+        item: TemperatureDisplayItemT,
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
     ) -> Tuple[int, TemperatureDisplayItem, Optional[float], Optional[int]]:
         return (
             slot,
@@ -196,7 +223,7 @@ class SendCommandToLcdControllerM:
 
     @staticmethod
     def unpack(
-        location: bool, data: int, timeout: float, retry_times: int
+        location: LcdRegisterT, data: ByteT, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[LcdRegister, int, Optional[float], Optional[int]]:
         return (
             LcdRegisterM.unpack(location),
@@ -207,15 +234,15 @@ class SendCommandToLcdControllerM:
 
 
 class ConfigureKeyReportingM:
-    t: ClassVar[str] = t(array(ByteM), array(ByteM), TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t(array(KeyPressM), array(ByteM), TimeoutM, RetryTimesM)
 
     @staticmethod
     def unpack(
-        when_pressed: List[int],
-        when_released: List[int],
-        timeout: float,
-        retry_times: int,
-    ) -> Tuple[Set[int], Set[int], Optional[float], Optional[int]]:
+        when_pressed: List[KeyPressT],
+        when_released: List[KeyPressT],
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
+    ) -> Tuple[Set[KeyPress], Set[KeyPress], Optional[float], Optional[int]]:
         return (
             set(when_pressed),
             set(when_released),
@@ -229,10 +256,10 @@ class SetSpecialCharacterDataM:
 
     @staticmethod
     def unpack(
-        index: int,
-        character: int,
-        timeout: float,
-        retry_times: int,
+        index: IndexT,
+        character: SpecialCharacterT,
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
     ) -> Tuple[int, SpecialCharacter, Optional[float], Optional[int]]:
         return (
             index,
@@ -251,7 +278,9 @@ class SetAtxPowerSwitchFunctionalityM:
 
     @staticmethod
     def unpack(
-        settings: Tuple[List[str], bool, float], timeout: float, retry_times: int
+        settings: AtxPowerSwitchFunctionalitySettingsT,
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
     ) -> Tuple[AtxPowerSwitchFunctionalitySettings, Optional[float], Optional[int]]:
         return (
             AtxPowerSwitchFunctionalitySettingsM.unpack(settings),
@@ -265,7 +294,7 @@ class ConfigureWatchdogM:
 
     @staticmethod
     def unpack(
-        timeout_seconds: int, timeout: float, retry_times: int
+        timeout_seconds: ByteT, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[int, Optional[float], Optional[int]]:
         return (
             timeout_seconds,
@@ -279,7 +308,11 @@ class SendDataM:
 
     @staticmethod
     def unpack(
-        row: int, column: int, data: List[int], timeout: float, retry_times: int
+        row: PositionT,
+        column: PositionT,
+        data: BytesT,
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
     ) -> Tuple[int, int, bytes, Optional[float], Optional[int]]:
         return (
             row,
@@ -295,7 +328,7 @@ class SetBaudRateM:
 
     @staticmethod
     def unpack(
-        baud_rate: int, timeout: float, retry_times: int
+        baud_rate: BaudRateT, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[BaudRate, Optional[float], Optional[int]]:
         return (
             BaudRateM.unpack(baud_rate),

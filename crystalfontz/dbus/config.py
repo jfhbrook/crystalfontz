@@ -1,6 +1,6 @@
 from dataclasses import asdict, dataclass, fields
 import json
-from typing import Any, Dict, Generic, Literal, Self, Tuple, TypeVar
+from typing import Any, Dict, Generic, Literal, Self, TypeVar
 
 import yaml
 
@@ -10,18 +10,6 @@ except ImportError:
     from yaml import Dumper
 
 from crystalfontz.config import Config
-
-File = str
-Port = str
-Model = str
-HardwareRev = str
-FirmwareRev = str
-BaudRate = int
-Timeout = float
-RetryTimes = int
-ConfigStruct = Tuple[
-    File, Port, Model, HardwareRev, FirmwareRev, BaudRate, Timeout, RetryTimes
-]
 
 StageType = Literal["set"] | Literal["unset"] | None
 T = TypeVar("T")

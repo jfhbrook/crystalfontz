@@ -18,6 +18,9 @@ class TemperatureUnit(Enum):
     FAHRENHEIT = 1
 
 
+TemperatureDigits = Literal[3] | Literal[5]
+
+
 @dataclass
 class TemperatureDisplayItem:
     """
@@ -34,7 +37,7 @@ class TemperatureDisplayItem:
 
     index: int
     # TODO: Device specific?
-    n_digits: Literal[3] | Literal[5]
+    n_digits: TemperatureDigits
     column: int
     row: int
     units: TemperatureUnit

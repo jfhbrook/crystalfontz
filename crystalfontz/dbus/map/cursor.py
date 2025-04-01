@@ -2,6 +2,8 @@ from typing import ClassVar, Dict
 
 from crystalfontz.cursor import CursorStyle
 
+CursorStyleT = int
+
 CURSOR_STYLES: Dict[int, CursorStyle] = {style.value: style for style in CursorStyle}
 
 
@@ -13,9 +15,9 @@ class CursorStyleM:
     t: ClassVar[str] = "q"
 
     @staticmethod
-    def unpack(style: int) -> CursorStyle:
+    def unpack(style: CursorStyleT) -> CursorStyle:
         return CURSOR_STYLES[style]
 
     @staticmethod
-    def pack(style: CursorStyle) -> int:
+    def pack(style: CursorStyle) -> CursorStyleT:
         return style.value
