@@ -21,6 +21,10 @@ class PongM:
 
 
 class VersionsM:
+    """
+    Map versions to and from dbus types.
+    """
+
     t: ClassVar[str] = struct("sss")
 
     @staticmethod
@@ -41,6 +45,10 @@ class UserFlashAreaReadM:
 
 
 class LcdMemoryM:
+    """
+    Map LcdMemory to and from dbus types.
+    """
+
     t: ClassVar[str] = t("q", BytesM)
 
     @staticmethod
@@ -54,6 +62,10 @@ class LcdMemoryM:
 
 
 class DowDeviceInformationM:
+    """
+    Map DowDeviceInformation to and from dbus types.
+    """
+
     t: ClassVar[str] = t(IndexM, BytesM)
 
     @staticmethod
@@ -67,6 +79,10 @@ class DowDeviceInformationM:
 
 
 class DowTransactionResultM:
+    """
+    Map DowTransactionResult to and from dbus types.
+    """
+
     t: ClassVar[str] = t(IndexM, BytesM, "q")
 
     @staticmethod
@@ -80,6 +96,10 @@ class DowTransactionResultM:
 
 
 class KeypadPolledM:
+    """
+    Map KeypadPolled to and from dbus types.
+    """
+
     t: ClassVar[str] = array(struct("bbb"))
 
     @staticmethod

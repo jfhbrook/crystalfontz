@@ -6,6 +6,10 @@ CURSOR_STYLES: Dict[int, CursorStyle] = {style.value: style for style in CursorS
 
 
 class CursorStyleM:
+    """
+    Map a CursorStyle to and from dbus types.
+    """
+
     t: ClassVar[str] = "q"
 
     @staticmethod

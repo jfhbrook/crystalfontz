@@ -34,6 +34,12 @@ def array(of: Union[str, Type[TypeProtocol]]) -> str:
 
 
 class OptIntM:
+    """
+    Map optional positive integers to and from dbus types.
+
+    This class treats values less than 0 (ie, -1) as representing None.
+    """
+
     t: ClassVar[str] = "i"
     none: ClassVar[int] = -1
 
@@ -47,6 +53,12 @@ class OptIntM:
 
 
 class OptFloatM:
+    """
+    Map optional positive floats to and from dbus types.
+
+    This class treats values less than 0 (ie, -1.0) as representing None.
+    """
+
     t: ClassVar[str] = "d"
     none: ClassVar[float] = -1.0
 
@@ -76,6 +88,10 @@ class ByteM:
 
 
 class BytesM:
+    """
+    Map bytes to and from dbus types.
+    """
+
     t: ClassVar[str] = array(ByteM)
 
     @staticmethod
@@ -89,6 +105,10 @@ class BytesM:
 
 
 class OptBytesM:
+    """
+    Map optional bytes to and from dbus types.
+    """
+
     t: ClassVar[str] = array(ByteM)
     none: ClassVar[List[int]] = list()
 
@@ -106,10 +126,22 @@ class OptBytesM:
 
 
 class TimeoutM(OptFloatM):
+    """
+    Map timeout parameters to and from dbus types.
+
+    TimeoutM is an alias for OptFloatM.
+    """
+
     pass
 
 
 class RetryTimesM(OptIntM):
+    """
+    Map retry times parameters to and from dbus types.
+
+    RetryTimesM is an alias for OptFloatM.
+    """
+
     pass
 
 

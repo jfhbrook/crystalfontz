@@ -8,6 +8,10 @@ LCD_REGISTERS: Dict[bool, LcdRegister] = {
 
 
 class LcdRegisterM:
+    """
+    Map LcdRegister to and from dbus types.
+    """
+
     t: ClassVar[str] = "b"
 
     @staticmethod

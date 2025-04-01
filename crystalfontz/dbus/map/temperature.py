@@ -32,6 +32,10 @@ class TemperatureUnitM:
 
 
 class TemperatureDisplayItemM:
+    """
+    Map a TemperatureDisplayItem to and from dbus types.
+    """
+
     t: ClassVar[str] = t(IndexM, TemperatureDigitsM, PositionM, PositionM, "b")
 
     @staticmethod

@@ -37,6 +37,10 @@ class RevisionM:
 
 
 class ConfigM:
+    """
+    Map a config to and from dbus types.
+    """
+
     t: ClassVar[str] = struct(
         ConfigFileM,
         PortM,
