@@ -1,7 +1,7 @@
-from typing import ClassVar, Dict, Optional, Self, Tuple, Type
+from typing import ClassVar, Optional, Self, Tuple, Type
 
 from crystalfontz.dbus.domain.base import ByteM, ByteT
-from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings, GpioState
+from crystalfontz.gpio import GpioSettings, GpioState
 
 GpioStateT = Tuple[bool, bool, bool]
 
@@ -17,52 +17,6 @@ class GpioStateM:
     def unpack(state: GpioStateT) -> GpioState:
         st, falling, rising = state
         return GpioState(st, falling, rising)
-
-
-GpioFunctionT = ByteT
-
-GPIO_FUNCTIONS: Dict[ByteT, GpioFunction] = {
-    function.value: function for function in GpioFunction
-}
-
-
-class GpioFunctionM:
-    """
-    Map GpioFunction to and from dbus types.
-    """
-
-    t: ClassVar[str] = ByteM.t
-
-    @staticmethod
-    def pack(function: GpioFunction) -> GpioFunctionT:
-        return function.value
-
-    @staticmethod
-    def unpack(function: GpioFunctionT) -> GpioFunction:
-        return GPIO_FUNCTIONS[function]
-
-
-GpioDriveModeT = ByteT
-
-GPIO_DRIVE_MODES: Dict[ByteT, GpioDriveMode] = {
-    drive_mode.value: drive_mode for drive_mode in GpioDriveMode
-}
-
-
-class GpioDriveModeM:
-    """
-    Map GpioDriveMode to and from dbus types.
-    """
-
-    t: ClassVar[str] = ByteM.t
-
-    @staticmethod
-    def pack(drive_mode: GpioDriveMode) -> GpioDriveModeT:
-        return drive_mode.value
-
-    @staticmethod
-    def unpack(drive_mode: GpioDriveModeT) -> GpioDriveMode:
-        return GPIO_DRIVE_MODES[drive_mode]
 
 
 GpioSettingsT = ByteT
