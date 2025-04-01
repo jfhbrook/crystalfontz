@@ -179,8 +179,19 @@ class GpioReadM:
 
     @staticmethod
     def pack(gpio_read: GpioRead) -> GpioReadT:
-        raise NotImplementedError("pack")
+        return (
+            gpio_read.index,
+            GpioStateM.pack(gpio_read.state),
+            gpio_read.requested_level,
+            GpioSettingsM.pack(gpio_read.settings),
+        )
 
     @staticmethod
     def unpack(gpio_read: GpioReadT) -> GpioRead:
-        raise NotImplementedError("unpack")
+        index, state, requested_level, settings = gpio_read
+        return GpioRead(
+            index=index,
+            state=GpioStateM.unpack(state),
+            requested_level=requested_level,
+            settings=GpioSettingsM.unpack(settings),
+        )
