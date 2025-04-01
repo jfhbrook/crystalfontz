@@ -1,4 +1,4 @@
-from typing import ClassVar, Optional, Self, Type
+from typing import Any, cast, ClassVar, Optional, Self, Type
 
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import ConfigStruct
@@ -31,6 +31,10 @@ class RevisionM:
     def pack(cls: Type[Self], revision: Optional[str]) -> str:
         return revision or cls.none
 
+    @classmethod
+    def unpack(cls: Type[Self], revision: str) -> Optional[str]:
+        return revision if revision != cls.none else None
+
 
 class ConfigM:
     t: ClassVar[str] = struct(
@@ -55,4 +59,28 @@ class ConfigM:
             config.baud_rate,
             TimeoutM.pack(config.timeout),
             RetryTimesM.pack(config.retry_times),
+        )
+
+    @staticmethod
+    def unpack(config: ConfigStruct) -> Config:
+        (
+            file,
+            port,
+            model,
+            hardware_rev,
+            firmware_rev,
+            baud_rate,
+            timeout,
+            retry_times,
+        ) = config
+
+        return cast(Any, Config)(
+            file=file,
+            port=port,
+            model=model,
+            hardware_rev=RevisionM.unpack(hardware_rev),
+            firmware_rev=RevisionM.unpack(firmware_rev),
+            baud_rate=baud_rate,
+            timeout=TimeoutM.unpack(timeout),
+            retry_times=RetryTimesM.unpack(retry_times),
         )
