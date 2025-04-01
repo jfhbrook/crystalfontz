@@ -13,11 +13,19 @@ from crystalfontz.response import (
 
 
 class PongM:
+    """
+    Map a Pong (ie, a ping response) to and from dbus types.
+    """
+
     t: ClassVar[str] = BytesM.t
 
     @staticmethod
     def pack(pong: Pong) -> List[int]:
         return BytesM.pack(pong.response)
+
+    @staticmethod
+    def unpack(pong: List[int]) -> Pong:
+        return Pong(BytesM.unpack(pong))
 
 
 class VersionsM:

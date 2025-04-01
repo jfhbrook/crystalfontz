@@ -15,6 +15,7 @@ from crystalfontz.dbus.map.response import (
     DowTransactionResultM,
     KeypadPolledM,
     LcdMemoryM,
+    PongM,
     VersionsM,
 )
 from crystalfontz.dbus.map.temperature import TemperatureDisplayItemM
@@ -30,6 +31,7 @@ __all__: List[str] = [
     "LcdRegisterM",
     "OptBytesM",
     "OptFloatM",
+    "PongM",
     "RetryTimesM",
     "TemperatureDisplayItemM",
     "TimeoutM",
