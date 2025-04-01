@@ -3,8 +3,10 @@ from typing import ClassVar, Tuple
 from crystalfontz.dbus.domain.base import (
     AddressM,
     AddressT,
+    ByteM,
     BytesM,
     BytesT,
+    ByteT,
     IndexM,
     IndexT,
     ModelM,
@@ -15,10 +17,17 @@ from crystalfontz.dbus.domain.base import (
     Uint16M,
     Uint16T,
 )
+from crystalfontz.dbus.domain.gpio import (
+    GpioSettingsM,
+    GpioSettingsT,
+    GpioStateM,
+    GpioStateT,
+)
 from crystalfontz.dbus.domain.keys import KeyStatesM, KeyStatesT
 from crystalfontz.response import (
     DowDeviceInformation,
     DowTransactionResult,
+    GpioRead,
     KeypadPolled,
     LcdMemory,
     Pong,
@@ -156,3 +165,22 @@ class KeypadPolledM:
     @staticmethod
     def unpack(polled: KeyStatesT) -> KeypadPolled:
         return KeypadPolled(KeyStatesM.unpack(polled))
+
+
+GpioReadT = Tuple[IndexT, GpioStateT, ByteT, GpioSettingsT]
+
+
+class GpioReadM:
+    """
+    Map GpioRead to and from dbus types.
+    """
+
+    t: ClassVar[str] = t(IndexM, GpioStateM, ByteM, GpioSettingsM)
+
+    @staticmethod
+    def pack(gpio_read: GpioRead) -> GpioReadT:
+        raise NotImplementedError("pack")
+
+    @staticmethod
+    def unpack(gpio_read: GpioReadT) -> GpioRead:
+        raise NotImplementedError("unpack")

@@ -31,6 +31,7 @@ from crystalfontz.dbus.domain.command import (
     DowTransactionM,
     PingM,
     ReadDowDeviceInformationM,
+    ReadGpioM,
     ReadLcdMemoryM,
     SendCommandToLcdControllerM,
     SendDataM,
@@ -40,6 +41,7 @@ from crystalfontz.dbus.domain.command import (
     SetContrastM,
     SetCursorPositionM,
     SetCursorStyleM,
+    SetGpioM,
     SetLineM,
     SetSpecialCharacterDataM,
     SetSpecialCharacterEncodingM,
@@ -55,6 +57,7 @@ from crystalfontz.dbus.domain.device import (
     DeviceStatusT,
     DeviceT,
 )
+from crystalfontz.dbus.domain.gpio import OptGpioSettingsT
 from crystalfontz.dbus.domain.keys import KeyPressT
 from crystalfontz.dbus.domain.lcd import LcdRegisterT
 from crystalfontz.dbus.domain.response import (
@@ -62,6 +65,8 @@ from crystalfontz.dbus.domain.response import (
     DowDeviceInformationT,
     DowTransactionResultM,
     DowTransactionResultT,
+    GpioReadM,
+    GpioReadT,
     KeypadPolledM,
     KeypadPolledT,
     LcdMemoryM,
@@ -782,3 +787,49 @@ class DbusInterface(  # type: ignore
         await self.client.set_baud_rate(
             *SetBaudRateM.unpack(baud_rate, timeout, retry_times)
         )
+
+    async def set_gpio(
+        self: Self,
+        index: IndexT,
+        output_state: ByteT,
+        settings: OptGpioSettingsT,
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
+    ) -> None:
+        """
+        34 (0x22): Set or Set and Configure GPIO Pins
+
+        The CFA533 (hardware versions 1.4 and up, firmware versions 1.9 and up) has
+        five pins for user-definable general purpose input / output (GPIO). These pins
+        are shared with the DOW and ATX functions. Be careful when you configure GPIO
+        if you want to use the ATX or DOW at the same time.
+
+        This functionality comes with many caveats. Please review the documentation in
+        your device's datasheet.
+        """
+
+        await self.client.set_gpio(
+            *SetGpioM.unpack(index, output_state, settings, timeout, retry_times)
+        )
+
+    @dbus_method_async(ReadGpioM.t, GpioReadM.t, flags=DbusUnprivilegedFlag)
+    async def read_gpio(
+        self: Self,
+        index: IndexT,
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
+    ) -> GpioReadT:
+        """
+        35 (0x23): Read GPIO Pin Levels and Configuration State
+
+        See method `client.set_gpio` for details on the GPIO architecture.
+
+        This functionality comes with many caveats. Please review the documentation in
+        your device's datasheet.
+        """
+
+        read = await self.client.read_gpio(
+            *ReadGpioM.unpack(index, timeout, retry_times)
+        )
+
+        return GpioReadM.pack(read)

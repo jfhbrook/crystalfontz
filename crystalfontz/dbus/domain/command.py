@@ -35,12 +35,14 @@ from crystalfontz.dbus.domain.base import (
 from crystalfontz.dbus.domain.baud import BaudRateM, BaudRateT
 from crystalfontz.dbus.domain.character import SpecialCharacterM, SpecialCharacterT
 from crystalfontz.dbus.domain.cursor import CursorStyleM, CursorStyleT
+from crystalfontz.dbus.domain.gpio import OptGpioSettingsM, OptGpioSettingsT
 from crystalfontz.dbus.domain.keys import KeyPressM, KeyPressT
 from crystalfontz.dbus.domain.lcd import LcdRegisterM, LcdRegisterT
 from crystalfontz.dbus.domain.temperature import (
     TemperatureDisplayItemM,
     TemperatureDisplayItemT,
 )
+from crystalfontz.gpio import GpioSettings
 from crystalfontz.keys import KeyPress
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import TemperatureDisplayItem
@@ -335,3 +337,33 @@ class SetBaudRateM:
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )
+
+
+class SetGpioM:
+    t: ClassVar[str] = t(IndexM, ByteM, OptGpioSettingsM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def unpack(
+        index: IndexT,
+        output_state: ByteT,
+        settings: OptGpioSettingsT,
+        timeout: TimeoutT,
+        retry_times: RetryTimesT,
+    ) -> Tuple[int, int, Optional[GpioSettings], Optional[float], Optional[int]]:
+        return (
+            index,
+            output_state,
+            OptGpioSettingsM.unpack(settings),
+            TimeoutM.unpack(timeout),
+            RetryTimesM.unpack(retry_times),
+        )
+
+
+class ReadGpioM:
+    t: ClassVar[str] = t(IndexM, TimeoutM, RetryTimesM)
+
+    @staticmethod
+    def unpack(
+        index: IndexT, timeout: TimeoutT, retry_times: RetryTimesT
+    ) -> Tuple[int, Optional[float], Optional[int]]:
+        return (index, TimeoutM.unpack(timeout), RetryTimesM.unpack(retry_times))

@@ -27,8 +27,11 @@ from crystalfontz.cli import (
     BYTE,
     BYTES,
     CursorStyle,
+    DRIVE_MODE,
     echo,
+    FUNCTION,
     KEYPRESSES,
+    load_gpio_settings,
     LogLevel,
     OutputMode,
     WATCHDOG_SETTING,
@@ -41,10 +44,12 @@ from crystalfontz.dbus.domain import (
     CursorStyleM,
     DowDeviceInformationM,
     DowTransactionResultM,
+    GpioReadM,
     KeypadPolledM,
     LcdMemoryM,
     LcdRegisterM,
     OptBytesM,
+    OptGpioSettingsM,
     OptPosFloatM,
     RetryTimesM,
     TemperatureDisplayItemM,
@@ -53,6 +58,7 @@ from crystalfontz.dbus.domain import (
 )
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
+from crystalfontz.gpio import GpioDriveMode, GpioFunction
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import (
     TemperatureDigits,
@@ -730,6 +736,48 @@ async def baud(
         finally:
             if staged.dirty:
                 warn_dirty()
+
+
+@main.group(help="Interact with GPIO pins")
+def gpio() -> None:
+    pass
+
+
+@gpio.command(name="set", help="34 (0x22): Set or Set and Configure GPIO Pins")
+@click.argument("index", type=BYTE)
+@click.argument("state", type=BYTE)
+@click.option("--function", type=FUNCTION, help="The GPIO pin's function")
+@click.option("--up", type=DRIVE_MODE, help="The GPIO pin's pull-up drive mode")
+@click.option("--down", type=DRIVE_MODE, help="The GPIO pin's pull-down drive mode")
+@async_command
+@pass_client
+async def set_gpio(
+    client: DbusClient,
+    index: int,
+    output_state: int,
+    function: Optional[GpioFunction],
+    up: Optional[GpioDriveMode],
+    down: Optional[GpioDriveMode],
+) -> None:
+    settings = load_gpio_settings(function, up, down)
+    await client.set_gpio(
+        index,
+        output_state,
+        OptGpioSettingsM.pack(settings),
+        TimeoutM.none,
+        RetryTimesM.none,
+    )
+
+
+@gpio.command(
+    name="read", help="35 (0x23): Read GPIO Pin Levels and Configuration State"
+)
+@click.argument("index", type=BYTE)
+@async_command
+@pass_client
+async def read_gpio(client: DbusClient, index: int) -> None:
+    res = await client.read_gpio(index, TimeoutM.none, RetryTimesM.none)
+    echo(GpioReadM.unpack(res))
 
 
 if __name__ == "__main__":

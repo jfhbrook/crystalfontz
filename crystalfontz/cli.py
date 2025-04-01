@@ -1049,22 +1049,11 @@ def gpio() -> None:
     pass
 
 
-@gpio.command(name="set", help="34 (0x22): Set or Set and Configure GPIO Pins")
-@click.argument("index", type=BYTE)
-@click.argument("state", type=BYTE)
-@click.option("--function", type=FUNCTION, help="The GPIO pin's function")
-@click.option("--up", type=DRIVE_MODE, help="The GPIO pin's pull-up drive mode")
-@click.option("--down", type=DRIVE_MODE, help="The GPIO pin's pull-down drive mode")
-@async_command
-@pass_client()
-async def set_gpio(
-    client: Client,
-    index: int,
-    output_state: int,
+def load_gpio_settings(
     function: Optional[GpioFunction],
     up: Optional[GpioDriveMode],
     down: Optional[GpioDriveMode],
-) -> None:
+) -> Optional[GpioSettings]:
     settings: Optional[GpioSettings] = None
     settings_undefined = function is None and up is None and down is None
     if not settings_undefined:
@@ -1081,6 +1070,26 @@ async def set_gpio(
                 "When configuring GPIO pins, " "a pull-down mode must be defined"
             )
         settings = GpioSettings(function=function, up=up, down=down)
+    return settings
+
+
+@gpio.command(name="set", help="34 (0x22): Set or Set and Configure GPIO Pins")
+@click.argument("index", type=BYTE)
+@click.argument("state", type=BYTE)
+@click.option("--function", type=FUNCTION, help="The GPIO pin's function")
+@click.option("--up", type=DRIVE_MODE, help="The GPIO pin's pull-up drive mode")
+@click.option("--down", type=DRIVE_MODE, help="The GPIO pin's pull-down drive mode")
+@async_command
+@pass_client()
+async def set_gpio(
+    client: Client,
+    index: int,
+    output_state: int,
+    function: Optional[GpioFunction],
+    up: Optional[GpioDriveMode],
+    down: Optional[GpioDriveMode],
+) -> None:
+    settings = load_gpio_settings(function, up, down)
     await client.set_gpio(index, output_state, settings)
 
 

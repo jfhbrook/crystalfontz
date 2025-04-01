@@ -70,6 +70,7 @@ from crystalfontz.dbus.domain.base import (
 )
 from crystalfontz.dbus.domain.config import ConfigM, ConfigT
 from crystalfontz.dbus.domain.cursor import CursorStyleM, CursorStyleT
+from crystalfontz.dbus.domain.gpio import OptGpioSettingsM, OptGpioSettingsT
 from crystalfontz.dbus.domain.keys import KeyPressT, KeyStatesT, KeyStateT
 from crystalfontz.dbus.domain.lcd import LcdRegisterM, LcdRegisterT
 from crystalfontz.dbus.domain.response import (
@@ -77,6 +78,8 @@ from crystalfontz.dbus.domain.response import (
     DowDeviceInformationT,
     DowTransactionResultM,
     DowTransactionResultT,
+    GpioReadM,
+    GpioReadT,
     KeypadPolledM,
     KeypadPolledT,
     LcdMemoryM,
@@ -103,6 +106,8 @@ __all__: List[str] = [
     "DowDeviceInformationT",
     "DowTransactionResultM",
     "DowTransactionResultT",
+    "GpioReadM",
+    "GpioReadT",
     "KeypadPolledM",
     "KeypadPolledT",
     "KeyPressT",
@@ -114,6 +119,8 @@ __all__: List[str] = [
     "LcdRegisterT",
     "OptBytesM",
     "OptBytesT",
+    "OptGpioSettingsM",
+    "OptGpioSettingsT",
     "OptPosFloatM",
     "OptPosFloatT",
     "PongM",
