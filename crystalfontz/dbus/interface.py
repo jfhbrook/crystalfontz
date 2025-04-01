@@ -42,6 +42,7 @@ from crystalfontz.dbus.map.device import (
     DeviceM,
     StatusM,
 )
+from crystalfontz.dbus.map.keys import DbusKeyStates
 from crystalfontz.dbus.map.response import (
     DowDeviceInformationM,
     DowTransactionResultM,
@@ -623,7 +624,7 @@ class DbusInterface(  # type: ignore
         self: Self,
         timeout: float,
         retry_times: int,
-    ) -> List[Tuple[bool, bool, bool]]:
+    ) -> DbusKeyStates:
         """
         24 (0x18): Read Keypad, Polled Mode
 

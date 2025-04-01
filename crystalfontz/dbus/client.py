@@ -42,6 +42,7 @@ from crystalfontz.dbus.map import (
     CursorStyleM,
     DowDeviceInformationM,
     DowTransactionResultM,
+    KeypadPolledM,
     LcdMemoryM,
     LcdRegisterM,
     OptBytesM,
@@ -636,7 +637,7 @@ async def configure_key_reporting(
 @pass_client
 async def poll_keypad(client: DbusClient) -> None:
     polled = await client.poll_keypad(TimeoutM.none, RetryTimesM.none)
-    echo(polled)
+    echo(KeypadPolledM.unpack(polled))
 
 
 @main.command(help="28 (0x1C): Set ATX Power Switch Functionality")

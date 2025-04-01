@@ -1,6 +1,7 @@
 from typing import ClassVar, List, Tuple
 
-from crystalfontz.dbus.map.base import array, BytesM, IndexM, struct, t
+from crystalfontz.dbus.map.base import BytesM, IndexM, struct, t
+from crystalfontz.dbus.map.keys import DbusKeyStates, KeyStatesM
 from crystalfontz.response import (
     DowDeviceInformation,
     DowTransactionResult,
@@ -108,12 +109,12 @@ class KeypadPolledM:
     Map KeypadPolled to and from dbus types.
     """
 
-    t: ClassVar[str] = array(struct("bbb"))
+    t: ClassVar[str] = struct(struct("bbb") * 6)
 
     @staticmethod
-    def pack(polled: KeypadPolled) -> List[Tuple[bool, bool, bool]]:
-        raise NotImplementedError("pack")
+    def pack(polled: KeypadPolled) -> DbusKeyStates:
+        return KeyStatesM.pack(polled.states)
 
     @staticmethod
-    def unpack(polled: List[Tuple[bool, bool, bool]]) -> KeypadPolled:
-        raise NotImplementedError("unpack")
+    def unpack(polled: DbusKeyStates) -> KeypadPolled:
+        return KeypadPolled(KeyStatesM.unpack(polled))
