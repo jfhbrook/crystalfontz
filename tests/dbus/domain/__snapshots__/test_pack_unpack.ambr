@@ -17,6 +17,12 @@
 # name: test_domain_pack_unpack[CursorStyle.BLINKING_UNDERSCORE-CursorStyleM-None]
   3
 # ---
+# name: test_domain_pack_unpack[LcdRegister.CONTROL-LcdRegisterM-None]
+  True
+# ---
+# name: test_domain_pack_unpack[LcdRegister.DATA-LcdRegisterM-None]
+  False
+# ---
 # name: test_domain_pack_unpack[None-KeypadBrightnessM-None]
   -1.0
 # ---

@@ -23,8 +23,10 @@ from crystalfontz.dbus.domain.cursor import CursorStyleM
 from crystalfontz.dbus.domain.device import DeviceM
 from crystalfontz.dbus.domain.gpio import GpioSettingsM, OptGpioSettingsM
 from crystalfontz.dbus.domain.keys import KeypadBrightnessM
+from crystalfontz.dbus.domain.lcd import LcdRegisterM
 from crystalfontz.device import lookup_device
 from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
+from crystalfontz.lcd import LcdRegister
 
 ValidateFn = Callable[[Any, Any], None]
 
@@ -96,6 +98,8 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
         ),
         (1.0, KeypadBrightnessM, None),
         (None, KeypadBrightnessM, None),
+        (LcdRegister.DATA, LcdRegisterM, None),
+        (LcdRegister.CONTROL, LcdRegisterM, None),
     ],
 )
 def test_domain_pack_unpack(
