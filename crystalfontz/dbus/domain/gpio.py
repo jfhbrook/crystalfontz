@@ -8,17 +8,25 @@ GpioStateT = Tuple[bool, bool, bool]
 
 class GpioStateM:
     """
-    Map between GpioState and GpioStateT.
+    Map `GpioState` to and from `GpioStateT` (`Tuple[bool, bool, bool]`).
     """
 
     t: ClassVar[str] = "bbb"
 
     @staticmethod
     def pack(state: GpioState) -> GpioStateT:
+        """
+        Pack `GpioState` to `GpioStateT`.
+        """
+
         return (state.state, state.falling, state.rising)
 
     @staticmethod
     def unpack(state: GpioStateT) -> GpioState:
+        """
+        Unpack `GpioStateT` to `GpioState`.
+        """
+
         st, falling, rising = state
         return GpioState(st, falling, rising)
 
@@ -28,7 +36,7 @@ GpioSettingsT = ByteT
 
 class GpioSettingsM:
     """
-    Map between GpioSettings and GpioSettingsT.
+    Map `GpioSettings` and `GpioSettingsT` (`int`).
 
     GPIO settings are represented by a byte, as they are in the raw
     crystalfontz protocol.
@@ -38,10 +46,18 @@ class GpioSettingsM:
 
     @staticmethod
     def pack(settings: GpioSettings) -> GpioSettingsT:
+        """
+        Pack `GpioSettings` to `GpioSettingsT`.
+        """
+
         return settings.to_bytes()[0]
 
     @staticmethod
     def unpack(settings: GpioSettingsT) -> GpioSettings:
+        """
+        Unpack `GpioSettingsT` to `GpioSettings`.
+        """
+
         return GpioSettings.from_byte(settings)
 
 
@@ -50,7 +66,7 @@ OptGpioSettingsT = int
 
 class OptGpioSettingsM:
     """
-    Map between Optional[GpioSettings] and OptGpioSettingsT.
+    Map `Optional[GpioSettings]` to and from `OptGpioSettingsT` (`int`).
 
     Optional GPIO settings are represented by a UINT16, where values higher
     than 0xFF are treated as None. When GPIO settings are defined, the integer

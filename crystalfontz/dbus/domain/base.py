@@ -42,9 +42,10 @@ OptIntT = int
 
 class OptIntM:
     """
-    Map optional positive integers to and from dbus types.
+    Map `Optional[int]` to and from `OptIntT` (`int`), where integer values
+    are expected to be positive.
 
-    This class treats values less than 0 (ie, -1) as representing None.
+    None values are represented by negative values, namely `-1`.
     """
 
     t: ClassVar[str] = "x"
@@ -64,21 +65,60 @@ OptFloatT = float
 
 class OptFloatM:
     """
-    Map optional positive floats to and from dbus types.
+    Map `Optional[float]` to and from `OptFloatT` (`float`), where float values
+    are expected to be positive.
 
-    This class treats values less than 0 (ie, -1.0) as representing None.
+    None values are represented by negative values, namely `-1.0`.
     """
 
     t: ClassVar[str] = "d"
     none: ClassVar[OptFloatT] = -1.0
 
-    @staticmethod
-    def unpack(t: OptFloatT) -> Optional[float]:
-        return t if t >= 0 else None
-
     @classmethod
     def pack(cls: Type[Self], t: Optional[float]) -> OptFloatT:
+        """
+        Pack `Optional[float]` to `OptFloatT`.
+        """
+
         return t if t is not None else cls.none
+
+    @staticmethod
+    def unpack(t: OptFloatT) -> Optional[float]:
+        """
+        Unpack `OptFloatT` to `Optional[float]`.
+        """
+
+        return t if t >= 0 else None
+
+
+OptStrT = str
+
+
+class OptStrM:
+    """
+    Map `Optional[str]` to and from `StrT` (`str`).
+
+    None values are represented by an empty string.
+    """
+
+    t: ClassVar[str] = "s"
+    none: ClassVar[str] = ""
+
+    @classmethod
+    def pack(cls: Type[Self], string: Optional[str]) -> OptStrT:
+        """
+        Pack `Optional[str]` to `OptStrT`.
+        """
+
+        return string or cls.none
+
+    @classmethod
+    def unpack(cls: Type[Self], string: OptStrT) -> Optional[str]:
+        """
+        Unpack `OptStrT` to `Optional[str]`.
+        """
+
+        return string if string != cls.none else None
 
 
 Uint16T = int
@@ -121,18 +161,25 @@ BytesT = List[int]
 
 class BytesM:
     """
-    Map bytes to and from dbus types.
+    Map `bytes` to and from `BytesT` (`List[int]`).
     """
 
     t: ClassVar[str] = array(ByteM)
 
-    # TODO: This may not be what the dbus client expects...
     @staticmethod
     def pack(buff: bytes) -> BytesT:
+        """
+        Pack `bytes` to `BytesT`.
+        """
+
         return list(buff)
 
     @staticmethod
     def unpack(buff: BytesT) -> bytes:
+        """
+        Unpack `BytesT` to `bytes`.
+        """
+
         return bytes(buff)
 
 
@@ -141,7 +188,9 @@ OptBytesT = BytesT
 
 class OptBytesM:
     """
-    Map optional bytes to and from dbus types.
+    Map `Optional[bytes]` to and from `BytesT` (`List[int]`).
+
+    None values are represented by an empty list.
     """
 
     t: ClassVar[str] = BytesM.t
@@ -149,12 +198,20 @@ class OptBytesM:
 
     @classmethod
     def pack(cls: Type[Self], buff: Optional[bytes]) -> BytesT:
+        """
+        Pack `Optional[bytes]` to `BytesT`.
+        """
+
         if buff is None:
             return cls.none
         return BytesM.pack(buff)
 
     @staticmethod
     def unpack(buff: BytesT) -> Optional[bytes]:
+        """
+        Unpack `BytesT` to `Optional[bytes]`.
+        """
+
         if not buff:
             return None
         return BytesM.unpack(buff)
@@ -170,17 +227,15 @@ class ModelM:
 RevisionT = str
 
 
-class RevisionM:
-    t: ClassVar[str] = "s"
-    none: ClassVar[str] = ""
+class RevisionM(OptStrM):
+    t: ClassVar[str] = OptStrM.t
+    none: ClassVar[str] = OptStrM.none
 
-    @classmethod
-    def pack(cls: Type[Self], revision: Optional[str]) -> str:
-        return revision or cls.none
+    """
+    Map `Optional[str]` to and from `RevisionT` (`str`).
 
-    @classmethod
-    def unpack(cls: Type[Self], revision: str) -> Optional[str]:
-        return revision if revision != cls.none else None
+    `RevisionM` is an alias for `OptStrM`.
+    """
 
 
 TimeoutT = float
@@ -188,12 +243,13 @@ TimeoutT = float
 
 class TimeoutM(OptFloatM):
     """
-    Map timeout parameters to and from dbus types.
+    Map `Optional[float]` to and from `TimeoutT` (`float`).
 
-    TimeoutM is an alias for OptFloatM.
+    `TimeoutM` is an alias for `OptFloatM`.
     """
 
-    pass
+    t: ClassVar[str] = OptFloatM.t
+    none: ClassVar[float] = OptFloatM.none
 
 
 RetryTimesT = int
@@ -201,12 +257,13 @@ RetryTimesT = int
 
 class RetryTimesM(OptIntM):
     """
-    Map retry times parameters to and from dbus types.
+    Map `Optional[int]` to and from `RetryTimesT` (`int`).
 
-    RetryTimesM is an alias for OptFloatM.
+    `RetryTimesM` is an alias for `OptIntM`.
     """
 
-    pass
+    t: ClassVar[str] = OptIntM.t
+    none: ClassVar[int] = OptIntM.none
 
 
 class OkM:

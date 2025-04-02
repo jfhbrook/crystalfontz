@@ -55,7 +55,7 @@ class KeyStateM:
 
 
 class KeyStatesM:
-    t: ClassVar[str] = struct(KeyStateM.t * 6)
+    t: ClassVar[str] = struct(KeyStateM.t) * 6
 
     @staticmethod
     def pack(states: KeyStates) -> KeyStatesT:
@@ -86,9 +86,9 @@ KeypadBrightnessT = OptFloatT
 
 class KeypadBrightnessM(OptFloatM):
     """
-    Map keypad brightness parameters to and from dbus types.
+    Map `Optional[float]` to and from `KeypadBrightnessT` (`float`).
 
-    KeypadBrightnessM is an alias for OptFloatM.
+    `KeypadBrightnessM` is an alias for `OptFloatM`.
     """
 
     t: ClassVar[str] = OptFloatM.t

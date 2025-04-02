@@ -44,13 +44,18 @@ TemperatureDisplayItemT = Tuple[int, TemperatureDigitsT, int, int, TemperatureUn
 
 class TemperatureDisplayItemM:
     """
-    Map a TemperatureDisplayItem to and from dbus types.
+    Map `TemperatureDisplayItem` to and from `TemperatureDisplayItemT`
+    (`Tuple[int, int, int, int, bool]`).
     """
 
     t: ClassVar[str] = t(IndexM, TemperatureDigitsM, PositionM, PositionM, "b")
 
     @staticmethod
     def pack(item: TemperatureDisplayItem) -> TemperatureDisplayItemT:
+        """
+        Pack `TemperatureDisplayItem` to `TemperatureDisplayItemT`.
+        """
+
         return (
             item.index,
             item.n_digits,
@@ -63,6 +68,9 @@ class TemperatureDisplayItemM:
     def unpack(
         item: TemperatureDisplayItemT,
     ) -> TemperatureDisplayItem:
+        """
+        Unpack `TemperatureDisplayItemT` to `TemperatureDisplayItem`.
+        """
 
         index, n_digits, column, row, units = item
         return TemperatureDisplayItem(
