@@ -4,6 +4,7 @@ import pytest
 
 from crystalfontz.baud import FAST_BAUD_RATE, SLOW_BAUD_RATE
 from crystalfontz.config import Config
+from crystalfontz.cursor import CursorStyle
 from crystalfontz.dbus.domain.atx import (
     AtxPowerSwitchFunction,
     AtxPowerSwitchFunctionalitySettingsM,
@@ -18,6 +19,7 @@ from crystalfontz.dbus.domain.base import (
 )
 from crystalfontz.dbus.domain.baud import BaudRateM
 from crystalfontz.dbus.domain.config import ConfigM
+from crystalfontz.dbus.domain.cursor import CursorStyleM
 
 ValidateFn = Callable[[Any, Any], None]
 
@@ -58,6 +60,7 @@ def validate_is(actual: Any, expected: Any) -> None:
             ConfigM,
             None,
         ),
+        (CursorStyle.BLINKING_UNDERSCORE, CursorStyleM, None),
     ],
 )
 def test_domain_pack_unpack(
