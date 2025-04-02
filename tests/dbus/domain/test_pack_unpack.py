@@ -94,6 +94,9 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
 @pytest.mark.parametrize(
     "entity,map_cls,validate",
     [
+        #
+        # Base types
+        #
         (1, OptIntM, None),
         (None, OptIntM, None),
         (1.0, OptFloatM, None),
@@ -105,6 +108,9 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
         (None, TimeoutM, None),
         (1, RetryTimesM, None),
         (None, RetryTimesM, None),
+        #
+        # Complex entities
+        #
         (
             cast(Any, Config)(
                 file="/etc/crystalfontz.yaml",
@@ -155,6 +161,9 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
             TemperatureDisplayItemM,
             None,
         ),
+        #
+        # Responses
+        #
         (DowDeviceInformation(0x00, b"\00"), DowDeviceInformationM, validate_is),
         (DowTransactionResult(0, b"\00", 0xFF), DowTransactionResultM, validate_is),
         (
@@ -208,6 +217,9 @@ def test_domain_pack_unpack(
 @pytest.mark.parametrize(
     "packed,map_cls",
     [
+        #
+        # Mostly entities that only get unpacked
+        #
         ([], OptBytesM),
         (
             ([AtxPowerSwitchFunction.KEYPAD_RESET.value], False, True, True, 1.0),
@@ -233,6 +245,9 @@ def test_domain_unpack_pack(packed: Any, map_cls: Any, snapshot) -> None:
 @pytest.mark.parametrize(
     "packed,map_cls",
     [
+        #
+        # Commands. These never get packed, and they take multiple arguments
+        #
         ([], SimpleCommandM),
         ([b"hello"], PingM),
         ([b"data"], WriteUserFlashAreaM),
@@ -289,6 +304,9 @@ def test_domain_unpack_command(packed: List[Any], map_cls: Any, snapshot) -> Non
 @pytest.mark.parametrize(
     "packed,map_cls",
     [
+        #
+        # Entities which have validation logic on unpack
+        #
         (0x00, AtxPowerSwitchFunctionM),
         (12, BaudRateM),
         (42, KeyPressM),
