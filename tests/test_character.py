@@ -36,7 +36,7 @@ def test_encode(input, expected) -> None:
 def test_special_character_valid(special_character):
     device = CFA533()
     special_character.validate(device)
-    encoded: bytes = special_character.as_bytes(device)
+    encoded: bytes = special_character.to_bytes(device)
     # 0x09 takes 9 bytes of data. The first character is the index (0-7) and
     # the actual character is 8 bytes.
     assert len(encoded) == 8, "Special character should be eight bytes"

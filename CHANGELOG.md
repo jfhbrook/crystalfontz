@@ -1,4 +1,3 @@
-- Improve CLI documentation for `crystalfontz listen` `--for` option
 - Update CLI to use `configurence` library
 - Improved error handling
   - Introduce `Receiver` type, a subclass of `asyncio.Queue`
@@ -6,7 +5,27 @@
 - `Response` class API changes
   - `Response.from_bytes` accepts bytes as from packets, rather than `__init__`
   - `Response.__init__` accepts properties as arguments
-- Expose `timeout` and `retry_times` in `detect_baud_rate`
+- `detect_baud_rate` exposes `timeout` and `retry_times` arguments
+- `SpecialCharacter` API changes
+  - Rename `as_bytes` method to `to_bytes`
+  - Store pixels as `List[List[bool]]` instead of `List[List[int]]`
+- Additional CLI commands accept bytes as arguments
+  - `crystalfontz line 1`
+  - `crystalfontz line 2`
+  - `crystalfontz send`
+- Documentation and CLI help improvements:
+  - Document `detect_baud_rate`
+  - CLI help for `crystalfontz listen` `--for` option
+- Initial dbus support:
+  - `crystalfontz.dbus.DbusInterface` dbus Interface class, implementing most commands
+    - `get_status` is unimplemented
+    - `set_special_character_data` is unimplemented
+    - Reporting is unimplemented
+    - Effects are unimplemented
+  - `crystalfontz.dbus.DbusClient` dbus client class
+  - `crystalfontz.dbus.domain` API for mapping domain objects to dbus types
+  - `crystalfontzd` dbus service CLI
+  - `crystalfontzctl` dbus client CLI
 
 ## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
