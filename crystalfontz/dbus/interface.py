@@ -167,13 +167,15 @@ class DbusInterface(  # type: ignore
         else:
             return True
 
-    @dbus_method_async(SimpleCommandM.t, BaudRateM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SimpleCommandM.t, BaudRateM.t)
     async def detect_baud_rate(
         self: Self, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> BaudRateT:
         """
         Detect the device's configured baud rate by testing the connection at each
         potential baud setting.
+
+        This is a privileged API, as it modifies the baud rate used by the client.
         """
 
         # Detect the baud rate, as you do
@@ -203,18 +205,20 @@ class DbusInterface(  # type: ignore
         )
         return VersionsM.pack(versions)
 
-    @dbus_method_async(SimpleCommandM.t, DeviceM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SimpleCommandM.t, DeviceM.t)
     async def detect_device(self: Self, timeout: TimeoutT, retry_times: int) -> DeviceT:
         """
         Get model, hardware and firmware versions from the device, then configure the
         client to use that device. This is useful if you don't know a priori what
         device you're using.
+
+        This is a privileged API, as it modifies the device settings for the client.
         """
 
         await self.client.detect_device(*SimpleCommandM.unpack(timeout, retry_times))
         return DeviceM.pack(self.client.device)
 
-    @dbus_method_async(WriteUserFlashAreaM.t, NoneM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(WriteUserFlashAreaM.t, NoneM.t)
     async def write_user_flash_area(
         self: Self, data: BytesT, timeout: TimeoutT, retry_times: int
     ) -> None:
@@ -224,6 +228,8 @@ class DbusInterface(  # type: ignore
         The CFA533 reserves 16 bytes of nonvolatile memory for arbitrary use by the
         host. This memory can be used to store a serial number, IP address, gateway
         address, netmask, or any other data required. All 16 bytes must be supplied.
+
+        This is a privileged API, as it modifies the state of the device.
         """
 
         await self.client.write_user_flash_area(
@@ -251,7 +257,7 @@ class DbusInterface(  # type: ignore
         )
         return UserFlashAreaReadM.pack(res)
 
-    @dbus_method_async(SimpleCommandM.t, NoneM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SimpleCommandM.t, NoneM.t)
     async def store_boot_state(
         self: Self,
         timeout: TimeoutT,
@@ -281,11 +287,13 @@ class DbusInterface(  # type: ignore
         temperatures can be saved). You cannot store the host watchdog. The host
         software should enable this item once the system is initialized and is ready
         to receive the data.
+
+        This is a privileged API, as it modifies the state of the device.
         """
 
         await self.client.store_boot_state(*SimpleCommandM.unpack(timeout, retry_times))
 
-    @dbus_method_async(SimpleCommandM.t, NoneM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SimpleCommandM.t, NoneM.t)
     async def reboot_lcd(
         self: Self,
         timeout: TimeoutT,
@@ -297,11 +305,13 @@ class DbusInterface(  # type: ignore
 
         Rebooting the device may be useful for testing the boot configuration. It may
         also be useful to re-enumerate the devices on the One-Wire bus.
+
+        This is a privileged API, as it impacts the availability of the device.
         """
 
         await self.client.reboot_lcd(*SimpleCommandM.unpack(timeout, retry_times))
 
-    @dbus_method_async(SimpleCommandM.t, NoneM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SimpleCommandM.t, NoneM.t)
     async def reset_host(
         self: Self,
         timeout: TimeoutT,
@@ -312,11 +322,13 @@ class DbusInterface(  # type: ignore
 
         This command assumes the host's reset line is connected to GPIO[3]. For more
         information, review your device's datasheet.
+
+        This is a privileged API, as it impacts the availability of the host.
         """
 
         await self.client.reset_host(*SimpleCommandM.unpack(timeout, retry_times))
 
-    @dbus_method_async(SimpleCommandM.t, NoneM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SimpleCommandM.t, NoneM.t)
     async def shutdown_host(
         self: Self,
         timeout: TimeoutT,
@@ -328,6 +340,8 @@ class DbusInterface(  # type: ignore
 
         This command assumes the host's power control line is connected to GPIO[2].
         For more information, review your device's datasheet.
+
+        This is a privileged API, as it impacts the availability of the host.
         """
 
         await self.client.shutdown_host(*SimpleCommandM.unpack(timeout, retry_times))
@@ -385,7 +399,7 @@ class DbusInterface(  # type: ignore
 
         await self.client.set_line_2(*SetLineM.unpack(line, timeout, retry_times))
 
-    @dbus_method_async(SetSpecialCharacterDataM.t, NoneM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SetSpecialCharacterDataM.t, NoneM.t)
     async def set_special_character_data(
         self: Self,
         index: IndexT,
@@ -397,15 +411,15 @@ class DbusInterface(  # type: ignore
         9 (0x09): Set LCD Special Character Data
 
         Sets the font definition for one of the special characters (CGRAM).
+
+        This is a privileged API, as it modifies the state of the device.
         """
 
         await self.client.send_command(
             *SetSpecialCharacterDataM.unpack(index, character, timeout, retry_times)
         )
 
-    @dbus_method_async(
-        SetSpecialCharacterEncodingM.t, NoneM.t, flags=DbusUnprivilegedFlag
-    )
+    @dbus_method_async(SetSpecialCharacterEncodingM.t, NoneM.t)
     async def set_special_character_encoding(
         self: Self,
         character: str,
@@ -414,6 +428,8 @@ class DbusInterface(  # type: ignore
         """
         Configure a unicode character to encode to the index of a given special
         character on CGRAM.
+
+        This is a privileged API, as it modifies the configuration of the client.
         """
 
         self.client.device.character_rom.set_encoding(character, index)
@@ -538,9 +554,7 @@ class DbusInterface(  # type: ignore
 
         return DowDeviceInformationM.pack(info)
 
-    @dbus_method_async(
-        SetupTemperatureReportingM.t, NoneM.t, flags=DbusUnprivilegedFlag
-    )
+    @dbus_method_async(SetupTemperatureReportingM.t, NoneM.t)
     async def setup_temperature_reporting(
         self: Self,
         enabled: List[int],
@@ -552,6 +566,9 @@ class DbusInterface(  # type: ignore
 
         This command will configure the device to report the temperature information
         to the host every second.
+
+        This is a privileged API, as it impacts the availability of temperature reports
+        for other users.
         """
 
         await self.client.setup_temperature_reporting(
@@ -634,7 +651,7 @@ class DbusInterface(  # type: ignore
             *SendCommandToLcdControllerM.unpack(location, data, timeout, retry_times)
         )
 
-    @dbus_method_async(ConfigureKeyReportingM.t, NoneM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(ConfigureKeyReportingM.t, NoneM.t)
     async def configure_key_reporting(
         self: Self,
         when_pressed: List[KeyPressT],
@@ -648,6 +665,9 @@ class DbusInterface(  # type: ignore
 
         By default, the device reports any key event to the host. This command allows
         the key events to be enabled or disabled on an individual basis.
+
+        This is a privileged API, as it impacts the availability of key reports for
+        other users.
         """
 
         await self.client.configure_key_reporting(
@@ -677,9 +697,7 @@ class DbusInterface(  # type: ignore
 
         return KeypadPolledM.pack(polled)
 
-    @dbus_method_async(
-        SetAtxPowerSwitchFunctionalityM.t, NoneM.t, flags=DbusUnprivilegedFlag
-    )
+    @dbus_method_async(SetAtxPowerSwitchFunctionalityM.t, NoneM.t)
     async def set_atx_power_switch_functionality(
         self: Self,
         settings: AtxPowerSwitchFunctionalitySettingsT,
@@ -695,13 +713,16 @@ class DbusInterface(  # type: ignore
 
         This functionality comes with a number of caveats. Please review your device's
         datasheet for more information.
+
+        This is a privileged API, as changing these settings can impact the availability
+        of the device.
         """
 
         await self.client.set_atx_power_switch_functionality(
             *SetAtxPowerSwitchFunctionalityM.unpack(settings, timeout, retry_times)
         )
 
-    @dbus_method_async(ConfigureWatchdogM.t, NoneM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(ConfigureWatchdogM.t, NoneM.t)
     async def configure_watchdog(
         self: Self,
         timeout_seconds: ByteT,
@@ -720,6 +741,9 @@ class DbusInterface(  # type: ignore
 
         The GPIO pins used for ATX control must not be configured as user GPIO. For
         more details, review your device's datasheet.
+
+        This is a privileged API, as configuring the watchdog can impact the
+        availability of the host.
         """
 
         await self.client.configure_watchdog(
@@ -767,7 +791,7 @@ class DbusInterface(  # type: ignore
             *SendDataM.unpack(row, column, data, timeout, retry_times)
         )
 
-    @dbus_method_async(SetBaudRateM.t, NoneM.t, flags=DbusUnprivilegedFlag)
+    @dbus_method_async(SetBaudRateM.t, NoneM.t)
     async def set_baud_rate(
         self: Self,
         baud_rate: BaudRateT,
@@ -782,12 +806,15 @@ class DbusInterface(  # type: ignore
         baud rate, and then switches to the new baud rate. The baud rate must be saved
         by a call to `client.store_boot_state` if you want the device to power up at
         the new baud rate.
+
+        This is a privileged API, as changing the baud rate can impact availability.
         """
 
         await self.client.set_baud_rate(
             *SetBaudRateM.unpack(baud_rate, timeout, retry_times)
         )
 
+    @dbus_method_async(SetGpioM.t, NoneM.t)
     async def set_gpio(
         self: Self,
         index: IndexT,
@@ -806,6 +833,9 @@ class DbusInterface(  # type: ignore
 
         This functionality comes with many caveats. Please review the documentation in
         your device's datasheet.
+
+        This is a privileged API, as changing these settings can impact device
+        availability.
         """
 
         await self.client.set_gpio(
