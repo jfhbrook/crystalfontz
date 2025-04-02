@@ -75,7 +75,7 @@ check:
 
 # Run tests with pytest
 test:
-  uv run pytest ./tests --ignore=./tests/test_integration.py
+  uv run pytest ./tests/ --ignore-glob='./tests/integration/**'
   @just _clean-test
 
 # Update snapshots
@@ -85,7 +85,7 @@ snap:
 
 # Run integration tests
 integration:
-  uv run gaktest ./tests/test_integration.py
+  uv run gaktest './tests/integration'
 
 _clean-test:
   rm -f pytest_runner-*.egg

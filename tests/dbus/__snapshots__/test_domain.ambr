@@ -1,0 +1,8 @@
+# serializer version: 1
+# name: test_domain_unpack_pack[packed0-AtxPowerSwitchFunctionalitySettingsM]
+  Functions enabled: KEYPAD_RESET
+  Auto-Polarity Enabled: no
+  Reset Inverted: yes
+  Power Inverted: yes
+  Power Pulse Length (seconds): 1.0
+# ---
