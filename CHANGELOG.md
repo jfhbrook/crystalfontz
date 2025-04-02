@@ -1,4 +1,3 @@
-- Improve CLI documentation for `crystalfontz listen` `--for` option
 - Update CLI to use `configurence` library
 - Improved error handling
   - Introduce `Receiver` type, a subclass of `asyncio.Queue`
@@ -6,14 +5,17 @@
 - `Response` class API changes
   - `Response.from_bytes` accepts bytes as from packets, rather than `__init__`
   - `Response.__init__` accepts properties as arguments
-- Expose `timeout` and `retry_times` in `detect_baud_rate`
+- `detect_baud_rate` exposes `timeout` and `retry_times` arguments
 - `SpecialCharacter` API changes
   - Rename `as_bytes` method to `to_bytes`
-  - Store character as `List[List[bool]]` instead of `List[List[int]]`
+  - Store pixels as `List[List[bool]]` instead of `List[List[int]]`
 - Additional CLI commands accept bytes as arguments
   - `crystalfontz line 1`
   - `crystalfontz line 2`
   - `crystalfontz send`
+- Documentation and CLI help improvements:
+  - Document `detect_baud_rate`
+  - CLI help for `crystalfontz listen` `--for` option
 - Initial dbus support:
   - `crystalfontz.dbus.DbusInterface` dbus Interface class, implementing most commands
     - `get_status` is unimplemented
