@@ -75,6 +75,15 @@
 # name: test_domain_pack_unpack[entity15-OptGpioSettingsM-validate_gpio_settings]
   0
 # ---
+# name: test_domain_pack_unpack[entity21-TemperatureDisplayItemM-None]
+  tuple(
+    1,
+    3,
+    1,
+    1,
+    False,
+  )
+# ---
 # name: test_domain_pack_unpack[hello-BytesM-None]
   list([
     104,
@@ -98,6 +107,12 @@
 # ---
 # name: test_domain_unpack_pack[19200-BaudRateM]
   19200
+# ---
+# name: test_domain_unpack_pack[3-TemperatureDigitsM]
+  3
+# ---
+# name: test_domain_unpack_pack[5-TemperatureDigitsM]
+  5
 # ---
 # name: test_domain_unpack_pack[packed0-OptBytesM]
   None

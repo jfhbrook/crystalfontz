@@ -24,9 +24,14 @@ from crystalfontz.dbus.domain.device import DeviceM
 from crystalfontz.dbus.domain.gpio import GpioSettingsM, OptGpioSettingsM
 from crystalfontz.dbus.domain.keys import KeypadBrightnessM
 from crystalfontz.dbus.domain.lcd import LcdRegisterM
+from crystalfontz.dbus.domain.temperature import (
+    TemperatureDigitsM,
+    TemperatureDisplayItemM,
+)
 from crystalfontz.device import lookup_device
 from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
 from crystalfontz.lcd import LcdRegister
+from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
 
 ValidateFn = Callable[[Any, Any], None]
 
@@ -100,6 +105,13 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
         (None, KeypadBrightnessM, None),
         (LcdRegister.DATA, LcdRegisterM, None),
         (LcdRegister.CONTROL, LcdRegisterM, None),
+        (
+            TemperatureDisplayItem(
+                index=1, n_digits=3, row=1, column=1, units=TemperatureUnit.CELSIUS
+            ),
+            TemperatureDisplayItemM,
+            None,
+        ),
     ],
 )
 def test_domain_pack_unpack(
@@ -127,6 +139,8 @@ def test_domain_pack_unpack(
         ),
         (SLOW_BAUD_RATE, BaudRateM),
         (FAST_BAUD_RATE, BaudRateM),
+        (3, TemperatureDigitsM),
+        (5, TemperatureDigitsM),
     ],
 )
 def test_domain_unpack_pack(packed: Any, map_cls: Any, snapshot) -> None:
@@ -139,7 +153,13 @@ def test_domain_unpack_pack(packed: Any, map_cls: Any, snapshot) -> None:
         assert repacked == packed
 
 
-@pytest.mark.parametrize("packed,map_cls,exc_cls", [(12, BaudRateM, ValueError)])
+@pytest.mark.parametrize(
+    "packed,map_cls,exc_cls",
+    [
+        (12, BaudRateM, ValueError),
+        (4, TemperatureDigitsM, ValueError),
+    ],
+)
 def test_domain_unpack_error(
     packed: Any, map_cls: Any, exc_cls: Type[Exception]
 ) -> None:
