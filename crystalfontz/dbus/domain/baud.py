@@ -1,12 +1,13 @@
 from typing import ClassVar
 
 from crystalfontz.baud import BaudRate
+from crystalfontz.dbus.domain.base import Uint16M
 
 BaudRateT = int
 
 
 class BaudRateM:
-    t: ClassVar[str] = "q"
+    t: ClassVar[str] = Uint16M.t
 
     @staticmethod
     def unpack(baud_rate: BaudRateT) -> BaudRate:
