@@ -37,25 +37,25 @@ class NoneM:
     t: ClassVar[str] = ""
 
 
-OptUintT = int
+OptIntT = int
 
 
-class OptUintM:
+class OptIntM:
     """
     Map optional positive integers to and from dbus types.
 
     This class treats values less than 0 (ie, -1) as representing None.
     """
 
-    t: ClassVar[str] = "i"
-    none: ClassVar[OptUintT] = -1
+    t: ClassVar[str] = "x"
+    none: ClassVar[OptIntT] = -1
 
     @staticmethod
-    def unpack(r: OptUintT) -> Optional[int]:
+    def unpack(r: OptIntT) -> Optional[int]:
         return r if r >= 0 else None
 
     @classmethod
-    def pack(cls: Type[Self], r: Optional[int]) -> OptUintT:
+    def pack(cls: Type[Self], r: Optional[int]) -> OptIntT:
         return r if r is not None else cls.none
 
 
@@ -126,14 +126,14 @@ class BytesM:
 
     t: ClassVar[str] = array(ByteM)
 
-    @staticmethod
-    def unpack(buff: BytesT) -> bytes:
-        return bytes(buff)
-
     # TODO: This may not be what the dbus client expects...
     @staticmethod
     def pack(buff: bytes) -> BytesT:
         return list(buff)
+
+    @staticmethod
+    def unpack(buff: BytesT) -> bytes:
+        return bytes(buff)
 
 
 OptBytesT = BytesT
@@ -147,17 +147,17 @@ class OptBytesM:
     t: ClassVar[str] = BytesM.t
     none: ClassVar[BytesT] = list()
 
-    @staticmethod
-    def unpack(buff: BytesT) -> Optional[bytes]:
-        if not buff:
-            return None
-        return BytesM.unpack(buff)
-
     @classmethod
     def pack(cls: Type[Self], buff: Optional[bytes]) -> BytesT:
         if buff is None:
             return cls.none
         return BytesM.pack(buff)
+
+    @staticmethod
+    def unpack(buff: BytesT) -> Optional[bytes]:
+        if not buff:
+            return None
+        return BytesM.unpack(buff)
 
 
 ModelT = str
@@ -199,7 +199,7 @@ class TimeoutM(OptFloatM):
 RetryTimesT = int
 
 
-class RetryTimesM(OptUintM):
+class RetryTimesM(OptIntM):
     """
     Map retry times parameters to and from dbus types.
 

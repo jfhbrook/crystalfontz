@@ -1,0 +1,57 @@
+# serializer version: 1
+# name: test_domain_pack_unpack[1-OptIntM-None]
+  1
+# ---
+# name: test_domain_pack_unpack[1-RetryTimesM-None]
+  1
+# ---
+# name: test_domain_pack_unpack[1.0-OptFloatM-None]
+  1.0
+# ---
+# name: test_domain_pack_unpack[1.0-TimeoutM-None]
+  1.0
+# ---
+# name: test_domain_pack_unpack[None-OptBytesM-None]
+  list([
+  ])
+# ---
+# name: test_domain_pack_unpack[None-OptFloatM-None]
+  -1.0
+# ---
+# name: test_domain_pack_unpack[None-OptIntM-None]
+  -1
+# ---
+# name: test_domain_pack_unpack[None-RetryTimesM-None]
+  -1
+# ---
+# name: test_domain_pack_unpack[None-TimeoutM-None]
+  -1.0
+# ---
+# name: test_domain_pack_unpack[hello-BytesM-None]
+  list([
+    104,
+    101,
+    108,
+    108,
+    111,
+  ])
+# ---
+# name: test_domain_pack_unpack[hello-OptBytesM-None]
+  list([
+    104,
+    101,
+    108,
+    108,
+    111,
+  ])
+# ---
+# name: test_domain_unpack_pack[packed0-OptBytesM]
+  None
+# ---
+# name: test_domain_unpack_pack[packed1-AtxPowerSwitchFunctionalitySettingsM]
+  Functions enabled: KEYPAD_RESET
+  Auto-Polarity Enabled: no
+  Reset Inverted: yes
+  Power Inverted: yes
+  Power Pulse Length (seconds): 1.0
+# ---

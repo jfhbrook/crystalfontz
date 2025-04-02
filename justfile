@@ -75,12 +75,12 @@ check:
 
 # Run tests with pytest
 test:
-  uv run pytest ./tests/ --ignore-glob='./tests/integration/**'
+  uv run pytest ./tests --ignore-glob='./tests/integration/**'
   @just _clean-test
 
 # Update snapshots
 snap:
-  uv run pytest --snapshot-update ./tests
+  uv run pytest --snapshot-update ./tests --ignore-glob='./tests/integration/**'
   @just _clean-test
 
 # Run integration tests
