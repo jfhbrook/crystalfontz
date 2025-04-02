@@ -14,6 +14,16 @@
   - `crystalfontz line 1`
   - `crystalfontz line 2`
   - `crystalfontz send`
+- Initial dbus support:
+  - `crystalfontz.dbus.DbusInterface` dbus Interface class, implementing most commands
+    - `get_status` is unimplemented
+    - `set_special_character_data` is unimplemented
+    - Reporting is unimplemented
+    - Effects are unimplemented
+  - `crystalfontz.dbus.DbusClient` dbus client class
+  - `crystalfontz.dbus.domain` API for mapping domain objects to dbus types
+  - `crystalfontzd` dbus service CLI
+  - `crystalfontzctl` dbus client CLI
 
 ## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
