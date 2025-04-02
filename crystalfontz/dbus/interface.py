@@ -807,7 +807,8 @@ class DbusInterface(  # type: ignore
         by a call to `client.store_boot_state` if you want the device to power up at
         the new baud rate.
 
-        This is a privileged API, as changing the baud rate can impact availability.
+        This is a privileged API, as changing the baud rate can impact the
+        availability of the device.
         """
 
         await self.client.set_baud_rate(
@@ -834,8 +835,8 @@ class DbusInterface(  # type: ignore
         This functionality comes with many caveats. Please review the documentation in
         your device's datasheet.
 
-        This is a privileged API, as changing these settings can impact device
-        availability.
+        This is a privileged API, as changing these settings can impact the
+        availability of the device.
         """
 
         await self.client.set_gpio(
