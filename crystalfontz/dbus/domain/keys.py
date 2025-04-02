@@ -1,6 +1,6 @@
 from typing import ClassVar, Tuple
 
-from crystalfontz.dbus.domain.base import ByteM, struct
+from crystalfontz.dbus.domain.base import ByteM, OptFloatM, OptFloatT, struct
 from crystalfontz.keys import KeyState, KeyStates
 
 KeyPressT = int
@@ -61,3 +61,16 @@ class KeyStatesM:
             right=KeyStateM.unpack(right),
             down=KeyStateM.unpack(down),
         )
+
+
+KeypadBrightnessT = OptFloatT
+
+
+class KeypadBrightnessM(OptFloatM):
+    """
+    Map keypad brightness parameters to and from dbus types.
+
+    KeypadBrightnessM is an alias for OptFloatM.
+    """
+
+    t: ClassVar[str] = OptFloatM.t

@@ -20,8 +20,6 @@ from crystalfontz.dbus.domain.base import (
     IndexT,
     OptBytesM,
     OptBytesT,
-    OptPosFloatM,
-    OptPosFloatT,
     PositionM,
     PositionT,
     RetryTimesM,
@@ -36,7 +34,12 @@ from crystalfontz.dbus.domain.baud import BaudRateM, BaudRateT
 from crystalfontz.dbus.domain.character import SpecialCharacterM, SpecialCharacterT
 from crystalfontz.dbus.domain.cursor import CursorStyleM, CursorStyleT
 from crystalfontz.dbus.domain.gpio import OptGpioSettingsM, OptGpioSettingsT
-from crystalfontz.dbus.domain.keys import KeyPressM, KeyPressT
+from crystalfontz.dbus.domain.keys import (
+    KeypadBrightnessM,
+    KeypadBrightnessT,
+    KeyPressM,
+    KeyPressT,
+)
 from crystalfontz.dbus.domain.lcd import LcdRegisterM, LcdRegisterT
 from crystalfontz.dbus.domain.temperature import (
     TemperatureDisplayItemM,
@@ -145,18 +148,18 @@ class SetContrastM:
 
 
 class SetBacklightM:
-    t: ClassVar[str] = t("d", OptPosFloatM, TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t("d", KeypadBrightnessM, TimeoutM, RetryTimesM)
 
     @staticmethod
     def unpack(
         lcd_brightness: float,
-        keypad_brightness: OptPosFloatT,
+        keypad_brightness: KeypadBrightnessT,
         timeout: TimeoutT,
         retry_times: RetryTimesT,
     ) -> Tuple[float, Optional[float], Optional[float], Optional[int]]:
         return (
             lcd_brightness,
-            OptPosFloatM.unpack(keypad_brightness),
+            KeypadBrightnessM.unpack(keypad_brightness),
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )

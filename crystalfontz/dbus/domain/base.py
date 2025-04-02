@@ -59,10 +59,10 @@ class OptUintM:
         return r if r is not None else cls.none
 
 
-OptPosFloatT = float
+OptFloatT = float
 
 
-class OptPosFloatM:
+class OptFloatM:
     """
     Map optional positive floats to and from dbus types.
 
@@ -70,14 +70,14 @@ class OptPosFloatM:
     """
 
     t: ClassVar[str] = "d"
-    none: ClassVar[OptPosFloatT] = -1.0
+    none: ClassVar[OptFloatT] = -1.0
 
     @staticmethod
-    def unpack(t: OptPosFloatT) -> Optional[float]:
+    def unpack(t: OptFloatT) -> Optional[float]:
         return t if t >= 0 else None
 
     @classmethod
-    def pack(cls: Type[Self], t: Optional[float]) -> OptPosFloatT:
+    def pack(cls: Type[Self], t: Optional[float]) -> OptFloatT:
         return t if t is not None else cls.none
 
 
@@ -186,7 +186,7 @@ class RevisionM:
 TimeoutT = float
 
 
-class TimeoutM(OptPosFloatM):
+class TimeoutM(OptFloatM):
     """
     Map timeout parameters to and from dbus types.
 

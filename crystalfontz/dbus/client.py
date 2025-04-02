@@ -45,12 +45,12 @@ from crystalfontz.dbus.domain import (
     DowDeviceInformationM,
     DowTransactionResultM,
     GpioReadM,
+    KeypadBrightnessM,
     KeypadPolledM,
     LcdMemoryM,
     LcdRegisterM,
     OptBytesM,
     OptGpioSettingsM,
-    OptPosFloatM,
     RetryTimesM,
     TemperatureDisplayItemM,
     TimeoutM,
@@ -519,7 +519,7 @@ async def backlight(
     client: DbusClient, brightness: float, keypad: Optional[float]
 ) -> None:
     await client.set_backlight(
-        brightness, OptPosFloatM.pack(keypad), TimeoutM.none, RetryTimesM.none
+        brightness, KeypadBrightnessM.pack(keypad), TimeoutM.none, RetryTimesM.none
     )
 
 

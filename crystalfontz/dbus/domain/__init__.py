@@ -61,8 +61,8 @@ from crystalfontz.dbus.domain.base import (
     BytesT,
     OptBytesM,
     OptBytesT,
-    OptPosFloatM,
-    OptPosFloatT,
+    OptFloatM,
+    OptFloatT,
     RetryTimesM,
     RetryTimesT,
     TimeoutM,
@@ -71,7 +71,13 @@ from crystalfontz.dbus.domain.base import (
 from crystalfontz.dbus.domain.config import ConfigM, ConfigT
 from crystalfontz.dbus.domain.cursor import CursorStyleM, CursorStyleT
 from crystalfontz.dbus.domain.gpio import OptGpioSettingsM, OptGpioSettingsT
-from crystalfontz.dbus.domain.keys import KeyPressT, KeyStatesT, KeyStateT
+from crystalfontz.dbus.domain.keys import (
+    KeypadBrightnessM,
+    KeypadBrightnessT,
+    KeyPressT,
+    KeyStatesT,
+    KeyStateT,
+)
 from crystalfontz.dbus.domain.lcd import LcdRegisterM, LcdRegisterT
 from crystalfontz.dbus.domain.response import (
     DowDeviceInformationM,
@@ -108,6 +114,8 @@ __all__: List[str] = [
     "DowTransactionResultT",
     "GpioReadM",
     "GpioReadT",
+    "KeypadBrightnessM",
+    "KeypadBrightnessT",
     "KeypadPolledM",
     "KeypadPolledT",
     "KeyPressT",
@@ -121,8 +129,8 @@ __all__: List[str] = [
     "OptBytesT",
     "OptGpioSettingsM",
     "OptGpioSettingsT",
-    "OptPosFloatM",
-    "OptPosFloatT",
+    "OptFloatM",
+    "OptFloatT",
     "PongM",
     "PongT",
     "RetryTimesM",
