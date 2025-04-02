@@ -24,4 +24,4 @@ if [ -n "${IS_DEV}" ]; then
 fi
 
 
-"${BIN}" --system --dest org.jfhbrook.plusdeck --out ./docs/dbus/iface.md
+"${BIN}" --system --dest org.jfhbrook.crystalfontz --out ./docs/dbus/iface.md

@@ -93,7 +93,7 @@ _clean-test:
 
 # Display the raw XML introspection of the live dbus service
 print-iface:
-  dbus-send --system --dest=org.jfhbrook.plusdeck "/" --print-reply org.freedesktop.DBus.Introspectable.Introspect
+  dbus-send --system --dest=org.jfhbrook.crystalfontz "/" --print-reply org.freedesktop.DBus.Introspectable.Introspect
 
 #
 # Shell and console
