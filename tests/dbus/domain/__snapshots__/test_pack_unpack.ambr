@@ -5,6 +5,9 @@
 # name: test_domain_pack_unpack[1-RetryTimesM-None]
   1
 # ---
+# name: test_domain_pack_unpack[1.0-KeypadBrightnessM-None]
+  1.0
+# ---
 # name: test_domain_pack_unpack[1.0-OptFloatM-None]
   1.0
 # ---
@@ -13,6 +16,9 @@
 # ---
 # name: test_domain_pack_unpack[CursorStyle.BLINKING_UNDERSCORE-CursorStyleM-None]
   3
+# ---
+# name: test_domain_pack_unpack[None-KeypadBrightnessM-None]
+  -1.0
 # ---
 # name: test_domain_pack_unpack[None-OptBytesM-None]
   list([

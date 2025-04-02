@@ -22,6 +22,7 @@ from crystalfontz.dbus.domain.config import ConfigM
 from crystalfontz.dbus.domain.cursor import CursorStyleM
 from crystalfontz.dbus.domain.device import DeviceM
 from crystalfontz.dbus.domain.gpio import GpioSettingsM, OptGpioSettingsM
+from crystalfontz.dbus.domain.keys import KeypadBrightnessM
 from crystalfontz.device import lookup_device
 from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
 
@@ -93,6 +94,8 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
             OptGpioSettingsM,
             validate_gpio_settings,
         ),
+        (1.0, KeypadBrightnessM, None),
+        (None, KeypadBrightnessM, None),
     ],
 )
 def test_domain_pack_unpack(
