@@ -71,7 +71,7 @@ async def serve(config_file: Optional[str] = None) -> None:
 )
 def main(global_: bool, config_file: str, log_level: LogLevel) -> None:
     """
-    Expose the Plus Deck 2C PC Cassette Deck as a DBus service.
+    Expose the Crystalfontz device as a DBus service.
     """
 
     logging.basicConfig(level=getattr(logging, log_level))
