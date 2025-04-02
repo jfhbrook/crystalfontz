@@ -1,7 +1,8 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Type
 
 import pytest
 
+from crystalfontz.baud import FAST_BAUD_RATE, SLOW_BAUD_RATE
 from crystalfontz.dbus.domain.atx import (
     AtxPowerSwitchFunction,
     AtxPowerSwitchFunctionalitySettingsM,
@@ -14,6 +15,7 @@ from crystalfontz.dbus.domain.base import (
     RetryTimesM,
     TimeoutM,
 )
+from crystalfontz.dbus.domain.baud import BaudRateM
 
 ValidateFn = Callable[[Any, Any], None]
 
@@ -64,7 +66,9 @@ def test_domain_pack_unpack(
         (
             ([AtxPowerSwitchFunction.KEYPAD_RESET.value], False, True, True, 1.0),
             AtxPowerSwitchFunctionalitySettingsM,
-        )
+        ),
+        (SLOW_BAUD_RATE, BaudRateM),
+        (FAST_BAUD_RATE, BaudRateM),
     ],
 )
 def test_domain_unpack_pack(packed: Any, map_cls: Any, snapshot) -> None:
@@ -75,3 +79,11 @@ def test_domain_unpack_pack(packed: Any, map_cls: Any, snapshot) -> None:
     if hasattr(map_cls, "pack"):
         repacked = map_cls.pack(entity)
         assert repacked == packed
+
+
+@pytest.mark.parametrize("packed,map_cls,exc_cls", [(12, BaudRateM, ValueError)])
+def test_domain_unpack_error(
+    packed: Any, map_cls: Any, exc_cls: Type[Exception]
+) -> None:
+    with pytest.raises(exc_cls):
+        map_cls.unpack(packed)

@@ -45,6 +45,12 @@
     111,
   ])
 # ---
+# name: test_domain_unpack_pack[115200-BaudRateM]
+  115200
+# ---
+# name: test_domain_unpack_pack[19200-BaudRateM]
+  19200
+# ---
 # name: test_domain_unpack_pack[packed0-OptBytesM]
   None
 # ---
