@@ -22,7 +22,7 @@ asyncio.run(main())
 
 This will write "Hello world!" on the first line of the LCD.
 
-The client has methods for every command supported by the CFA533. For more documentation, refer to <https://crystalfontz.readthedocs.io> and [the CFA533 datasheet](./docs/CFA533-TMI-KU.pdf).
+The client has methods for every command supported by the CFA533. For more documentation, refer to <https://crystalfontz.readthedocs.io> and [the CFA533 datasheet](./CFA533-TMI-KU.pdf).
 
 ## Reporting
 

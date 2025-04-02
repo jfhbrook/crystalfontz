@@ -32,14 +32,16 @@ class AtxPowerSwitchFunctionalitySettings:
     Settings for command 28 (0x1C): Set ATX Power Switch Functionality.
 
     Parameters:
-        functions: A set of enabled power switch functions.
-        auto_polarity: When True, automatically detects polarity for reset and/or
-                       power (recommended)
-        reset_invert: When True, the reset pin drives high instead of low
-        power_invert: When True, the power pin drives high instead of low
-        power_pulse_length_seconds:  Length of power on and off pulses in seconds.
-                                     When set to 8 seconds or higher, asserts power
-                                     control line until host power state changes.
+        functions (Set[AtxPowerSwitchFunction): A set of enabled power switch functions.
+        auto_polarity (bool): When True, automatically detects polarity for reset and/or
+                              power (recommended)
+        reset_invert (bool): When True, the reset pin drives high instead of low
+        power_invert (bool): When True, the power pin drives high instead of low
+        power_pulse_length_seconds (Optional[float]): Length of power on and off
+                                                      pulses in seconds. When set to 8
+                                                      seconds or higher, asserts power
+                                                      control line until host power
+                                                      state changes.
 
     """
 
