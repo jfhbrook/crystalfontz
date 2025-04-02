@@ -21,17 +21,23 @@ from crystalfontz.dbus.domain.baud import BaudRateM
 from crystalfontz.dbus.domain.config import ConfigM
 from crystalfontz.dbus.domain.cursor import CursorStyleM
 from crystalfontz.dbus.domain.device import DeviceM
+from crystalfontz.dbus.domain.gpio import GpioSettingsM, OptGpioSettingsM
 from crystalfontz.device import lookup_device
+from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
 
 ValidateFn = Callable[[Any, Any], None]
 
 
-def validate_eq(actual: Any, expected: Any) -> None:
-    assert actual == expected
-
-
 def validate_is(actual: Any, expected: Any) -> None:
     assert isinstance(actual, expected.__class__)
+
+
+def validate_gpio_settings(actual: Any, expected: Any) -> None:
+    if expected is None:
+        assert actual is None
+        return
+    assert actual.function == expected.function
+    assert actual.mode == expected.mode
 
 
 @pytest.mark.parametrize(
@@ -64,6 +70,29 @@ def validate_is(actual: Any, expected: Any) -> None:
         ),
         (CursorStyle.BLINKING_UNDERSCORE, CursorStyleM, None),
         (lookup_device("CFA533", "h1.4", "u1v2"), DeviceM, validate_is),
+        (
+            GpioSettings(
+                function=GpioFunction.UNUSED,
+                up=GpioDriveMode.FAST_STRONG,
+                down=GpioDriveMode.RESISTIVE,
+            ),
+            GpioSettingsM,
+            validate_gpio_settings,
+        ),
+        (
+            GpioSettings(
+                function=GpioFunction.UNUSED,
+                up=GpioDriveMode.FAST_STRONG,
+                down=GpioDriveMode.RESISTIVE,
+            ),
+            OptGpioSettingsM,
+            validate_gpio_settings,
+        ),
+        (
+            None,
+            OptGpioSettingsM,
+            validate_gpio_settings,
+        ),
     ],
 )
 def test_domain_pack_unpack(

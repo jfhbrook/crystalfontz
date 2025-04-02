@@ -74,8 +74,8 @@ check:
   uv run npx pyright@latest
 
 # Run tests with pytest
-test:
-  uv run pytest ./tests --ignore-glob='./tests/integration/**'
+test *argv:
+  uv run pytest {{ argv }} ./tests --ignore-glob='./tests/integration/**'
   @just _clean-test
 
 # Update snapshots

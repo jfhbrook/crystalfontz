@@ -21,6 +21,9 @@
 # name: test_domain_pack_unpack[None-OptFloatM-None]
   -1.0
 # ---
+# name: test_domain_pack_unpack[None-OptGpioSettingsM-validate_gpio_settings]
+  65280
+# ---
 # name: test_domain_pack_unpack[None-OptIntM-None]
   -1
 # ---
@@ -53,6 +56,12 @@
     8,
     32,
   )
+# ---
+# name: test_domain_pack_unpack[entity14-GpioSettingsM-validate_gpio_settings]
+  0
+# ---
+# name: test_domain_pack_unpack[entity15-OptGpioSettingsM-validate_gpio_settings]
+  0
 # ---
 # name: test_domain_pack_unpack[hello-BytesM-None]
   list([

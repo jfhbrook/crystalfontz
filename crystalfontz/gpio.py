@@ -114,7 +114,7 @@ class GpioSettings:
         def invalid() -> NoReturn:
             raise ValueError(f"Unsupported combination up={up}, down={down}")
 
-        if mode:
+        if mode is not None:
             if not (0 <= mode <= 0b111):
                 raise ValueError(f"Invalid mode {mode:0b}")
             self.mode = mode
