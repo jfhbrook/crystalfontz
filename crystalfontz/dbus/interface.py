@@ -406,7 +406,7 @@ class DbusInterface(  # type: ignore
     @dbus_method_async(
         SetSpecialCharacterEncodingM.t, NoneM.t, flags=DbusUnprivilegedFlag
     )
-    def set_special_character_encoding(
+    async def set_special_character_encoding(
         self: Self,
         character: str,
         index: IndexT,
