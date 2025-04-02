@@ -66,4 +66,4 @@ class OptGpioSettingsM:
 
     @staticmethod
     def unpack(settings: OptGpioSettingsT) -> Optional[GpioSettings]:
-        return GpioSettingsM.unpack(settings) if settings > 0xFF else None
+        return GpioSettingsM.unpack(settings) if settings <= 0xFF else None

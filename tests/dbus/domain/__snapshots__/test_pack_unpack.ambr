@@ -1,0 +1,589 @@
+# serializer version: 1
+# name: test_domain_pack_unpack[1-OptIntM-None]
+  1
+# ---
+# name: test_domain_pack_unpack[1-RetryTimesM-None]
+  1
+# ---
+# name: test_domain_pack_unpack[1.0-KeypadBrightnessM-None]
+  1.0
+# ---
+# name: test_domain_pack_unpack[1.0-OptFloatM-None]
+  1.0
+# ---
+# name: test_domain_pack_unpack[1.0-TimeoutM-None]
+  1.0
+# ---
+# name: test_domain_pack_unpack[CursorStyle.BLINKING_UNDERSCORE-CursorStyleM-None]
+  3
+# ---
+# name: test_domain_pack_unpack[LcdRegister.CONTROL-LcdRegisterM-None]
+  True
+# ---
+# name: test_domain_pack_unpack[LcdRegister.DATA-LcdRegisterM-None]
+  False
+# ---
+# name: test_domain_pack_unpack[None-KeypadBrightnessM-None]
+  -1.0
+# ---
+# name: test_domain_pack_unpack[None-OptBytesM-None]
+  list([
+  ])
+# ---
+# name: test_domain_pack_unpack[None-OptFloatM-None]
+  -1.0
+# ---
+# name: test_domain_pack_unpack[None-OptGpioSettingsM-validate_gpio_settings]
+  65280
+# ---
+# name: test_domain_pack_unpack[None-OptIntM-None]
+  -1
+# ---
+# name: test_domain_pack_unpack[None-RetryTimesM-None]
+  -1
+# ---
+# name: test_domain_pack_unpack[None-TimeoutM-None]
+  -1.0
+# ---
+# name: test_domain_pack_unpack[entity11-ConfigM-None]
+  tuple(
+    '/etc/crystalfontz.yaml',
+    '/dev/ttyUSB1',
+    'CFA533',
+    'h1.4',
+    'u1v2',
+    115200,
+    0.25,
+    1,
+  )
+# ---
+# name: test_domain_pack_unpack[entity13-DeviceM-validate_is]
+  tuple(
+    'CFA533',
+    'h1.4',
+    'u1v2',
+    2,
+    16,
+    6,
+    8,
+    32,
+  )
+# ---
+# name: test_domain_pack_unpack[entity14-GpioSettingsM-validate_gpio_settings]
+  0
+# ---
+# name: test_domain_pack_unpack[entity15-OptGpioSettingsM-validate_gpio_settings]
+  0
+# ---
+# name: test_domain_pack_unpack[entity21-TemperatureDisplayItemM-None]
+  tuple(
+    1,
+    3,
+    1,
+    1,
+    False,
+  )
+# ---
+# name: test_domain_pack_unpack[entity22-DowDeviceInformationM-validate_is]
+  tuple(
+    0,
+    list([
+      0,
+    ]),
+  )
+# ---
+# name: test_domain_pack_unpack[entity23-DowTransactionResultM-validate_is]
+  tuple(
+    0,
+    list([
+      0,
+    ]),
+    255,
+  )
+# ---
+# name: test_domain_pack_unpack[entity24-GpioReadM-validate_is]
+  tuple(
+    0,
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    5,
+    0,
+  )
+# ---
+# name: test_domain_pack_unpack[entity25-KeypadPolledM-validate_is]
+  tuple(
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+  )
+# ---
+# name: test_domain_pack_unpack[entity26-LcdMemoryM-validate_is]
+  tuple(
+    0,
+    list([
+      0,
+    ]),
+  )
+# ---
+# name: test_domain_pack_unpack[entity27-PongM-validate_is]
+  list([
+    112,
+    105,
+    110,
+    103,
+  ])
+# ---
+# name: test_domain_pack_unpack[entity28-VersionsM-validate_is]
+  tuple(
+    'CFA533',
+    'h1.4',
+    'u1v2',
+  )
+# ---
+# name: test_domain_pack_unpack[hello-BytesM-None]
+  list([
+    104,
+    101,
+    108,
+    108,
+    111,
+  ])
+# ---
+# name: test_domain_pack_unpack[hello-OptBytesM-None]
+  list([
+    104,
+    101,
+    108,
+    108,
+    111,
+  ])
+# ---
+# name: test_domain_unpack_command[packed0-SimpleCommandM]
+  tuple(
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed0-SimpleCommandM].1
+  tuple(
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed1-PingM]
+  tuple(
+    b'hello',
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed1-PingM].1
+  tuple(
+    b'hello',
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed10-ReadDowDeviceInformationM]
+  tuple(
+    1,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed10-ReadDowDeviceInformationM].1
+  tuple(
+    1,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed11-SetupTemperatureReportingM]
+  tuple(
+    list([
+      1,
+      2,
+      3,
+    ]),
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed11-SetupTemperatureReportingM].1
+  tuple(
+    list([
+      1,
+      2,
+      3,
+    ]),
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed12-DowTransactionM]
+  tuple(
+    1,
+    3,
+    b'\x00',
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed12-DowTransactionM].1
+  tuple(
+    1,
+    3,
+    b'\x00',
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed13-DowTransactionM]
+  tuple(
+    1,
+    3,
+    None,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed13-DowTransactionM].1
+  tuple(
+    1,
+    3,
+    None,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed14-SetupLiveTemperatureDisplayM]
+  tuple(
+    1,
+    TemperatureDisplayItem(index=1, n_digits=3, column=1, row=1, units=<TemperatureUnit.FAHRENHEIT: 1>),
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed14-SetupLiveTemperatureDisplayM].1
+  tuple(
+    1,
+    TemperatureDisplayItem(index=1, n_digits=3, column=1, row=1, units=<TemperatureUnit.FAHRENHEIT: 1>),
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed15-SendCommandToLcdControllerM]
+  tuple(
+    <LcdRegister.DATA: 0>,
+    1,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed15-SendCommandToLcdControllerM].1
+  tuple(
+    <LcdRegister.DATA: 0>,
+    1,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed16-ConfigureKeyReportingM]
+  tuple(
+    set({
+      1,
+    }),
+    set({
+      1,
+    }),
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed16-ConfigureKeyReportingM].1
+  tuple(
+    set({
+      1,
+    }),
+    set({
+      1,
+    }),
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed17-SetAtxPowerSwitchFunctionalityM]
+  tuple(
+    Functions enabled: KEYPAD_POWER_OFF
+  Auto-Polarity Enabled: no
+  Reset Inverted: yes
+  Power Inverted: yes
+  Power Pulse Length (seconds): 1.5,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed17-SetAtxPowerSwitchFunctionalityM].1
+  tuple(
+    Functions enabled: KEYPAD_POWER_OFF
+  Auto-Polarity Enabled: no
+  Reset Inverted: yes
+  Power Inverted: yes
+  Power Pulse Length (seconds): 1.5,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed18-ConfigureWatchdogM]
+  tuple(
+    2,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed18-ConfigureWatchdogM].1
+  tuple(
+    2,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed19-SendDataM]
+  tuple(
+    1,
+    5,
+    b'\x00',
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed19-SendDataM].1
+  tuple(
+    1,
+    5,
+    b'\x00',
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed2-WriteUserFlashAreaM]
+  tuple(
+    b'data',
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed2-WriteUserFlashAreaM].1
+  tuple(
+    b'data',
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed20-SetBaudRateM]
+  tuple(
+    115200,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed20-SetBaudRateM].1
+  tuple(
+    115200,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed21-SetGpioM]
+  tuple(
+    1,
+    10,
+    Function: 0
+  Drive Mode: FAST_STRONG, RESISTIVE,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed21-SetGpioM].1
+  tuple(
+    1,
+    10,
+    Function: 0
+  Drive Mode: FAST_STRONG, RESISTIVE,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed22-ReadGpioM]
+  tuple(
+    1,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed22-ReadGpioM].1
+  tuple(
+    1,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed3-SetLineM]
+  tuple(
+    b'hello',
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed3-SetLineM].1
+  tuple(
+    b'hello',
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed4-ReadLcdMemoryM]
+  tuple(
+    1,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed4-ReadLcdMemoryM].1
+  tuple(
+    1,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed5-SetCursorPositionM]
+  tuple(
+    1,
+    1,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed5-SetCursorPositionM].1
+  tuple(
+    1,
+    1,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed6-SetCursorStyleM]
+  tuple(
+    <CursorStyle.BLINKING_UNDERSCORE: 3>,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed6-SetCursorStyleM].1
+  tuple(
+    <CursorStyle.BLINKING_UNDERSCORE: 3>,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed7-SetContrastM]
+  tuple(
+    0.5,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed7-SetContrastM].1
+  tuple(
+    0.5,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed8-SetBacklightM]
+  tuple(
+    0.5,
+    0.5,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed8-SetBacklightM].1
+  tuple(
+    0.5,
+    0.5,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_command[packed9-SetBacklightM]
+  tuple(
+    0.5,
+    None,
+    0.25,
+    3,
+  )
+# ---
+# name: test_domain_unpack_command[packed9-SetBacklightM].1
+  tuple(
+    0.5,
+    None,
+    None,
+    None,
+  )
+# ---
+# name: test_domain_unpack_pack[1-KeyPressM]
+  1
+# ---
+# name: test_domain_unpack_pack[115200-BaudRateM]
+  115200
+# ---
+# name: test_domain_unpack_pack[19200-BaudRateM]
+  19200
+# ---
+# name: test_domain_unpack_pack[3-TemperatureDigitsM]
+  3
+# ---
+# name: test_domain_unpack_pack[5-TemperatureDigitsM]
+  5
+# ---
+# name: test_domain_unpack_pack[packed0-OptBytesM]
+  None
+# ---
+# name: test_domain_unpack_pack[packed1-AtxPowerSwitchFunctionalitySettingsM]
+  Functions enabled: KEYPAD_RESET
+  Auto-Polarity Enabled: no
+  Reset Inverted: yes
+  Power Inverted: yes
+  Power Pulse Length (seconds): 1.0
+# ---

@@ -1,8 +1,15 @@
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import List, Self, Type
+from typing import List, Literal, Self, Type
 
-KeyPress = int
+KeyPress = (
+    Literal[0x01]
+    | Literal[0x02]
+    | Literal[0x04]
+    | Literal[0x08]
+    | Literal[0x10]
+    | Literal[0x20]
+)
 
 KP_UP: KeyPress = 0x01
 KP_ENTER: KeyPress = 0x02

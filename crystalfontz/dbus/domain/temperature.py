@@ -15,7 +15,8 @@ class TemperatureDigitsM:
 
     @staticmethod
     def unpack(n_digits: TemperatureDigitsT) -> TemperatureDigits:
-        if n_digits != 3 or n_digits != 5:
+        print(n_digits)
+        if n_digits != 3 and n_digits != 5:
             raise ValueError("May display either 3 or 5 temperature digits")
         return n_digits
 

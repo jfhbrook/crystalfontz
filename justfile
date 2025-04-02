@@ -74,18 +74,18 @@ check:
   uv run npx pyright@latest
 
 # Run tests with pytest
-test:
-  uv run pytest ./tests --ignore=./tests/test_integration.py
+test *argv:
+  uv run pytest {{ argv }} ./tests --ignore-glob='./tests/integration/**'
   @just _clean-test
 
 # Update snapshots
 snap:
-  uv run pytest --snapshot-update ./tests
+  uv run pytest --snapshot-update ./tests --ignore-glob='./tests/integration/**'
   @just _clean-test
 
 # Run integration tests
 integration:
-  uv run gaktest ./tests/test_integration.py
+  uv run gaktest './tests/integration'
 
 _clean-test:
   rm -f pytest_runner-*.egg

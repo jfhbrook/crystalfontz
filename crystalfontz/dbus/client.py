@@ -677,7 +677,15 @@ async def atx(
     power_pulse_length: float,
 ) -> None:
     await client.set_atx_power_switch_functionality(
-        (function, auto_polarity, power_pulse_length), TimeoutM.none, RetryTimesM.none
+        (
+            [AtxPowerSwitchFunction[fn].value for fn in function],
+            auto_polarity,
+            False,
+            False,
+            power_pulse_length,
+        ),
+        TimeoutM.none,
+        RetryTimesM.none,
     )
 
 
