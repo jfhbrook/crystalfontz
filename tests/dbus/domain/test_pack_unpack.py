@@ -20,6 +20,8 @@ from crystalfontz.dbus.domain.base import (
 from crystalfontz.dbus.domain.baud import BaudRateM
 from crystalfontz.dbus.domain.config import ConfigM
 from crystalfontz.dbus.domain.cursor import CursorStyleM
+from crystalfontz.dbus.domain.device import DeviceM
+from crystalfontz.device import lookup_device
 
 ValidateFn = Callable[[Any, Any], None]
 
@@ -61,6 +63,7 @@ def validate_is(actual: Any, expected: Any) -> None:
             None,
         ),
         (CursorStyle.BLINKING_UNDERSCORE, CursorStyleM, None),
+        (lookup_device("CFA533", "h1.4", "u1v2"), DeviceM, validate_is),
     ],
 )
 def test_domain_pack_unpack(

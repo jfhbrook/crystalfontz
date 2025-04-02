@@ -42,6 +42,18 @@
     1,
   )
 # ---
+# name: test_domain_pack_unpack[entity13-DeviceM-validate_is]
+  tuple(
+    'CFA533',
+    'h1.4',
+    'u1v2',
+    2,
+    16,
+    6,
+    8,
+    32,
+  )
+# ---
 # name: test_domain_pack_unpack[hello-BytesM-None]
   list([
     104,
