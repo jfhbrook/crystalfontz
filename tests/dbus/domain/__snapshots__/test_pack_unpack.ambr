@@ -27,6 +27,18 @@
 # name: test_domain_pack_unpack[None-TimeoutM-None]
   -1.0
 # ---
+# name: test_domain_pack_unpack[entity11-ConfigM-None]
+  tuple(
+    '/etc/crystalfontz.yaml',
+    '/dev/ttyUSB1',
+    'CFA533',
+    'h1.4',
+    'u1v2',
+    115200,
+    0.25,
+    1,
+  )
+# ---
 # name: test_domain_pack_unpack[hello-BytesM-None]
   list([
     104,

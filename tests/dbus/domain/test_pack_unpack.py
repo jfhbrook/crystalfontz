@@ -1,8 +1,9 @@
-from typing import Any, Callable, Optional, Type
+from typing import Any, Callable, cast, Optional, Type
 
 import pytest
 
 from crystalfontz.baud import FAST_BAUD_RATE, SLOW_BAUD_RATE
+from crystalfontz.config import Config
 from crystalfontz.dbus.domain.atx import (
     AtxPowerSwitchFunction,
     AtxPowerSwitchFunctionalitySettingsM,
@@ -16,6 +17,7 @@ from crystalfontz.dbus.domain.base import (
     TimeoutM,
 )
 from crystalfontz.dbus.domain.baud import BaudRateM
+from crystalfontz.dbus.domain.config import ConfigM
 
 ValidateFn = Callable[[Any, Any], None]
 
@@ -42,6 +44,20 @@ def validate_is(actual: Any, expected: Any) -> None:
         (None, TimeoutM, None),
         (1, RetryTimesM, None),
         (None, RetryTimesM, None),
+        (
+            cast(Any, Config)(
+                file="/etc/crystalfontz.yaml",
+                port="/dev/ttyUSB1",
+                model="CFA533",
+                hardware_rev="h1.4",
+                firmware_rev="u1v2",
+                baud_rate=FAST_BAUD_RATE,
+                timeout=0.250,
+                retry_times=1,
+            ),
+            ConfigM,
+            None,
+        ),
     ],
 )
 def test_domain_pack_unpack(
