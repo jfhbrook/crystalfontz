@@ -95,25 +95,25 @@ class AddressM(Uint16M):
     t: ClassVar[str] = Uint16M.t
 
 
-IndexT = Uint16T
-
-
-class IndexM(Uint16T):
-    t: ClassVar[str] = Uint16M.t
-
-
-PositionT = Uint16T
-
-
-class PositionM(Uint16T):
-    t: ClassVar[str] = Uint16M.t
-
-
 ByteT = int
 
 
 class ByteM:
     t: ClassVar[str] = "y"
+
+
+IndexT = ByteT
+
+
+class IndexM(ByteT):
+    t: ClassVar[str] = ByteM.t
+
+
+PositionT = Uint16T
+
+
+class PositionM(ByteT):
+    t: ClassVar[str] = ByteM.t
 
 
 BytesT = List[int]
