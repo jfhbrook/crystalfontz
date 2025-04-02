@@ -1,13 +1,14 @@
-from typing import Any, Callable, cast, Optional, Type
+from typing import Any, Callable, cast, List, Optional
 
 import pytest
 
+from crystalfontz.atx import AtxPowerSwitchFunction
 from crystalfontz.baud import FAST_BAUD_RATE, SLOW_BAUD_RATE
 from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.dbus.domain.atx import (
-    AtxPowerSwitchFunction,
     AtxPowerSwitchFunctionalitySettingsM,
+    AtxPowerSwitchFunctionM,
 )
 from crystalfontz.dbus.domain.base import (
     BytesM,
@@ -18,11 +19,34 @@ from crystalfontz.dbus.domain.base import (
     TimeoutM,
 )
 from crystalfontz.dbus.domain.baud import BaudRateM
+from crystalfontz.dbus.domain.command import (
+    ConfigureKeyReportingM,
+    ConfigureWatchdogM,
+    DowTransactionM,
+    PingM,
+    ReadDowDeviceInformationM,
+    ReadGpioM,
+    ReadLcdMemoryM,
+    SendCommandToLcdControllerM,
+    SendDataM,
+    SetAtxPowerSwitchFunctionalityM,
+    SetBacklightM,
+    SetBaudRateM,
+    SetContrastM,
+    SetCursorPositionM,
+    SetCursorStyleM,
+    SetGpioM,
+    SetLineM,
+    SetupLiveTemperatureDisplayM,
+    SetupTemperatureReportingM,
+    SimpleCommandM,
+    WriteUserFlashAreaM,
+)
 from crystalfontz.dbus.domain.config import ConfigM
 from crystalfontz.dbus.domain.cursor import CursorStyleM
 from crystalfontz.dbus.domain.device import DeviceM
 from crystalfontz.dbus.domain.gpio import GpioSettingsM, OptGpioSettingsM
-from crystalfontz.dbus.domain.keys import KeypadBrightnessM
+from crystalfontz.dbus.domain.keys import KeypadBrightnessM, KeyPressM
 from crystalfontz.dbus.domain.lcd import LcdRegisterM
 from crystalfontz.dbus.domain.temperature import (
     TemperatureDigitsM,
@@ -30,6 +54,7 @@ from crystalfontz.dbus.domain.temperature import (
 )
 from crystalfontz.device import lookup_device
 from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
+from crystalfontz.keys import KP_UP
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
 
@@ -139,6 +164,7 @@ def test_domain_pack_unpack(
         ),
         (SLOW_BAUD_RATE, BaudRateM),
         (FAST_BAUD_RATE, BaudRateM),
+        (KP_UP, KeyPressM),
         (3, TemperatureDigitsM),
         (5, TemperatureDigitsM),
     ],
@@ -154,14 +180,70 @@ def test_domain_unpack_pack(packed: Any, map_cls: Any, snapshot) -> None:
 
 
 @pytest.mark.parametrize(
-    "packed,map_cls,exc_cls",
+    "packed,map_cls",
     [
-        (12, BaudRateM, ValueError),
-        (4, TemperatureDigitsM, ValueError),
+        ([], SimpleCommandM),
+        ([b"hello"], PingM),
+        ([b"data"], WriteUserFlashAreaM),
+        ([b"hello"], SetLineM),
+        ([0x01], ReadLcdMemoryM),
+        ([1, 1], SetCursorPositionM),
+        ([CursorStyle.BLINKING_UNDERSCORE.value], SetCursorStyleM),
+        ([0.5], SetContrastM),
+        ([0.5, 0.5], SetBacklightM),
+        ([0.5, -1.0], SetBacklightM),
+        ([1], ReadDowDeviceInformationM),
+        ([[1, 2, 3]], SetupTemperatureReportingM),
+        ([1, 3, [0x00]], DowTransactionM),
+        ([1, 3, []], DowTransactionM),
+        ([1, [1, 3, 1, 1, True]], SetupLiveTemperatureDisplayM),
+        ([False, 0x01], SendCommandToLcdControllerM),
+        ([[KP_UP], [KP_UP]], ConfigureKeyReportingM),
+        (
+            [([AtxPowerSwitchFunction.KEYPAD_POWER_OFF.value], False, True, True, 1.5)],
+            SetAtxPowerSwitchFunctionalityM,
+        ),
+        ([2], ConfigureWatchdogM),
+        ([1, 5, [0x00]], SendDataM),
+        ([FAST_BAUD_RATE], SetBaudRateM),
+        (
+            [
+                1,
+                10,
+                OptGpioSettingsM.pack(
+                    GpioSettings(
+                        function=GpioFunction.UNUSED,
+                        up=GpioDriveMode.FAST_STRONG,
+                        down=GpioDriveMode.RESISTIVE,
+                    ),
+                ),
+            ],
+            SetGpioM,
+        ),
+        ([1], ReadGpioM),
     ],
 )
-def test_domain_unpack_error(
-    packed: Any, map_cls: Any, exc_cls: Type[Exception]
-) -> None:
-    with pytest.raises(exc_cls):
+def test_domain_unpack_command(packed: List[Any], map_cls: Any, snapshot) -> None:
+    with_timeout_retry = map_cls.unpack(*(packed + [0.250, 3]))
+
+    assert with_timeout_retry == snapshot
+
+    without_timeout_retry = map_cls.unpack(
+        *(packed + [TimeoutM.none, RetryTimesM.none])
+    )
+
+    assert without_timeout_retry == snapshot
+
+
+@pytest.mark.parametrize(
+    "packed,map_cls",
+    [
+        (0x00, AtxPowerSwitchFunctionM),
+        (12, BaudRateM),
+        (42, KeyPressM),
+        (4, TemperatureDigitsM),
+    ],
+)
+def test_domain_unpack_error(packed: Any, map_cls: Any) -> None:
+    with pytest.raises(ValueError):
         map_cls.unpack(packed)

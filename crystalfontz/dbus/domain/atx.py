@@ -28,7 +28,10 @@ class AtxPowerSwitchFunctionM:
 
     @staticmethod
     def unpack(function: AtxPowerSwitchFunctionT) -> AtxPowerSwitchFunction:
-        return FUNCTIONS[function]
+        try:
+            return FUNCTIONS[function]
+        except KeyError:
+            raise ValueError(f"{function} is not a valid ATX power switch function")
 
 
 class AtxPowerSwitchFunctionalitySettingsM:

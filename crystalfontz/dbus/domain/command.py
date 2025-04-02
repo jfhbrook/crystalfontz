@@ -24,6 +24,7 @@ from crystalfontz.dbus.domain.base import (
     PositionT,
     RetryTimesM,
     RetryTimesT,
+    struct,
     t,
     TimeoutM,
     TimeoutT,
@@ -62,7 +63,7 @@ class SimpleCommandM:
 
 
 class PingM:
-    t: ClassVar[str] = t("y", TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t(BytesM, TimeoutM, RetryTimesM)
 
     @staticmethod
     def unpack(
@@ -76,7 +77,7 @@ class PingM:
 
 
 class WriteUserFlashAreaM:
-    t: ClassVar[str] = t("y", TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t(BytesM, TimeoutM, RetryTimesM)
 
     @staticmethod
     def unpack(
@@ -249,8 +250,8 @@ class ConfigureKeyReportingM:
         retry_times: RetryTimesT,
     ) -> Tuple[Set[KeyPress], Set[KeyPress], Optional[float], Optional[int]]:
         return (
-            set(when_pressed),
-            set(when_released),
+            {KeyPressM.unpack(keypress) for keypress in when_pressed},
+            {KeyPressM.unpack(keypress) for keypress in when_released},
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )
@@ -279,7 +280,9 @@ class SetSpecialCharacterEncodingM:
 
 
 class SetAtxPowerSwitchFunctionalityM:
-    t: ClassVar[str] = t(AtxPowerSwitchFunctionalitySettingsM, TimeoutM, RetryTimesM)
+    t: ClassVar[str] = t(
+        struct(AtxPowerSwitchFunctionalitySettingsM), TimeoutM, RetryTimesM
+    )
 
     @staticmethod
     def unpack(

@@ -929,7 +929,7 @@ def keypad() -> None:
     pass
 
 
-KEYPRESSES: Dict[str, KeyPress] = dict(
+KEYPRESSES: Dict[str, int] = dict(
     KP_UP=KP_UP,
     KP_ENTER=KP_ENTER,
     KP_EXIT=KP_EXIT,
@@ -952,8 +952,8 @@ async def configure_key_reporting(
     client: Client, when_pressed: List[str], when_released: List[str]
 ) -> None:
     await client.configure_key_reporting(
-        when_pressed={KEYPRESSES[name] for name in when_pressed},
-        when_released={KEYPRESSES[name] for name in when_released},
+        when_pressed={cast(KeyPress, KEYPRESSES[name]) for name in when_pressed},
+        when_released={cast(KeyPress, KEYPRESSES[name]) for name in when_released},
     )
 
 
@@ -1058,16 +1058,14 @@ def load_gpio_settings(
     settings_undefined = function is None and up is None and down is None
     if not settings_undefined:
         if not function:
-            raise ValueError(
-                "When configuring GPIO pins, " "a function must be defined"
-            )
+            raise ValueError("When configuring GPIO pins, a function must be defined")
         if not up:
             raise ValueError(
-                "When configuring GPIO pins, " "a pull-up mode must be defined"
+                "When configuring GPIO pins, a pull-up mode must be defined"
             )
         if not down:
             raise ValueError(
-                "When configuring GPIO pins, " "a pull-down mode must be defined"
+                "When configuring GPIO pins, a pull-down mode must be defined"
             )
         settings = GpioSettings(function=function, up=up, down=down)
     return settings
