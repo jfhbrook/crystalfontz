@@ -48,14 +48,32 @@ from crystalfontz.dbus.domain.device import DeviceM
 from crystalfontz.dbus.domain.gpio import GpioSettingsM, OptGpioSettingsM
 from crystalfontz.dbus.domain.keys import KeypadBrightnessM, KeyPressM
 from crystalfontz.dbus.domain.lcd import LcdRegisterM
+from crystalfontz.dbus.domain.response import (
+    DowDeviceInformationM,
+    DowTransactionResultM,
+    GpioReadM,
+    KeypadPolledM,
+    LcdMemoryM,
+    PongM,
+    VersionsM,
+)
 from crystalfontz.dbus.domain.temperature import (
     TemperatureDigitsM,
     TemperatureDisplayItemM,
 )
 from crystalfontz.device import lookup_device
-from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings
-from crystalfontz.keys import KP_UP
+from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings, GpioState
+from crystalfontz.keys import KeyState, KeyStates, KP_UP
 from crystalfontz.lcd import LcdRegister
+from crystalfontz.response import (
+    DowDeviceInformation,
+    DowTransactionResult,
+    GpioRead,
+    KeypadPolled,
+    LcdMemory,
+    Pong,
+    Versions,
+)
 from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
 
 ValidateFn = Callable[[Any, Any], None]
@@ -137,6 +155,39 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
             TemperatureDisplayItemM,
             None,
         ),
+        (DowDeviceInformation(0x00, b"\00"), DowDeviceInformationM, validate_is),
+        (DowTransactionResult(0, b"\00", 0xFF), DowTransactionResultM, validate_is),
+        (
+            GpioRead(
+                0,
+                GpioState(state=True, falling=False, rising=False),
+                5,
+                GpioSettings(
+                    function=GpioFunction.UNUSED,
+                    up=GpioDriveMode.FAST_STRONG,
+                    down=GpioDriveMode.RESISTIVE,
+                ),
+            ),
+            GpioReadM,
+            validate_is,
+        ),
+        (
+            KeypadPolled(
+                KeyStates(
+                    up=KeyState(True, False, False),
+                    enter=KeyState(True, False, False),
+                    exit=KeyState(True, False, False),
+                    left=KeyState(True, False, False),
+                    right=KeyState(True, False, False),
+                    down=KeyState(True, False, False),
+                )
+            ),
+            KeypadPolledM,
+            validate_is,
+        ),
+        (LcdMemory(0x00, b"\00"), LcdMemoryM, validate_is),
+        (Pong(b"ping"), PongM, validate_is),
+        (Versions("CFA533", "h1.4", "u1v2"), VersionsM, validate_is),
     ],
 )
 def test_domain_pack_unpack(

@@ -84,6 +84,92 @@
     False,
   )
 # ---
+# name: test_domain_pack_unpack[entity22-DowDeviceInformationM-validate_is]
+  tuple(
+    0,
+    list([
+      0,
+    ]),
+  )
+# ---
+# name: test_domain_pack_unpack[entity23-DowTransactionResultM-validate_is]
+  tuple(
+    0,
+    list([
+      0,
+    ]),
+    255,
+  )
+# ---
+# name: test_domain_pack_unpack[entity24-GpioReadM-validate_is]
+  tuple(
+    0,
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    5,
+    0,
+  )
+# ---
+# name: test_domain_pack_unpack[entity25-KeypadPolledM-validate_is]
+  tuple(
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+    tuple(
+      True,
+      False,
+      False,
+    ),
+  )
+# ---
+# name: test_domain_pack_unpack[entity26-LcdMemoryM-validate_is]
+  tuple(
+    0,
+    list([
+      0,
+    ]),
+  )
+# ---
+# name: test_domain_pack_unpack[entity27-PongM-validate_is]
+  list([
+    112,
+    105,
+    110,
+    103,
+  ])
+# ---
+# name: test_domain_pack_unpack[entity28-VersionsM-validate_is]
+  tuple(
+    'CFA533',
+    'h1.4',
+    'u1v2',
+  )
+# ---
 # name: test_domain_pack_unpack[hello-BytesM-None]
   list([
     104,
