@@ -1,9 +1,11 @@
-from typing import Any, cast, ClassVar, Optional, Self, Tuple, Type
+from typing import Any, cast, ClassVar, Tuple
 
 from crystalfontz.config import Config
 from crystalfontz.dbus.domain.base import (
     ModelM,
     ModelT,
+    OptStrM,
+    OptStrT,
     RetryTimesM,
     RetryTimesT,
     RevisionM,
@@ -14,16 +16,12 @@ from crystalfontz.dbus.domain.base import (
 )
 from crystalfontz.dbus.domain.baud import BaudRateM, BaudRateT
 
-FileT = str
+FileT = OptStrT
 
 
-class FileM:
-    t: ClassVar[str] = "s"
-    none: ClassVar[str] = ""
-
-    @classmethod
-    def pack(cls: Type[Self], file: Optional[str]) -> str:
-        return file or cls.none
+class FileM(OptStrM):
+    t: ClassVar[str] = OptStrM.t
+    none: ClassVar[str] = OptStrM.none
 
 
 PortT = str
@@ -40,7 +38,8 @@ ConfigT = Tuple[
 
 class ConfigM:
     """
-    Map a config to and from dbus types.
+    Map `Config` to and from `ConfigT`
+    (`Tuple[Optional[str], str, str, str, str, int, float, int]`).
     """
 
     t: ClassVar[str] = struct(
@@ -56,6 +55,10 @@ class ConfigM:
 
     @staticmethod
     def pack(config: Config) -> ConfigT:
+        """
+        Pack `Config` to `ConfigT`.
+        """
+
         return (
             FileM.pack(config.file),
             config.port,
@@ -69,6 +72,10 @@ class ConfigM:
 
     @staticmethod
     def unpack(config: ConfigT) -> Config:
+        """
+        Unpack `ConfigT` to `Config`.
+        """
+
         (
             file,
             port,

@@ -11,7 +11,7 @@ LCD_REGISTERS: Dict[bool, LcdRegister] = {
 
 class LcdRegisterM:
     """
-    Map LcdRegister to and from dbus types.
+    Map `LcdRegister` to and from `LcdRegisterT` (`bool`).
     """
 
     t: ClassVar[str] = "b"

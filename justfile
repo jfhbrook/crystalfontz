@@ -91,6 +91,10 @@ _clean-test:
   rm -f pytest_runner-*.egg
   rm -rf tests/__pycache__
 
+# Display the raw XML introspection of the live dbus service
+print-iface:
+  dbus-send --system --dest=org.jfhbrook.crystalfontz "/" --print-reply org.freedesktop.DBus.Introspectable.Introspect
+
 #
 # Shell and console
 #
@@ -113,6 +117,10 @@ docs:
 # Build the documentation
 build-docs:
   uv run mkdocs build
+
+# Render markdown documentation based on the live service from dbus
+generate-dbus-iface-docs *ARGV:
+  @bash ./scripts/generate-dbus-iface-docs.sh {{ ARGV }}
 
 #
 # Package publishing

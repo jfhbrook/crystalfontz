@@ -4,7 +4,7 @@
 
 * `CFA533`: Most features have been tested with a real CFA533.
 * `CFA633`: The CFA633 has **not** been tested. However, the documentation for the CFA533 includes some details on how the CFA633 differs from the CFA533, such that I have _ostensive_ support for it. Feel free to try it out, but be aware that it may have bugs.
-* Other devices: Crystalfontz has other devices, but I haven't investigated them. As such, these other devices are currently unsupported. However, it's believed that it would be easy to add support for a device, by reading through its data sheet and implementing device-specific functionality in [`crystalfontz.device`](./crystalfontz/device.py).
+* Other devices: Crystalfontz has other devices, but I haven't investigated them. As such, these other devices are currently unsupported. However, it's believed that it would be easy to add support for a device, by reading through its data sheet and implementing device-specific functionality in `crystalfontz.device`.
 
 ## Features
 

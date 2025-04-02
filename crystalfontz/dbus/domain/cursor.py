@@ -9,15 +9,23 @@ CURSOR_STYLES: Dict[int, CursorStyle] = {style.value: style for style in CursorS
 
 class CursorStyleM:
     """
-    Map a CursorStyle to and from dbus types.
+    Map `CursorStyle` to and from `CursorStyleT` (`int`).
     """
 
     t: ClassVar[str] = "q"
 
     @staticmethod
-    def unpack(style: CursorStyleT) -> CursorStyle:
-        return CURSOR_STYLES[style]
+    def pack(style: CursorStyle) -> CursorStyleT:
+        """
+        Pack `CursorStyle` to `CursorStyleT`.
+        """
+
+        return style.value
 
     @staticmethod
-    def pack(style: CursorStyle) -> CursorStyleT:
-        return style.value
+    def unpack(style: CursorStyleT) -> CursorStyle:
+        """
+        Unpack `CursorStyleT` to `CursorStyle`.
+        """
+
+        return CURSOR_STYLES[style]
