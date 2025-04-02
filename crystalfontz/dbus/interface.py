@@ -175,7 +175,8 @@ class DbusInterface(  # type: ignore
         Detect the device's configured baud rate by testing the connection at each
         potential baud setting.
 
-        This is a privileged API, as it modifies the baud rate used by the client.
+        This is a privileged API, as it modifies the baud rate used by the both the
+        client and the device.
         """
 
         # Detect the baud rate, as you do
