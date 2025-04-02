@@ -41,6 +41,8 @@ dbus = [
 
 [project.scripts]
 crystalfontz = "crystalfontz.cli:main"
+crystalfontzd = "crystalfontz.dbus.service:main"
+crystalfontzctl = "crystalfontz.dbus.client:main"
 
 [dependency-groups]
 dev = [
