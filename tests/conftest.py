@@ -50,13 +50,13 @@ def cli_env(config_file: str, log_level: str) -> EnvFactory:
 
 
 @pytest.fixture
-def crystalfontz(config_file: str, cli_env: EnvFactory) -> Cli:
+def crystalfontz(cli_env: EnvFactory) -> Cli:
     return Cli("crystalfontz", env=cli_env())
 
 
 @pytest.fixture
 def crystalfontzd(
-    config_file: str, cli_env: EnvFactory, request: pytest.FixtureRequest
+    cli_env: EnvFactory, request: pytest.FixtureRequest
 ) -> Generator[None, None, None]:
     cli = Cli("crystalfontzd", env=cli_env())
 
