@@ -50,7 +50,7 @@ def test_versions(crystalfontzctl: Cli, snapshot) -> None:
 
 @pytest.mark.skip(reason="Privileged command")
 def test_reboot(crystalfontzctl: Cli, confirm) -> None:
-    crystalfontzctl("power", "reboot-lcd")
+    crystalfontzctl("--timeout", "1.0", "power", "reboot-lcd")
 
     confirm("Did the LCD reboot?")
 

@@ -48,12 +48,8 @@ def test_versions(crystalfontz: Cli, snapshot) -> None:
     assert crystalfontz("versions").stdout.strip() == snapshot
 
 
-@pytest.mark.skip
 def test_reboot(crystalfontz: Cli, confirm) -> None:
-    # TODO: This test failed due to a timeout issue. This is probably an
-    # easy fix - simply increasing the timeout. But it raises a bigger issue
-    # with how timeouts are treated in the crystalfontz project...
-    crystalfontz("power", "reboot-lcd")
+    crystalfontz("--timeout", "1.0", "power", "reboot-lcd")
 
     confirm("Did the LCD reboot?")
 
