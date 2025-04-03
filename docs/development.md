@@ -46,7 +46,7 @@
 ### Interactive
 
 - `run` - Thin wrapper around `uv run`
-- `start` - Run `plusdeck` CLI
+- `start` - Run `crystalfontz` CLI
 - `console` - Run a Python repl
 - `shell` - Start a bash shell with a sourced virtualenv
 
