@@ -91,7 +91,7 @@ def pass_timeout_retry(fn: AsyncCommand) -> AsyncCommand:
     @click.pass_obj
     @functools.wraps(fn)
     async def wrapped(obj: Obj, *args, **kwargs) -> None:
-        await fn(obj.timeout, obj.retry_times, *args, **kwargs)
+        await fn(*args, **kwargs, timeout=obj.timeout, retry_times=obj.retry_times)
 
     return wrapped
 
@@ -372,7 +372,7 @@ async def listen(client: DbusClient, for_: Optional[float]) -> None:
 @pass_timeout_retry
 @pass_client
 async def ping(
-    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, payload: bytes
+    client: DbusClient, payload: bytes, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
     pong = await client.ping(payload, timeout, retry_times)
     echo(pong)
@@ -400,7 +400,7 @@ def flash() -> None:
 @pass_timeout_retry
 @pass_client
 async def write_user_flash_area(
-    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, data: bytes
+    client: DbusClient, data: bytes, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
     await client.write_user_flash_area(data, timeout, retry_times)
 
@@ -482,7 +482,7 @@ def line() -> None:
 @pass_timeout_retry
 @pass_client
 async def set_line_1(
-    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, line: bytes
+    client: DbusClient, line: bytes, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
     await client.set_line_1(line, timeout, retry_times)
 
@@ -493,7 +493,7 @@ async def set_line_1(
 @pass_timeout_retry
 @pass_client
 async def set_line_2(
-    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, line: bytes
+    client: DbusClient, line: bytes, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
     await client.set_line_2(line, timeout, retry_times)
 
@@ -514,7 +514,7 @@ def lcd() -> None:
 @pass_timeout_retry
 @pass_client
 async def read_lcd_memory(
-    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, address: int
+    client: DbusClient, address: int, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
     memory = await client.read_lcd_memory(address, timeout, retry_times)
     echo(LcdMemoryM.unpack(memory))
@@ -533,10 +533,10 @@ def cursor() -> None:
 @pass_client
 async def set_cursor_position(
     client: DbusClient,
-    timeout: TimeoutT,
-    retry_times: RetryTimesT,
     row: int,
     column: int,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
 ) -> None:
     await client.set_cursor_position(row, column, timeout, retry_times)
 
@@ -547,7 +547,7 @@ async def set_cursor_position(
 @pass_timeout_retry
 @pass_client
 async def set_cursor_style(
-    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, style: str
+    client: DbusClient, style: str, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
     await client.set_cursor_style(
         CursorStyleM.pack(CursorStyle[style]), timeout, retry_times
@@ -560,7 +560,7 @@ async def set_cursor_style(
 @pass_timeout_retry
 @pass_client
 async def contrast(
-    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, contrast: float
+    client: DbusClient, contrast: float, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
     await client.set_contrast(contrast, timeout, retry_times)
 
@@ -573,10 +573,10 @@ async def contrast(
 @pass_client
 async def backlight(
     client: DbusClient,
-    timeout: TimeoutT,
-    retry_times: RetryTimesT,
     brightness: float,
     keypad: Optional[float],
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
 ) -> None:
     await client.set_backlight(
         brightness, KeypadBrightnessM.pack(keypad), timeout, retry_times
@@ -594,7 +594,7 @@ def dow() -> None:
 @pass_timeout_retry
 @pass_client
 async def read_dow_device_information(
-    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, index: int
+    client: DbusClient, index: int, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
     info = await client.read_dow_device_information(index, timeout, retry_times)
     echo(DowDeviceInformationM.unpack(info))
@@ -612,9 +612,9 @@ def temperature() -> None:
 @pass_client
 async def setup_temperature_reporting(
     client: DbusClient,
+    enabled: Tuple[int, ...],
     timeout: TimeoutT,
     retry_times: RetryTimesT,
-    enabled: Tuple[int, ...],
 ) -> None:
     await client.setup_temperature_reporting(list(enabled), timeout, retry_times)
 
@@ -628,11 +628,11 @@ async def setup_temperature_reporting(
 @pass_client
 async def dow_transaction(
     client: DbusClient,
-    timeout: TimeoutT,
-    retry_times: RetryTimesT,
     index: int,
     bytes_to_read: int,
     data_to_write: Optional[bytes],
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
 ) -> None:
     res = await client.dow_transaction(
         index, bytes_to_read, OptBytesM.pack(data_to_write), timeout, retry_times
@@ -652,14 +652,14 @@ async def dow_transaction(
 @pass_client
 async def setup_live_temperature_display(
     client: DbusClient,
-    timeout: TimeoutT,
-    retry_times: RetryTimesT,
     slot: int,
     index: int,
     n_digits: str,
     column: int,
     row: int,
     units: str,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
 ) -> None:
     item = TemperatureDisplayItem(
         index=index,
@@ -682,10 +682,10 @@ async def setup_live_temperature_display(
 @pass_client
 async def send_command_to_lcd_controler(
     client: DbusClient,
-    timeout: TimeoutT,
-    retry_times: RetryTimesT,
     location: str,
     data: int,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
 ) -> None:
     register = LcdRegister[location]
     await client.send_command_to_lcd_controller(
@@ -710,10 +710,10 @@ def keypad() -> None:
 @pass_client
 async def configure_key_reporting(
     client: DbusClient,
-    timeout: TimeoutT,
-    retry_times: RetryTimesT,
     when_pressed: List[str],
     when_released: List[str],
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
 ) -> None:
     await client.configure_key_reporting(
         [KEYPRESSES[name] for name in when_pressed],
@@ -754,11 +754,11 @@ async def poll_keypad(
 @pass_client
 async def atx(
     client: DbusClient,
-    timeout: TimeoutT,
-    retry_times: RetryTimesT,
     function: List[str],
     auto_polarity: bool,
     power_pulse_length: float,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
 ) -> None:
     await client.set_atx_power_switch_functionality(
         (
@@ -779,9 +779,9 @@ async def atx(
 @pass_client
 async def watchdog(
     client: DbusClient,
+    timeout_seconds: int,
     timeout: TimeoutT,
     retry_times: RetryTimesT,
-    timeout_seconds: int,
 ) -> None:
     await client.configure_watchdog(timeout_seconds, timeout, retry_times)
 
@@ -805,11 +805,11 @@ async def status(
 @pass_client
 async def send(
     client: DbusClient,
-    timeout: TimeoutT,
-    retry_times: RetryTimesT,
     row: int,
     column: int,
     data: bytes,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
 ) -> None:
     await client.send_data(row, column, data, timeout, retry_times)
 
@@ -860,13 +860,13 @@ def gpio() -> None:
 @pass_client
 async def set_gpio(
     client: DbusClient,
-    timeout: TimeoutT,
-    retry_times: RetryTimesT,
     index: int,
     output_state: int,
     function: Optional[GpioFunction],
     up: Optional[GpioDriveMode],
     down: Optional[GpioDriveMode],
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
 ) -> None:
     settings = load_gpio_settings(function, up, down)
     await client.set_gpio(
@@ -882,7 +882,7 @@ async def set_gpio(
 @pass_timeout_retry
 @pass_client
 async def read_gpio(
-    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, index: int
+    client: DbusClient, index: int, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
     res = await client.read_gpio(index, timeout, retry_times)
     echo(GpioReadM.unpack(res))
