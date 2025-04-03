@@ -1,27 +1,39 @@
-- Update CLI to use `configurence` library
-- Improved error handling
-  - Introduce `Receiver` type, a subclass of `asyncio.Queue`
-  - Emit unmatched exceptions on expecting receivers instead of resolving `client.closed`
-- `Response` class API changes
-  - `Response.from_bytes` accepts bytes as from packets, rather than `__init__`
-  - `Response.__init__` accepts properties as arguments
-- `detect_baud_rate` exposes `timeout` and `retry_times` arguments
-- `SpecialCharacter` API changes
-  - Rename `as_bytes` method to `to_bytes`
-  - Store pixels as `List[List[bool]]` instead of `List[List[int]]`
-- Additional CLI commands accept bytes as arguments
-  - `crystalfontz line 1`
-  - `crystalfontz line 2`
-  - `crystalfontz send`
-- Documentation and CLI help improvements:
-  - Document `detect_baud_rate`
-  - CLI help for `crystalfontz listen` `--for` option
-- Initial dbus support:
+- API Changes:
+  - **NEW** `Receiver` class
+    - A subclass of `asyncio.Queue`
+  - `Client`:
+    - `subscribe` and `unsubscribe` methods use new `Receiver` class
+    - Emit unmatched exceptions on expecting receivers instead of resolving `client.closed`
+    - `detect_baud_rate` exposes `timeout` and `retry_times` arguments
+    - Document `detect_baud_rate`
+  - `Response`:
+    - `Response.from_bytes` accepts bytes as from packets, rather than `__init__`
+    - `Response.__init__` accepts properties as arguments
+  - `SpecialCharacter` API:
+    - Rename `as_bytes` method to `to_bytes`
+    - Store pixels as `List[List[bool]]` instead of `List[List[int]]`
+- `crystalfontz` CLI changes:
+  - Use `configurence` library
+  - Respect `CRYSTALFONTZ_CONFIG_FILE` environment variable
+  - Improve error reporting for timeouts
+  - Client now respects CLI settings
+    - Cause was the `Client` constructor being called twice
+  - Additional commands accept bytes as arguments
+    - `crystalfontz line 1`
+    - `crystalfontz line 2`
+    - `crystalfontz send`
+  - Help for `crystalfontz listen` `--for` option
+- Integration tests:
+  - Use `python-gak` plugin
+  - Use snapshots
+  - Leverage a config file at `./tests/fixtures/crystalfontz.yaml`
+    - Can be overridden with `CRYSTALFONTZ_CONFIG_FILE` environment variable
+- **NEW** Dbus support:
   - `crystalfontz.dbus.DbusInterface` dbus Interface class, implementing most commands
-    - `get_status` is unimplemented
-    - `set_special_character_data` is unimplemented
-    - Reporting is unimplemented
-    - Effects are unimplemented
+    - **NOTE:** `get_status` is unimplemented
+    - **NOTE:** `set_special_character_data` is unimplemented
+    - **NOTE:** Reporting is unimplemented
+    - **NOTE:** Effects are unimplemented
   - `crystalfontz.dbus.DbusClient` dbus client class
   - `crystalfontz.dbus.domain` API for mapping domain objects to dbus types
   - `crystalfontzd` dbus service CLI

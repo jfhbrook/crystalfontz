@@ -1,0 +1,7 @@
+baud_rate: 19200
+firmware_rev: u1v2
+hardware_rev: h1.4
+model: CFA533
+port: /dev/ttyUSB0
+retry_times: 0
+timeout: 0.25

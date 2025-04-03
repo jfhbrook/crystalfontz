@@ -67,6 +67,7 @@ format:
 # Lint with flake8
 lint:
   uv run flake8 './crystalfontz' ./tests
+  shellcheck ./scripts/*.sh
   uv run validate-pyproject ./pyproject.toml
 
 # Check type annotations with pyright
@@ -84,8 +85,8 @@ snap:
   @just _clean-test
 
 # Run integration tests
-integration:
-  uv run gaktest './tests/integration'
+integration *argv:
+  ./scripts/integration.sh {{ argv }}
 
 _clean-test:
   rm -f pytest_runner-*.egg

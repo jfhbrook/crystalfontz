@@ -1,50 +1,81 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import os
-import subprocess
-from typing import Dict, Optional, Protocol, Self
+from pathlib import Path
+from typing import Dict, Generator, List, Optional
 
 import pytest
 
+from tests.helpers import Cli, EnvFactory
 
-class CliProtocol(Protocol):
-    def __call__(self: Self, *argv: str, env=None) -> subprocess.CompletedProcess: ...
+logger = logging.getLogger(__name__)
 
 
-class EnvFactoryProtocol(Protocol):
-    def __call__(
-        self: Self, env: Optional[Dict[str, str]] = None
-    ) -> Dict[str, str]: ...
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--system", action="store", default=False, help="Connect to the system bus"
+    )
 
 
 @pytest.fixture
-def cli_env() -> EnvFactoryProtocol:
-    def env_factory(env: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+def config_file() -> str:
+    if "CRYSTALFONTZ_CONFIG_FILE" in os.environ:
+        return os.environ["CRYSTALFONTZ_CONFIG_FILE"]
+    path = Path(__file__).parent / "fixtures/crystalfontz.yaml"
+    return str(path)
+
+
+@pytest.fixture
+def log_level() -> str:
+    if "CRYSTALFONTZ_LOG_LEVEL" in os.environ:
+        return os.environ["CRYSTALFONTZ_LOG_LEVEL"]
+    return "INFO"
+
+
+@pytest.fixture
+def cli_env(config_file: str, log_level: str) -> EnvFactory:
+    def factory(env: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         _env: Dict[str, str] = dict(os.environ)
 
         if env:
             _env.update(env)
 
-        if "CRYSTALFONTZ_LOG_LEVEL" not in _env:
-            _env["CRYSTALFONTZ_LOG_LEVEL"] = "INFO"
-
-        if "CRYSTALFONTZ_PORT" not in _env:
-            _env["CRYSTALFONTZ_PORT"] = "/dev/ttyUSB0"
+        _env["CRYSTALFONTZ_CONFIG_FILE"] = config_file
+        _env["CRYSTALFONTZ_LOG_LEVEL"] = log_level
 
         return _env
 
-    return env_factory
+    return factory
 
 
 @pytest.fixture
-def crystalfontz(cli_env) -> CliProtocol:
-    def _cli(
-        *argv: str, env: Optional[Dict[str, str]] = None
-    ) -> subprocess.CompletedProcess:
-        _env = cli_env(env)
+def crystalfontz(cli_env: EnvFactory) -> Cli:
+    return Cli("crystalfontz", env=cli_env())
 
-        return subprocess.run(
-            ["crystalfontz"] + list(argv), capture_output=True, check=True, env=_env
-        )
 
-    return _cli
+@pytest.fixture
+def crystalfontzd(
+    cli_env: EnvFactory, request: pytest.FixtureRequest
+) -> Generator[None, None, None]:
+    cli = Cli("crystalfontzd", env=cli_env())
+
+    if request.config.getoption("--system"):
+        logger.info("Connecting to system bus")
+        yield
+        return
+
+    with cli.bg():
+        yield
+
+
+@pytest.fixture
+def crystalfontzctl(
+    cli_env: EnvFactory, crystalfontzd: None, request: pytest.FixtureRequest
+) -> Cli:
+    argv: List[str] = list()
+
+    if not request.config.getoption("--system"):
+        argv.append("--user")
+
+    return Cli("crystalfontzctl", argv=argv, env=cli_env())
