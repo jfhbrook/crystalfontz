@@ -73,7 +73,7 @@ def test_listen_for(crystalfontz: Cli) -> None:
 
 
 def test_marquee(crystalfontz, confirm) -> None:
-    with crystalfontz.bg("effects", "marquee", "1", "Josh is cool"):
+    with crystalfontz.bg("effects", "marquee", "0", "Josh is cool"):
         confirm("Is the LCD showing a marquee effect?")
 
 

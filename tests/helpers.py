@@ -31,7 +31,11 @@ class Cli:
 
     @contextmanager
     def bg(self: Self, *argv: str) -> Generator[None, None, None]:
-        proc = subprocess.Popen([self.command] + self.argv + list(argv), env=self.env)
+        proc = subprocess.Popen(
+            [self.command] + self.argv + list(argv),
+            stderr=subprocess.DEVNULL,
+            env=self.env,
+        )
 
         yield
 
