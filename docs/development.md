@@ -71,8 +71,9 @@ Components:
     dbus  Start cystalfontzd and run crystalfontzctl integration tests
 
 Options:
-    --help    Show this help text
-    --system  Run any dbus tests against the system bus
+    --help             Show this help text
+    --snapshot-update  Update snapshots
+    --system           Run any dbus tests against the system bus
 
     Other options are passed to pytest.
 
