@@ -401,6 +401,11 @@ def pass_client(
             # Set the output mode for echo
             echo.mode = output
 
+            to: float = timeout if timeout is not None else DEFAULT_TIMEOUT
+            retries: int = (
+                retry_times if retry_times is not None else DEFAULT_RETRY_TIMES
+            )
+
             try:
                 client: Client = await create_connection(
                     port,
@@ -408,18 +413,21 @@ def pass_client(
                     hardware_rev=hardware_rev,
                     firmware_rev=firmware_rev,
                     report_handler=report_handler,
-                    timeout=timeout if timeout is not None else DEFAULT_TIMEOUT,
-                    retry_times=(
-                        retry_times if retry_times is not None else DEFAULT_RETRY_TIMES
-                    ),
+                    timeout=to,
+                    retry_times=retries,
                     baud_rate=baud_rate,
                 )
             except SerialException as exc:
                 click.echo(exc)
                 sys.exit(1)
 
-            # Giddyup!
-            await fn(client, *args, **kwargs)
+            try:
+                # Giddyup!
+                await fn(client, *args, **kwargs)
+            except TimeoutError:
+                logger.error(
+                    f"Command timed out after {to} seconds and {retries} retries."
+                )
 
             # Close the client if we're done
             if not run_forever:
