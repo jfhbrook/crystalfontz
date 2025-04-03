@@ -85,8 +85,8 @@ snap:
   @just _clean-test
 
 # Run integration tests
-integration *components:
-  ./scripts/integration.sh {{ components }}
+integration *argv:
+  ./scripts/integration.sh {{ argv }}
 
 _clean-test:
   rm -f pytest_runner-*.egg
