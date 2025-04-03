@@ -86,7 +86,7 @@
 # name: test_domain_pack_unpack[entity21-DowDeviceInformationM-validate_is]
   tuple(
     0,
-    b'\x00',
+    255,
   )
 # ---
 # name: test_domain_pack_unpack[entity22-DowTransactionResultM-validate_is]

@@ -162,7 +162,7 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
         #
         # Responses
         #
-        (DowDeviceInformation(0x00, b"\00"), DowDeviceInformationM, validate_is),
+        (DowDeviceInformation(0x00, 0xFF), DowDeviceInformationM, validate_is),
         (DowTransactionResult(0, b"\00", 0xFF), DowTransactionResultM, validate_is),
         (
             GpioRead(

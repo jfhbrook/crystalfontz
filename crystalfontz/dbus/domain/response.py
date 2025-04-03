@@ -132,16 +132,16 @@ class LcdMemoryM:
         return LcdMemory(address, buff)
 
 
-DowDeviceInformationT = Tuple[IndexT, bytes]
+DowDeviceInformationT = Tuple[IndexT, int]
 
 
 class DowDeviceInformationM:
     """
     Map `DowDeviceInformation` to and from `DowDeviceInformationT`
-    (`Tuple[int, bytes]`).
+    (`Tuple[int, int]`).
     """
 
-    t: ClassVar[str] = t(IndexM, BytesM)
+    t: ClassVar[str] = t(IndexM, "t")
 
     @staticmethod
     def pack(info: DowDeviceInformation) -> DowDeviceInformationT:

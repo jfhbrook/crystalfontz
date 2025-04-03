@@ -270,24 +270,24 @@ class DowDeviceInformation(Response):
         rom_id (bytes): The ROM ID of the device.
     """
 
-    def __init__(self: Self, index: int, rom_id: bytes) -> None:
+    def __init__(self: Self, index: int, rom_id: int) -> None:
         self.index: int = index
-        self.rom_id: bytes = rom_id
+        self.rom_id: int = rom_id
 
     @classmethod
     def from_bytes(cls: Type[Self], data: bytes) -> Self:
         index: int = data[0]
-        rom_id: bytes = data[1:]
+        rom_id: int = int.from_bytes(data[1:], "big")
         return cls(index, rom_id)
 
     def __str__(self: Self) -> str:
-        return f"DowDeviceInformation({self.index}={self.rom_id})"
+        return f"DowDeviceInformation({self.index:02X}={self.rom_id:02X})"
 
     def as_dict(self: Self) -> Dict[str, Any]:
-        return dict(index=self.index, rom_id=format_json_bytes(self.rom_id))
+        return dict(index=self.index, rom_id=self.rom_id)
 
     def __repr__(self: Self) -> str:
-        return f"0x{self.index:02X}: {format_bytes(self.rom_id)}"
+        return f"0x{self.index:02X}: {self.rom_id:02X}"
 
 
 @code(0x53)

@@ -9,7 +9,7 @@
   '{"address": 255, "data": "AAECAwQFBgc="}'
 # ---
 # name: test_json[obj2]
-  '{"index": 255, "rom_id": "AAECAwQFBgc="}'
+  '{"index": 255, "rom_id": 283686952306183}'
 # ---
 # name: test_json[obj3]
   '{"index": 255, "data": "AQIDBAUGBw==", "crc": 255}'
@@ -33,7 +33,7 @@
   '0xFF: \\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07'
 # ---
 # name: test_repr[obj2]
-  '0xFF: \\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07'
+  '0xFF: 1020304050607'
 # ---
 # name: test_repr[obj3]
   '''
