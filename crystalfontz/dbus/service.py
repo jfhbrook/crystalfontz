@@ -58,6 +58,7 @@ async def serve(config_file: Optional[str] = None) -> None:
 @click.option(
     "--config-file",
     "-C",
+    envvar="CRYSTALFONTZ_CONFIG_FILE",
     default=GLOBAL_FILE,
     type=click.Path(),
     help="A path to a config file",

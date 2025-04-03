@@ -26,6 +26,7 @@
   - `crystalfontz.dbus.domain` API for mapping domain objects to dbus types
   - `crystalfontzd` dbus service CLI
   - `crystalfontzctl` dbus client CLI
+- CLI respects `CRYSTALFONTZ_CONFIG_FILE` environment variable
 
 ## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
