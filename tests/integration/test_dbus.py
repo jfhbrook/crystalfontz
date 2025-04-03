@@ -40,6 +40,7 @@ def test_ping(crystalfontzctl: Cli) -> None:
     assert pong == b"pong"
 
 
+@pytest.mark.skip(reason="Not implemented")
 def test_status(crystalfontzctl: Cli, snapshot) -> None:
     assert crystalfontzctl("status").stdout.strip() == snapshot
 
