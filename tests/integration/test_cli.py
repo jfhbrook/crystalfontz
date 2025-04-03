@@ -12,16 +12,20 @@ def test_backlight_contrast(crystalfontz: Cli, confirm) -> None:
     confirm("Did the backlight and contrast settings change?")
 
 
-def test_display_clear(crystalfontz: Cli, confirm) -> None:
+def test_send(crystalfontz: Cli, confirm) -> None:
     crystalfontz("send", "0", "0", "Hello world!")
 
     confirm('Did the LCD display "Hello world!"?')
 
+
+def test_line(crystalfontz: Cli, confirm) -> None:
     crystalfontz("line", "1", "Line 1")
     crystalfontz("line", "2", "Line 2")
 
     confirm('Does the LCD display "Line 1" and "Line 2"?')
 
+
+def test_clear(crystalfontz: Cli, confirm) -> None:
     crystalfontz("clear")
 
     confirm("Did the LCD clear?")
