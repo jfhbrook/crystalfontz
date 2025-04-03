@@ -64,7 +64,7 @@ async def serve(config_file: Optional[str] = None) -> None:
 )
 @click.option(
     "--log-level",
-    envvar="PLUSDECK_LOG_LEVEL",
+    envvar="CRYSTALFONTZ_LOG_LEVEL",
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
     default="INFO",
     help="Set the log level",

@@ -100,10 +100,10 @@ def should_sudo(config_file: str) -> bool:
 
 
 def run_config_command(obj: Obj, staged: StagedConfig, argv: List[str]) -> None:
-    plusdeck_bin = str(Path(__file__).parent.parent / "cli.py")
+    crystalfontz_bin = str(Path(__file__).parent.parent / "cli.py")
     args: List[str] = [
         sys.executable,
-        plusdeck_bin,
+        crystalfontz_bin,
         "--config-file",
         staged.file,
         "--log-level",
@@ -130,7 +130,7 @@ def warn_dirty() -> None:
     if shutil.which("systemctl"):
         msg += """To reload the service, run:
 
-    sudo system ctl restart plusdeck"""
+    sudo system ctl restart crystalfontz"""
     else:
         msg += (
             "To update the configuration, reload the service with your OS's "
