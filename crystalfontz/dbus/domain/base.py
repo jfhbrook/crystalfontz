@@ -156,7 +156,7 @@ class PositionM(ByteT):
     t: ClassVar[str] = ByteM.t
 
 
-BytesT = List[int]
+BytesT = bytes
 
 
 class BytesM:
@@ -167,12 +167,12 @@ class BytesM:
     t: ClassVar[str] = array(ByteM)
 
     @staticmethod
-    def pack(buff: bytes) -> BytesT:
+    def pack(buff: bytes) -> bytes:
         """
         Pack `bytes` to `BytesT`.
         """
 
-        return list(buff)
+        return buff
 
     @staticmethod
     def unpack(buff: BytesT) -> bytes:
@@ -180,7 +180,7 @@ class BytesM:
         Unpack `BytesT` to `bytes`.
         """
 
-        return bytes(buff)
+        return buff
 
 
 OptBytesT = BytesT
