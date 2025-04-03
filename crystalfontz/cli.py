@@ -414,8 +414,6 @@ def pass_client(
                     ),
                     baud_rate=baud_rate,
                 )
-
-                client: Client = await create_connection(port)
             except SerialException as exc:
                 click.echo(exc)
                 sys.exit(1)
