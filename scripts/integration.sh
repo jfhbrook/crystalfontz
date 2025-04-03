@@ -19,7 +19,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ ${#COMPONENTS[@]} -eq 0 ]; then
-  COMPONENTS=("crystalfontz")
+  COMPONENTS=("cli")
 fi
 
 for component in "${COMPONENTS[@]}"; do
