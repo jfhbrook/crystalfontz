@@ -49,8 +49,10 @@ from crystalfontz.dbus.domain import (
     OptBytesM,
     OptGpioSettingsM,
     RetryTimesM,
+    RetryTimesT,
     TemperatureDisplayItemM,
     TimeoutM,
+    TimeoutT,
     VersionsM,
 )
 from crystalfontz.dbus.error import handle_dbus_error
@@ -70,6 +72,8 @@ class Obj:
     client: DbusClient
     log_level: LogLevel
     output: OutputMode
+    timeout: TimeoutT
+    retry_times: RetryTimesT
     user: bool
 
 
@@ -79,6 +83,15 @@ def pass_config(fn: AsyncCommand) -> AsyncCommand:
     async def wrapped(obj: Obj, *args, **kwargs) -> None:
         config = await obj.client.staged_config()
         await fn(config, *args, **kwargs)
+
+    return wrapped
+
+
+def pass_timeout_retry(fn: AsyncCommand) -> AsyncCommand:
+    @click.pass_obj
+    @functools.wraps(fn)
+    async def wrapped(obj: Obj, *args, **kwargs) -> None:
+        await fn(obj.timeout, obj.retry_times, *args, **kwargs)
 
     return wrapped
 
@@ -154,11 +167,28 @@ def warn_dirty() -> None:
     help="Output either human-friendly text or JSON",
 )
 @click.option(
+    "--timeout",
+    type=float,
+    envvar="CRYSTALFONTZ_TIMEOUT",
+    help="How long to wait for a response from the device before timing out",
+)
+@click.option(
+    "--retry-times",
+    type=int,
+    envvar="CRYSTALFONTZ_RETRY_TIMES",
+    help="How many times to retry a command if a response times out",
+)
+@click.option(
     "--user/--no-user", type=bool, default=False, help="Connect to the user bus"
 )
 @click.pass_context
 def main(
-    ctx: click.Context, log_level: LogLevel, output: OutputMode, user: bool
+    ctx: click.Context,
+    log_level: LogLevel,
+    output: OutputMode,
+    timeout: Optional[float],
+    retry_times: Optional[int],
+    user: bool,
 ) -> None:
     """
     Control your Crystalfontz device.
@@ -172,7 +202,14 @@ def main(
     async def load() -> None:
         bus: SdBus = sd_bus_open_user() if user else sd_bus_open_system()
         client = DbusClient(bus)
-        ctx.obj = Obj(client=client, log_level=log_level, output=output, user=user)
+        ctx.obj = Obj(
+            client=client,
+            log_level=log_level,
+            output=output,
+            timeout=TimeoutM.pack(timeout),
+            retry_times=RetryTimesM.pack(retry_times),
+            user=user,
+        )
 
     asyncio.run(load())
 
@@ -290,10 +327,10 @@ async def detect(
     firmware_rev = "<unknown>"
 
     if baud:
-        baud_rate = await client.detect_baud_rate(TimeoutM.none, RetryTimesM.none)
+        baud_rate = await client.detect_baud_rate(obj.timeout, RetryTimesM.none)
 
     if device:
-        device_t = await client.detect_device(TimeoutM.none, RetryTimesM.none)
+        device_t = await client.detect_device(obj.retry_times, RetryTimesM.none)
         model = device_t[0]
         hardware_rev = device_t[1]
         firmware_rev = device_t[2]
@@ -332,17 +369,23 @@ async def listen(client: DbusClient, for_: Optional[float]) -> None:
 @main.command(help="0 (0x00): Ping command")
 @click.argument("payload", type=BYTES)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def ping(client: DbusClient, payload: bytes) -> None:
-    pong = await client.ping(payload, TimeoutM.none, RetryTimesM.none)
+async def ping(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, payload: bytes
+) -> None:
+    pong = await client.ping(payload, timeout, retry_times)
     echo(pong)
 
 
 @main.command(help="1 (0x01): Get Hardware & Firmware Version")
 @async_command
+@pass_timeout_retry
 @pass_client
-async def versions(client: DbusClient) -> None:
-    versions = await client.versions(TimeoutM.none, RetryTimesM.none)
+async def versions(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT
+) -> None:
+    versions = await client.versions(timeout, retry_times)
     echo(VersionsM.unpack(versions))
 
 
@@ -354,24 +397,33 @@ def flash() -> None:
 @flash.command(name="write", help="2 (0x02): Write User Flash Area")
 @click.argument("data", type=BYTES)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def write_user_flash_area(client: DbusClient, data: bytes) -> None:
-    await client.write_user_flash_area(data, TimeoutM.none, RetryTimesM.none)
+async def write_user_flash_area(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, data: bytes
+) -> None:
+    await client.write_user_flash_area(data, timeout, retry_times)
 
 
 @flash.command(name="read", help="3 (0x03): Read User Flash Area")
 @async_command
+@pass_timeout_retry
 @pass_client
-async def read_user_flash_area(client: DbusClient) -> None:
-    flash = await client.read_user_flash_area(TimeoutM.none, RetryTimesM.none)
+async def read_user_flash_area(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT
+) -> None:
+    flash = await client.read_user_flash_area(timeout, retry_times)
     echo(flash)
 
 
 @main.command(help="4 (0x04): Store Current State as Boot State")
 @async_command
+@pass_timeout_retry
 @pass_client
-async def store(client: DbusClient) -> None:
-    await client.store_boot_state(TimeoutM.none, RetryTimesM.none)
+async def store(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT
+) -> None:
+    await client.store_boot_state(timeout, retry_times)
 
 
 @main.group(help="5 (0x05): Reboot LCD, Reset Host, or Power Off Host")
@@ -381,30 +433,42 @@ def power() -> None:
 
 @power.command(help="Reboot the Crystalfontx LCD")
 @async_command
+@pass_timeout_retry
 @pass_client
-async def reboot_lcd(client: DbusClient) -> None:
-    await client.reboot_lcd(TimeoutM.none, RetryTimesM.none)
+async def reboot_lcd(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT
+) -> None:
+    await client.reboot_lcd(timeout, retry_times)
 
 
 @power.command(help="Reset the host, assuming ATX control is configured")
 @async_command
+@pass_timeout_retry
 @pass_client
-async def reset_host(client: DbusClient) -> None:
-    await client.reset_host(TimeoutM.none, RetryTimesM.none)
+async def reset_host(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT
+) -> None:
+    await client.reset_host(timeout, retry_times)
 
 
 @power.command(help="Turn the host's power off, assuming ATX control is configured")
 @async_command
+@pass_timeout_retry
 @pass_client
-async def shutdown_host(client: DbusClient) -> None:
-    await client.shutdown_host(TimeoutM.none, RetryTimesM.none)
+async def shutdown_host(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT
+) -> None:
+    await client.shutdown_host(timeout, retry_times)
 
 
 @main.command(help="6 (0x06): Clear LCD Screen")
 @async_command
+@pass_timeout_retry
 @pass_client
-async def clear(client: DbusClient) -> None:
-    await client.clear_screen(TimeoutM.none, RetryTimesM.none)
+async def clear(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT
+) -> None:
+    await client.clear_screen(timeout, retry_times)
 
 
 @main.group(help="Set LCD contents for a line")
@@ -415,17 +479,23 @@ def line() -> None:
 @line.command(name="1", help="7 (0x07): Set LCD Contents, Line 1")
 @click.argument("line", type=BYTES)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def set_line_1(client: DbusClient, line: bytes) -> None:
-    await client.set_line_1(line, TimeoutM.none, RetryTimesM.none)
+async def set_line_1(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, line: bytes
+) -> None:
+    await client.set_line_1(line, timeout, retry_times)
 
 
 @line.command(name="2", help="8 (0x08): Set LCD Contents, Line 2")
 @click.argument("line", type=BYTES)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def set_line_2(client: DbusClient, line: bytes) -> None:
-    await client.set_line_2(line, TimeoutM.none, RetryTimesM.none)
+async def set_line_2(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, line: bytes
+) -> None:
+    await client.set_line_2(line, timeout, retry_times)
 
 
 @main.command(help="Interact with special characters")
@@ -441,9 +511,12 @@ def lcd() -> None:
 @lcd.command(name="poke", help="10 (0x0A): Read 8 Bytes of LCD Memory")
 @click.argument("address", type=BYTE)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def read_lcd_memory(client: DbusClient, address: int) -> None:
-    memory = await client.read_lcd_memory(address, TimeoutM.none, RetryTimesM.none)
+async def read_lcd_memory(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, address: int
+) -> None:
+    memory = await client.read_lcd_memory(address, timeout, retry_times)
     echo(LcdMemoryM.unpack(memory))
 
 
@@ -456,39 +529,57 @@ def cursor() -> None:
 @click.argument("row", type=BYTE)
 @click.argument("column", type=BYTE)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def set_cursor_position(client: DbusClient, row: int, column: int) -> None:
-    await client.set_cursor_position(row, column, TimeoutM.none, RetryTimesM.none)
+async def set_cursor_position(
+    client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
+    row: int,
+    column: int,
+) -> None:
+    await client.set_cursor_position(row, column, timeout, retry_times)
 
 
 @cursor.command(name="style", help="12 (0x0C): Set LCD Cursor Style")
 @click.argument("style", type=click.Choice([e.name for e in CursorStyle]))
 @async_command
+@pass_timeout_retry
 @pass_client
-async def set_cursor_style(client: DbusClient, style: str) -> None:
+async def set_cursor_style(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, style: str
+) -> None:
     await client.set_cursor_style(
-        CursorStyleM.pack(CursorStyle[style]), TimeoutM.none, RetryTimesM.none
+        CursorStyleM.pack(CursorStyle[style]), timeout, retry_times
     )
 
 
 @main.command(help="13 (0x0D): Set LCD Contrast")
 @click.argument("contrast", type=float)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def contrast(client: DbusClient, contrast: float) -> None:
-    await client.set_contrast(contrast, TimeoutM.none, RetryTimesM.none)
+async def contrast(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, contrast: float
+) -> None:
+    await client.set_contrast(contrast, timeout, retry_times)
 
 
 @main.command(help="14 (0x0E): Set LCD & Keypad Backlight")
 @click.argument("brightness", type=float)
 @click.option("--keypad", type=float)
 @async_command
+@pass_timeout_retry
 @pass_client
 async def backlight(
-    client: DbusClient, brightness: float, keypad: Optional[float]
+    client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
+    brightness: float,
+    keypad: Optional[float],
 ) -> None:
     await client.set_backlight(
-        brightness, KeypadBrightnessM.pack(keypad), TimeoutM.none, RetryTimesM.none
+        brightness, KeypadBrightnessM.pack(keypad), timeout, retry_times
     )
 
 
@@ -500,11 +591,12 @@ def dow() -> None:
 @dow.command(name="info", help="18 (0x12): Read DOW Device Information")
 @click.argument("index", type=BYTE)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def read_dow_device_information(client: DbusClient, index: int) -> None:
-    info = await client.read_dow_device_information(
-        index, TimeoutM.none, RetryTimesM.none
-    )
+async def read_dow_device_information(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, index: int
+) -> None:
+    info = await client.read_dow_device_information(index, timeout, retry_times)
     echo(DowDeviceInformationM.unpack(info))
 
 
@@ -516,13 +608,15 @@ def temperature() -> None:
 @temperature.command(name="reporting", help="19 (0x13): Set Up Temperature Reporting")
 @click.argument("enabled", nargs=-1)
 @async_command
+@pass_timeout_retry
 @pass_client
 async def setup_temperature_reporting(
-    client: DbusClient, enabled: Tuple[int, ...]
+    client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
+    enabled: Tuple[int, ...],
 ) -> None:
-    await client.setup_temperature_reporting(
-        list(enabled), TimeoutM.none, RetryTimesM.none
-    )
+    await client.setup_temperature_reporting(list(enabled), timeout, retry_times)
 
 
 @dow.command(name="transaction", help="20 (0x14): Arbitrary DOW Transaction")
@@ -530,16 +624,18 @@ async def setup_temperature_reporting(
 @click.argument("bytes_to_read", type=BYTE)
 @click.option("--data_to_write", type=BYTES)
 @async_command
+@pass_timeout_retry
 @pass_client
 async def dow_transaction(
-    client: DbusClient, index: int, bytes_to_read: int, data_to_write: Optional[bytes]
+    client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
+    index: int,
+    bytes_to_read: int,
+    data_to_write: Optional[bytes],
 ) -> None:
     res = await client.dow_transaction(
-        index,
-        bytes_to_read,
-        OptBytesM.pack(data_to_write),
-        TimeoutM.none,
-        RetryTimesM.none,
+        index, bytes_to_read, OptBytesM.pack(data_to_write), timeout, retry_times
     )
     echo(DowTransactionResultM.unpack(res))
 
@@ -552,9 +648,12 @@ async def dow_transaction(
 @click.option("--row", "-r", type=BYTE, required=True)
 @click.option("--units", "-U", type=click.Choice([e.name for e in TemperatureUnit]))
 @async_command
+@pass_timeout_retry
 @pass_client
 async def setup_live_temperature_display(
     client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
     slot: int,
     index: int,
     n_digits: str,
@@ -571,7 +670,7 @@ async def setup_live_temperature_display(
     )
 
     await client.setup_live_temperature_display(
-        slot, TemperatureDisplayItemM.pack(item), TimeoutM.none, RetryTimesM.none
+        slot, TemperatureDisplayItemM.pack(item), timeout, retry_times
     )
 
 
@@ -579,13 +678,18 @@ async def setup_live_temperature_display(
 @click.argument("location", type=click.Choice([e.name for e in LcdRegister]))
 @click.argument("data", type=BYTE)
 @async_command
+@pass_timeout_retry
 @pass_client
 async def send_command_to_lcd_controler(
-    client: DbusClient, location: str, data: int
+    client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
+    location: str,
+    data: int,
 ) -> None:
     register = LcdRegister[location]
     await client.send_command_to_lcd_controller(
-        LcdRegisterM.pack(register), data, TimeoutM.none, RetryTimesM.none
+        LcdRegisterM.pack(register), data, timeout, retry_times
     )
 
 
@@ -602,23 +706,31 @@ def keypad() -> None:
     "--when-released", multiple=True, type=click.Choice(list(KEYPRESSES.keys()))
 )
 @async_command
+@pass_timeout_retry
 @pass_client
 async def configure_key_reporting(
-    client: DbusClient, when_pressed: List[str], when_released: List[str]
+    client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
+    when_pressed: List[str],
+    when_released: List[str],
 ) -> None:
     await client.configure_key_reporting(
         [KEYPRESSES[name] for name in when_pressed],
         [KEYPRESSES[name] for name in when_released],
-        TimeoutM.none,
-        RetryTimesM.none,
+        timeout,
+        retry_times,
     )
 
 
 @keypad.command(name="poll", help="24 (0x18): Read Keypad, Polled Mode")
 @async_command
+@pass_timeout_retry
 @pass_client
-async def poll_keypad(client: DbusClient) -> None:
-    polled = await client.poll_keypad(TimeoutM.none, RetryTimesM.none)
+async def poll_keypad(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT
+) -> None:
+    polled = await client.poll_keypad(timeout, retry_times)
     echo(KeypadPolledM.unpack(polled))
 
 
@@ -638,9 +750,12 @@ async def poll_keypad(client: DbusClient) -> None:
     help="Length of power on and off pulses in seconds",
 )
 @async_command
+@pass_timeout_retry
 @pass_client
 async def atx(
     client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
     function: List[str],
     auto_polarity: bool,
     power_pulse_length: float,
@@ -653,8 +768,8 @@ async def atx(
             False,
             power_pulse_length,
         ),
-        TimeoutM.none,
-        RetryTimesM.none,
+        timeout,
+        retry_times,
     )
 
 
@@ -662,14 +777,22 @@ async def atx(
 @click.argument("timeout_seconds", type=WATCHDOG_SETTING)
 @async_command
 @pass_client
-async def watchdog(client: DbusClient, timeout_seconds: int) -> None:
-    await client.configure_watchdog(timeout_seconds, TimeoutM.none, RetryTimesM.none)
+async def watchdog(
+    client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
+    timeout_seconds: int,
+) -> None:
+    await client.configure_watchdog(timeout_seconds, timeout, retry_times)
 
 
 @main.command(help="30 (0x1E): Read Reporting & Status")
 @async_command
+@pass_timeout_retry
 @pass_client
-async def status(_client: DbusClient) -> None:
+async def status(
+    _client: DbusClient, _timeout: TimeoutT, _retry_times: RetryTimesT
+) -> None:
     raise NotImplementedError("status")
 
 
@@ -678,9 +801,17 @@ async def status(_client: DbusClient) -> None:
 @click.argument("column", type=int)
 @click.argument("data", type=BYTES)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def send(client: DbusClient, row: int, column: int, data: bytes) -> None:
-    await client.send_data(row, column, data, TimeoutM.none, RetryTimesM.none)
+async def send(
+    client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
+    row: int,
+    column: int,
+    data: bytes,
+) -> None:
+    await client.send_data(row, column, data, timeout, retry_times)
 
 
 @main.command(help="33 (0x21): Set Baud Rate")
@@ -697,7 +828,7 @@ async def send(client: DbusClient, row: int, column: int, data: bytes) -> None:
 async def baud(
     obj: Obj, staged: StagedConfig, client: DbusClient, rate: BaudRate, save: bool
 ) -> None:
-    await client.set_baud_rate(rate, TimeoutM.none, RetryTimesM.none)
+    await client.set_baud_rate(rate, obj.timeout, obj.retry_times)
 
     if save:
         logger.info(f"Saving baud rate {rate} to {staged.target_config.file}")
@@ -725,9 +856,12 @@ def gpio() -> None:
 @click.option("--up", type=DRIVE_MODE, help="The GPIO pin's pull-up drive mode")
 @click.option("--down", type=DRIVE_MODE, help="The GPIO pin's pull-down drive mode")
 @async_command
+@pass_timeout_retry
 @pass_client
 async def set_gpio(
     client: DbusClient,
+    timeout: TimeoutT,
+    retry_times: RetryTimesT,
     index: int,
     output_state: int,
     function: Optional[GpioFunction],
@@ -736,11 +870,7 @@ async def set_gpio(
 ) -> None:
     settings = load_gpio_settings(function, up, down)
     await client.set_gpio(
-        index,
-        output_state,
-        OptGpioSettingsM.pack(settings),
-        TimeoutM.none,
-        RetryTimesM.none,
+        index, output_state, OptGpioSettingsM.pack(settings), timeout, retry_times
     )
 
 
@@ -749,9 +879,12 @@ async def set_gpio(
 )
 @click.argument("index", type=BYTE)
 @async_command
+@pass_timeout_retry
 @pass_client
-async def read_gpio(client: DbusClient, index: int) -> None:
-    res = await client.read_gpio(index, TimeoutM.none, RetryTimesM.none)
+async def read_gpio(
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT, index: int
+) -> None:
+    res = await client.read_gpio(index, timeout, retry_times)
     echo(GpioReadM.unpack(res))
 
 
