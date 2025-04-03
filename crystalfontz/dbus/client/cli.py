@@ -38,7 +38,6 @@ from crystalfontz.cli import (
 from crystalfontz.dbus.client import DbusClient
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import (
-    BytesM,
     CursorStyleM,
     DowDeviceInformationM,
     DowTransactionResultM,
@@ -335,8 +334,8 @@ async def listen(client: DbusClient, for_: Optional[float]) -> None:
 @async_command
 @pass_client
 async def ping(client: DbusClient, payload: bytes) -> None:
-    pong = await client.ping(BytesM.pack(payload), TimeoutM.none, RetryTimesM.none)
-    echo(BytesM.unpack(pong))
+    pong = await client.ping(payload, TimeoutM.none, RetryTimesM.none)
+    echo(pong)
 
 
 @main.command(help="1 (0x01): Get Hardware & Firmware Version")
@@ -357,9 +356,7 @@ def flash() -> None:
 @async_command
 @pass_client
 async def write_user_flash_area(client: DbusClient, data: bytes) -> None:
-    await client.write_user_flash_area(
-        BytesM.pack(data), TimeoutM.none, RetryTimesM.none
-    )
+    await client.write_user_flash_area(data, TimeoutM.none, RetryTimesM.none)
 
 
 @flash.command(name="read", help="3 (0x03): Read User Flash Area")
@@ -420,7 +417,7 @@ def line() -> None:
 @async_command
 @pass_client
 async def set_line_1(client: DbusClient, line: bytes) -> None:
-    await client.set_line_1(BytesM.pack(line), TimeoutM.none, RetryTimesM.none)
+    await client.set_line_1(line, TimeoutM.none, RetryTimesM.none)
 
 
 @line.command(name="2", help="8 (0x08): Set LCD Contents, Line 2")
@@ -428,7 +425,7 @@ async def set_line_1(client: DbusClient, line: bytes) -> None:
 @async_command
 @pass_client
 async def set_line_2(client: DbusClient, line: bytes) -> None:
-    await client.set_line_2(BytesM.pack(line), TimeoutM.none, RetryTimesM.none)
+    await client.set_line_2(line, TimeoutM.none, RetryTimesM.none)
 
 
 @main.command(help="Interact with special characters")
@@ -683,9 +680,7 @@ async def status(_client: DbusClient) -> None:
 @async_command
 @pass_client
 async def send(client: DbusClient, row: int, column: int, data: bytes) -> None:
-    await client.send_data(
-        row, column, BytesM.pack(data), TimeoutM.none, RetryTimesM.none
-    )
+    await client.send_data(row, column, data, TimeoutM.none, RetryTimesM.none)
 
 
 @main.command(help="33 (0x21): Set Baud Rate")

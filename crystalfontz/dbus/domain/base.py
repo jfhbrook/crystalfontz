@@ -1,6 +1,5 @@
 from typing import (
     ClassVar,
-    List,
     Optional,
     Protocol,
     Self,
@@ -156,65 +155,42 @@ class PositionM(ByteT):
     t: ClassVar[str] = ByteM.t
 
 
-BytesT = List[int]
-
-
 class BytesM:
-    """
-    Map `bytes` to and from `BytesT` (`List[int]`).
-    """
-
     t: ClassVar[str] = array(ByteM)
 
-    @staticmethod
-    def pack(buff: bytes) -> BytesT:
-        """
-        Pack `bytes` to `BytesT`.
-        """
 
-        return list(buff)
-
-    @staticmethod
-    def unpack(buff: BytesT) -> bytes:
-        """
-        Unpack `BytesT` to `bytes`.
-        """
-
-        return bytes(buff)
-
-
-OptBytesT = BytesT
+OptBytesT = bytes
 
 
 class OptBytesM:
     """
-    Map `Optional[bytes]` to and from `BytesT` (`List[int]`).
+    Map `Optional[bytes]` to and from `OptBytesT` (`bytes`).
 
-    None values are represented by an empty list.
+    None values are represented by an empty bytestring.
     """
 
     t: ClassVar[str] = BytesM.t
-    none: ClassVar[BytesT] = list()
+    none: ClassVar[OptBytesT] = b""
 
     @classmethod
-    def pack(cls: Type[Self], buff: Optional[bytes]) -> BytesT:
+    def pack(cls: Type[Self], buff: Optional[bytes]) -> OptBytesT:
         """
-        Pack `Optional[bytes]` to `BytesT`.
+        Pack `Optional[bytes]` to `OptBytesT`.
         """
 
         if buff is None:
             return cls.none
-        return BytesM.pack(buff)
+        return buff
 
     @staticmethod
-    def unpack(buff: BytesT) -> Optional[bytes]:
+    def unpack(buff: OptBytesT) -> Optional[bytes]:
         """
-        Unpack `BytesT` to `Optional[bytes]`.
+        Unpack `OptBytesT` to `Optional[bytes]`.
         """
 
         if not buff:
             return None
-        return BytesM.unpack(buff)
+        return buff
 
 
 ModelT = str

@@ -14,7 +14,6 @@ from crystalfontz.dbus.domain.base import (
     array,
     ByteM,
     BytesM,
-    BytesT,
     ByteT,
     IndexM,
     IndexT,
@@ -67,10 +66,10 @@ class PingM:
 
     @staticmethod
     def unpack(
-        payload: BytesT, timeout: TimeoutT, retry_times: RetryTimesT
+        payload: bytes, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
         return (
-            BytesM.unpack(payload),
+            payload,
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )
@@ -81,10 +80,10 @@ class WriteUserFlashAreaM:
 
     @staticmethod
     def unpack(
-        data: BytesT, timeout: TimeoutT, retry_times: RetryTimesT
+        data: bytes, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
         return (
-            BytesM.unpack(data),
+            data,
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )
@@ -95,10 +94,10 @@ class SetLineM:
 
     @staticmethod
     def unpack(
-        line: BytesT, timeout: TimeoutT, retry_times: RetryTimesT
+        line: bytes, timeout: TimeoutT, retry_times: RetryTimesT
     ) -> Tuple[bytes, Optional[float], Optional[int]]:
         return (
-            BytesM.unpack(line),
+            line,
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )
@@ -318,14 +317,14 @@ class SendDataM:
     def unpack(
         row: PositionT,
         column: PositionT,
-        data: BytesT,
+        data: bytes,
         timeout: TimeoutT,
         retry_times: RetryTimesT,
     ) -> Tuple[int, int, bytes, Optional[float], Optional[int]]:
         return (
             row,
             column,
-            BytesM.unpack(data),
+            data,
             TimeoutM.unpack(timeout),
             RetryTimesM.unpack(retry_times),
         )

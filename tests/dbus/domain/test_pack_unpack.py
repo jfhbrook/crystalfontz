@@ -11,7 +11,6 @@ from crystalfontz.dbus.domain.atx import (
     AtxPowerSwitchFunctionM,
 )
 from crystalfontz.dbus.domain.base import (
-    BytesM,
     OptBytesM,
     OptFloatM,
     OptIntM,
@@ -101,7 +100,6 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
         (None, OptIntM, None),
         (1.0, OptFloatM, None),
         (None, OptFloatM, None),
-        (b"hello", BytesM, None),
         (b"hello", OptBytesM, None),
         (None, OptBytesM, None),
         (1.0, TimeoutM, None),
@@ -220,7 +218,7 @@ def test_domain_pack_unpack(
         #
         # Mostly entities that only get unpacked
         #
-        ([], OptBytesM),
+        (b"", OptBytesM),
         (
             ([AtxPowerSwitchFunction.KEYPAD_RESET.value], False, True, True, 1.0),
             AtxPowerSwitchFunctionalitySettingsM,

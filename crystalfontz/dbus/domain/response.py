@@ -5,7 +5,6 @@ from crystalfontz.dbus.domain.base import (
     AddressT,
     ByteM,
     BytesM,
-    BytesT,
     ByteT,
     IndexM,
     IndexT,
@@ -36,12 +35,12 @@ from crystalfontz.response import (
     Versions,
 )
 
-PongT = BytesT
+PongT = bytes
 
 
 class PongM:
     """
-    Map `Pong` to and from `PongT` (`List[int]`).
+    Map `Pong` to and from `PongT` (`bytes`).
     """
 
     t: ClassVar[str] = BytesM.t
@@ -52,7 +51,7 @@ class PongM:
         Pack `Pong` to `PongT`.
         """
 
-        return BytesM.pack(pong.response)
+        return pong.response
 
     @staticmethod
     def unpack(pong: PongT) -> Pong:
@@ -60,7 +59,7 @@ class PongM:
         Unpack `PongT` to `Pong`.
         """
 
-        return Pong(BytesM.unpack(pong))
+        return Pong(pong)
 
 
 VersionsT = Tuple[ModelT, RevisionT, RevisionT]
@@ -86,19 +85,19 @@ class VersionsM:
         return Versions(*versions)
 
 
-UserFlashAreaReadT = BytesT
+UserFlashAreaReadT = bytes
 
 
 class UserFlashAreaReadM:
     """
-    Map `UserFlashAreaRead` to and from `UserFlashAreaReadT` (`List[int]`).
+    Map `UserFlashAreaRead` to and from `UserFlashAreaReadT` (`bytes`).
     """
 
     t: ClassVar[str] = BytesM.t
 
     @staticmethod
     def pack(res: UserFlashAreaRead) -> UserFlashAreaReadT:
-        return BytesM.pack(res.data)
+        return res.data
 
     @staticmethod
     def unpack(res: UserFlashAreaReadT) -> UserFlashAreaRead:
@@ -106,22 +105,22 @@ class UserFlashAreaReadM:
         Unpack `UserFlashAreaReadT` to `UserFlashAreaRead`.
         """
 
-        return UserFlashAreaRead(BytesM.unpack(res))
+        return UserFlashAreaRead(res)
 
 
-LcdMemoryT = Tuple[AddressT, BytesT]
+LcdMemoryT = Tuple[AddressT, bytes]
 
 
 class LcdMemoryM:
     """
-    Map `LcdMemory` to and from `LcdMemoryT` (`Tuple[int, List[int]]`).
+    Map `LcdMemory` to and from `LcdMemoryT` (`Tuple[int, bytes]`).
     """
 
     t: ClassVar[str] = t(AddressM, BytesM)
 
     @staticmethod
     def pack(memory: LcdMemory) -> LcdMemoryT:
-        return (memory.address, BytesM.pack(memory.data))
+        return (memory.address, memory.data)
 
     @staticmethod
     def unpack(obj: LcdMemoryT) -> LcdMemory:
@@ -130,23 +129,23 @@ class LcdMemoryM:
         """
 
         address, buff = obj
-        return LcdMemory(address, BytesM.unpack(buff))
+        return LcdMemory(address, buff)
 
 
-DowDeviceInformationT = Tuple[IndexT, BytesT]
+DowDeviceInformationT = Tuple[IndexT, bytes]
 
 
 class DowDeviceInformationM:
     """
     Map `DowDeviceInformation` to and from `DowDeviceInformationT`
-    (`Tuple[int, List[int]]`).
+    (`Tuple[int, bytes]`).
     """
 
     t: ClassVar[str] = t(IndexM, BytesM)
 
     @staticmethod
     def pack(info: DowDeviceInformation) -> DowDeviceInformationT:
-        return (info.index, BytesM.pack(info.rom_id))
+        return (info.index, info.rom_id)
 
     @staticmethod
     def unpack(info: DowDeviceInformationT) -> DowDeviceInformation:
@@ -155,23 +154,23 @@ class DowDeviceInformationM:
         """
 
         index, rom_id = info
-        return DowDeviceInformation(index, BytesM.unpack(rom_id))
+        return DowDeviceInformation(index, rom_id)
 
 
-DowTransactionResultT = Tuple[IndexT, BytesT, Uint16T]
+DowTransactionResultT = Tuple[IndexT, bytes, Uint16T]
 
 
 class DowTransactionResultM:
     """
     Map `DowTransactionResult` to and from `DowTransactionResultT`
-    (`Tuple[int, List[int], int]`).
+    (`Tuple[int, bytes, int]`).
     """
 
     t: ClassVar[str] = t(IndexM, BytesM, Uint16M)
 
     @staticmethod
     def pack(res: DowTransactionResult) -> DowTransactionResultT:
-        return (res.index, BytesM.pack(res.data), res.crc)
+        return (res.index, res.data, res.crc)
 
     @staticmethod
     def unpack(res: DowTransactionResultT) -> DowTransactionResult:
@@ -180,7 +179,7 @@ class DowTransactionResultM:
         """
 
         index, data, crc = res
-        return DowTransactionResult(index, BytesM.unpack(data), crc)
+        return DowTransactionResult(index, data, crc)
 
 
 KeypadPolledT = KeyStatesT

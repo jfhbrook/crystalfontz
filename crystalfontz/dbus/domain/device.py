@@ -2,7 +2,6 @@ from typing import ClassVar, Tuple
 
 from crystalfontz.dbus.domain.base import (
     BytesM,
-    BytesT,
     ModelM,
     ModelT,
     RevisionM,
@@ -59,7 +58,7 @@ class DeviceM:
 
 
 # Includes enough device info to unpack the status
-DeviceStatusT = Tuple[ModelT, RevisionT, RevisionT, BytesT]
+DeviceStatusT = Tuple[ModelT, RevisionT, RevisionT, bytes]
 
 
 class DeviceStatusM:

@@ -27,8 +27,7 @@
   -1.0
 # ---
 # name: test_domain_pack_unpack[None-OptBytesM-None]
-  list([
-  ])
+  b''
 # ---
 # name: test_domain_pack_unpack[None-OptFloatM-None]
   -1.0
@@ -45,7 +44,7 @@
 # name: test_domain_pack_unpack[None-TimeoutM-None]
   -1.0
 # ---
-# name: test_domain_pack_unpack[entity11-ConfigM-None]
+# name: test_domain_pack_unpack[entity10-ConfigM-None]
   tuple(
     '/etc/crystalfontz.yaml',
     '/dev/ttyUSB1',
@@ -57,7 +56,7 @@
     1,
   )
 # ---
-# name: test_domain_pack_unpack[entity13-DeviceM-validate_is]
+# name: test_domain_pack_unpack[entity12-DeviceM-validate_is]
   tuple(
     'CFA533',
     'h1.4',
@@ -69,13 +68,13 @@
     32,
   )
 # ---
-# name: test_domain_pack_unpack[entity14-GpioSettingsM-validate_gpio_settings]
+# name: test_domain_pack_unpack[entity13-GpioSettingsM-validate_gpio_settings]
   0
 # ---
-# name: test_domain_pack_unpack[entity15-OptGpioSettingsM-validate_gpio_settings]
+# name: test_domain_pack_unpack[entity14-OptGpioSettingsM-validate_gpio_settings]
   0
 # ---
-# name: test_domain_pack_unpack[entity21-TemperatureDisplayItemM-None]
+# name: test_domain_pack_unpack[entity20-TemperatureDisplayItemM-None]
   tuple(
     1,
     3,
@@ -84,24 +83,20 @@
     False,
   )
 # ---
-# name: test_domain_pack_unpack[entity22-DowDeviceInformationM-validate_is]
+# name: test_domain_pack_unpack[entity21-DowDeviceInformationM-validate_is]
   tuple(
     0,
-    list([
-      0,
-    ]),
+    b'\x00',
   )
 # ---
-# name: test_domain_pack_unpack[entity23-DowTransactionResultM-validate_is]
+# name: test_domain_pack_unpack[entity22-DowTransactionResultM-validate_is]
   tuple(
     0,
-    list([
-      0,
-    ]),
+    b'\x00',
     255,
   )
 # ---
-# name: test_domain_pack_unpack[entity24-GpioReadM-validate_is]
+# name: test_domain_pack_unpack[entity23-GpioReadM-validate_is]
   tuple(
     0,
     tuple(
@@ -113,7 +108,7 @@
     0,
   )
 # ---
-# name: test_domain_pack_unpack[entity25-KeypadPolledM-validate_is]
+# name: test_domain_pack_unpack[entity24-KeypadPolledM-validate_is]
   tuple(
     tuple(
       True,
@@ -147,46 +142,24 @@
     ),
   )
 # ---
-# name: test_domain_pack_unpack[entity26-LcdMemoryM-validate_is]
+# name: test_domain_pack_unpack[entity25-LcdMemoryM-validate_is]
   tuple(
     0,
-    list([
-      0,
-    ]),
+    b'\x00',
   )
 # ---
-# name: test_domain_pack_unpack[entity27-PongM-validate_is]
-  list([
-    112,
-    105,
-    110,
-    103,
-  ])
+# name: test_domain_pack_unpack[entity26-PongM-validate_is]
+  b'ping'
 # ---
-# name: test_domain_pack_unpack[entity28-VersionsM-validate_is]
+# name: test_domain_pack_unpack[entity27-VersionsM-validate_is]
   tuple(
     'CFA533',
     'h1.4',
     'u1v2',
   )
 # ---
-# name: test_domain_pack_unpack[hello-BytesM-None]
-  list([
-    104,
-    101,
-    108,
-    108,
-    111,
-  ])
-# ---
 # name: test_domain_pack_unpack[hello-OptBytesM-None]
-  list([
-    104,
-    101,
-    108,
-    108,
-    111,
-  ])
+  b'hello'
 # ---
 # name: test_domain_unpack_command[packed0-SimpleCommandM]
   tuple(
@@ -254,7 +227,9 @@
   tuple(
     1,
     3,
-    b'\x00',
+    list([
+      0,
+    ]),
     0.25,
     3,
   )
@@ -263,7 +238,9 @@
   tuple(
     1,
     3,
-    b'\x00',
+    list([
+      0,
+    ]),
     None,
     None,
   )
@@ -382,7 +359,9 @@
   tuple(
     1,
     5,
-    b'\x00',
+    list([
+      0,
+    ]),
     0.25,
     3,
   )
@@ -391,7 +370,9 @@
   tuple(
     1,
     5,
-    b'\x00',
+    list([
+      0,
+    ]),
     None,
     None,
   )
@@ -562,6 +543,9 @@
     None,
   )
 # ---
+# name: test_domain_unpack_pack[-OptBytesM]
+  None
+# ---
 # name: test_domain_unpack_pack[1-KeyPressM]
   1
 # ---
@@ -576,9 +560,6 @@
 # ---
 # name: test_domain_unpack_pack[5-TemperatureDigitsM]
   5
-# ---
-# name: test_domain_unpack_pack[packed0-OptBytesM]
-  None
 # ---
 # name: test_domain_unpack_pack[packed1-AtxPowerSwitchFunctionalitySettingsM]
   Functions enabled: KEYPAD_RESET

@@ -14,7 +14,6 @@ from crystalfontz.config import Config
 from crystalfontz.dbus.domain.atx import AtxPowerSwitchFunctionalitySettingsT
 from crystalfontz.dbus.domain.base import (
     AddressT,
-    BytesT,
     ByteT,
     IndexT,
     NoneM,
@@ -137,7 +136,7 @@ class DbusInterface(  # type: ignore
     @dbus_method_async(PingM.t, PongM.t, flags=DbusUnprivilegedFlag)
     async def ping(
         self: Self,
-        payload: BytesT,
+        payload: bytes,
         timeout: TimeoutT,
         retry_times: RetryTimesT,
     ) -> PongT:
@@ -221,7 +220,7 @@ class DbusInterface(  # type: ignore
 
     @dbus_method_async(WriteUserFlashAreaM.t, NoneM.t)
     async def write_user_flash_area(
-        self: Self, data: BytesT, timeout: TimeoutT, retry_times: int
+        self: Self, data: bytes, timeout: TimeoutT, retry_times: int
     ) -> None:
         """
         2 (0x02): Write User Flash Area
@@ -365,7 +364,7 @@ class DbusInterface(  # type: ignore
     @dbus_method_async(SetLineM.t, NoneM.t, flags=DbusUnprivilegedFlag)
     async def set_line_1(
         self: Self,
-        line: BytesT,
+        line: bytes,
         timeout: TimeoutT,
         retry_times: RetryTimesT,
     ) -> None:
@@ -384,7 +383,7 @@ class DbusInterface(  # type: ignore
     @dbus_method_async(SetLineM.t, NoneM.t, flags=DbusUnprivilegedFlag)
     async def set_line_2(
         self: Self,
-        line: BytesT,
+        line: bytes,
         timeout: TimeoutT,
         retry_times: RetryTimesT,
     ) -> None:
@@ -583,7 +582,7 @@ class DbusInterface(  # type: ignore
         self: Self,
         index: int,
         bytes_to_read: int,
-        data_to_write: List[int],
+        data_to_write: bytes,
         timeout: TimeoutT,
         retry_times: RetryTimesT,
     ) -> DowTransactionResultT:
@@ -778,7 +777,7 @@ class DbusInterface(  # type: ignore
         self: Self,
         row: PositionT,
         column: PositionT,
-        data: BytesT,
+        data: bytes,
         timeout: TimeoutT,
         retry_times: RetryTimesT,
     ) -> None:
