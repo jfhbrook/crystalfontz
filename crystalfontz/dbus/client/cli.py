@@ -30,7 +30,7 @@ from crystalfontz.cli import (
     OutputMode,
     WATCHDOG_SETTING,
 )
-from crystalfontz.dbus.bus import BUS_TYPE, BusType, configure_bus, DEFAULT_BUS
+from crystalfontz.dbus.bus import bus_type_option, BusType, configure_bus
 from crystalfontz.dbus.client import DbusClient
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import (
@@ -173,12 +173,7 @@ def warn_dirty() -> None:
     envvar="CRYSTALFONTZ_RETRY_TIMES",
     help="How many times to retry a command if a response times out",
 )
-@click.option(
-    "--user/--system",
-    type=BUS_TYPE,
-    default=DEFAULT_BUS,
-    help="Connect to either the user or system bus",
-)
+@bus_type_option
 @click.pass_context
 def main(
     ctx: click.Context,
@@ -186,7 +181,7 @@ def main(
     output: OutputMode,
     timeout: Optional[float],
     retry_times: Optional[int],
-    user: BusType,
+    bus_type: BusType,
 ) -> None:
     """
     Control your Crystalfontz device.
@@ -198,7 +193,7 @@ def main(
     echo.mode = output
 
     async def load() -> None:
-        configure_bus(bus_type=user)
+        configure_bus(bus_type)
 
         client = DbusClient()
         ctx.obj = Obj(
