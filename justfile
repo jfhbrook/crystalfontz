@@ -67,7 +67,7 @@ format:
 # Lint with flake8
 lint:
   uv run flake8 './crystalfontz' ./tests
-  shellcheck ./scripts/*.sh
+  shellcheck ./scripts/*.sh ./bin/*
   uv run validate-pyproject ./pyproject.toml
 
 # Check type annotations with pyright

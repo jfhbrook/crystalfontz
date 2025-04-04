@@ -97,7 +97,3 @@ def main(global_: bool, config_file: str, log_level: LogLevel, user: BusType) ->
     configure_bus(bus_type=user)
 
     asyncio.run(serve(file))
-
-
-if __name__ == "__main__":
-    main()

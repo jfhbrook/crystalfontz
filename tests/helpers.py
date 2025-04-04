@@ -13,17 +13,15 @@ class Cli:
 
     def __init__(
         self: Self,
-        command: str,
-        argv: Optional[List[str]] = None,
+        argv: List[str],
         env: Optional[Dict[str, str]] = None,
     ) -> None:
-        self.command: str = command
-        self.argv: List[str] = argv or list()
+        self.argv: List[str] = argv
         self.env: Dict[str, str] = env or dict(os.environ)
 
     def __call__(self: Self, *argv: str) -> subprocess.CompletedProcess:
         return subprocess.run(
-            [self.command] + self.argv + list(argv),
+            self.argv + list(argv),
             capture_output=True,
             check=True,
             env=self.env,
@@ -32,7 +30,7 @@ class Cli:
     @contextmanager
     def bg(self: Self, *argv: str) -> Generator[None, None, None]:
         proc = subprocess.Popen(
-            [self.command] + self.argv + list(argv),
+            self.argv + list(argv),
             stderr=subprocess.DEVNULL,
             env=self.env,
         )

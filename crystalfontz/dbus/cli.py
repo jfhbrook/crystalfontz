@@ -884,7 +884,3 @@ async def read_gpio(
 ) -> None:
     res = await client.read_gpio(index, timeout, retry_times)
     echo(GpioReadM.unpack(res))
-
-
-if __name__ == "__main__":
-    main()
