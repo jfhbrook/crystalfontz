@@ -10,7 +10,7 @@ from sdbus import (  # pyright: ignore [reportMissingModuleSource]
 
 from crystalfontz.cli import LogLevel
 from crystalfontz.config import GLOBAL_FILE
-from crystalfontz.dbus.bus import BusType, configure_bus
+from crystalfontz.dbus.bus import BUS_TYPE, BusType, configure_bus, DEFAULT_BUS
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface, load_client
 
@@ -73,8 +73,8 @@ async def serve(config_file: Optional[str] = None) -> None:
 )
 @click.option(
     "--user/--system",
-    type=bool,
-    default=None,
+    type=BUS_TYPE,
+    default=DEFAULT_BUS,
     help="Connect to either the user or system bus",
 )
 def main(global_: bool, config_file: str, log_level: LogLevel, user: BusType) -> None:

@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+import click
 from sdbus import (  # pyright: ignore [reportMissingModuleSource]
     sd_bus_open_system,
     sd_bus_open_user,
@@ -10,6 +11,7 @@ from sdbus import (  # pyright: ignore [reportMissingModuleSource]
 logger = logging.getLogger(__name__)
 
 BusType = Optional[bool]
+BUS_TYPE = click.BOOL
 
 DEFAULT_BUS = None
 USER_BUS = True

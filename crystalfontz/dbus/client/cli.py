@@ -30,7 +30,7 @@ from crystalfontz.cli import (
     OutputMode,
     WATCHDOG_SETTING,
 )
-from crystalfontz.dbus.bus import configure_bus, DEFAULT_BUS
+from crystalfontz.dbus.bus import BUS_TYPE, BusType, configure_bus, DEFAULT_BUS
 from crystalfontz.dbus.client import DbusClient
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import (
@@ -61,8 +61,6 @@ from crystalfontz.temperature import (
 )
 
 logger = logging.getLogger(__name__)
-
-BUS_TYPE = click.BOOL
 
 
 @dataclass
@@ -188,7 +186,7 @@ def main(
     output: OutputMode,
     timeout: Optional[float],
     retry_times: Optional[int],
-    user: Optional[bool],
+    user: BusType,
 ) -> None:
     """
     Control your Crystalfontz device.
