@@ -73,7 +73,7 @@ def dbus_service(
 def dbus_cli(
     cli_env: EnvFactory, dbus_service: None, request: pytest.FixtureRequest
 ) -> Cli:
-    argv: List[str] = ["python3", "-m", "crystalfontz.dbus"]
+    argv: List[str] = ["python3", "-m", "crystalfontz.dbus.client"]
 
     if not request.config.getoption("--system"):
         argv.append("--user")
