@@ -11,11 +11,6 @@ import sys
 from typing import cast, List, Optional, Tuple
 
 import click
-from sdbus import (  # pyright: ignore [reportMissingModuleSource]
-    sd_bus_open_system,
-    sd_bus_open_user,
-    SdBus,
-)
 
 from crystalfontz.atx import AtxPowerSwitchFunction
 from crystalfontz.baud import BaudRate
@@ -35,6 +30,7 @@ from crystalfontz.cli import (
     OutputMode,
     WATCHDOG_SETTING,
 )
+from crystalfontz.dbus.bus import configure_bus
 from crystalfontz.dbus.client import DbusClient
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import (
@@ -74,7 +70,6 @@ class Obj:
     output: OutputMode
     timeout: TimeoutT
     retry_times: RetryTimesT
-    user: bool
 
 
 def pass_config(fn: AsyncCommand) -> AsyncCommand:
@@ -179,7 +174,10 @@ def warn_dirty() -> None:
     help="How many times to retry a command if a response times out",
 )
 @click.option(
-    "--user/--no-user", type=bool, default=False, help="Connect to the user bus"
+    "--user/--system",
+    type=bool,
+    default=None,
+    help="Connect to either the user or system bus",
 )
 @click.pass_context
 def main(
@@ -188,7 +186,7 @@ def main(
     output: OutputMode,
     timeout: Optional[float],
     retry_times: Optional[int],
-    user: bool,
+    user: Optional[bool],
 ) -> None:
     """
     Control your Crystalfontz device.
@@ -200,15 +198,15 @@ def main(
     echo.mode = output
 
     async def load() -> None:
-        bus: SdBus = sd_bus_open_user() if user else sd_bus_open_system()
-        client = DbusClient(bus)
+        configure_bus(bus_type=user)
+
+        client = DbusClient()
         ctx.obj = Obj(
             client=client,
             log_level=log_level,
             output=output,
             timeout=TimeoutM.pack(timeout),
             retry_times=RetryTimesM.pack(retry_times),
-            user=user,
         )
 
     asyncio.run(load())

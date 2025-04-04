@@ -10,6 +10,7 @@ from sdbus import (  # pyright: ignore [reportMissingModuleSource]
 
 from crystalfontz.cli import LogLevel
 from crystalfontz.config import GLOBAL_FILE
+from crystalfontz.dbus.bus import BusType, configure_bus
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface, load_client
 
@@ -70,7 +71,13 @@ async def serve(config_file: Optional[str] = None) -> None:
     default="INFO",
     help="Set the log level",
 )
-def main(global_: bool, config_file: str, log_level: LogLevel) -> None:
+@click.option(
+    "--user/--system",
+    type=bool,
+    default=None,
+    help="Connect to either the user or system bus",
+)
+def main(global_: bool, config_file: str, log_level: LogLevel, user: BusType) -> None:
     """
     Expose the Crystalfontz device as a DBus service.
     """
@@ -86,6 +93,8 @@ def main(global_: bool, config_file: str, log_level: LogLevel) -> None:
         file = config_file
     elif global_:
         file = GLOBAL_FILE
+
+    configure_bus(bus_type=user)
 
     asyncio.run(serve(file))
 
