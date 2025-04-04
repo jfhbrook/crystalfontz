@@ -30,7 +30,7 @@ from crystalfontz.cli import (
     OutputMode,
     WATCHDOG_SETTING,
 )
-from crystalfontz.dbus.bus import configure_bus
+from crystalfontz.dbus.bus import configure_bus, DEFAULT_BUS
 from crystalfontz.dbus.client import DbusClient
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import (
@@ -61,6 +61,8 @@ from crystalfontz.temperature import (
 )
 
 logger = logging.getLogger(__name__)
+
+BUS_TYPE = click.BOOL
 
 
 @dataclass
@@ -175,8 +177,8 @@ def warn_dirty() -> None:
 )
 @click.option(
     "--user/--system",
-    type=bool,
-    default=None,
+    type=BUS_TYPE,
+    default=DEFAULT_BUS,
     help="Connect to either the user or system bus",
 )
 @click.pass_context
