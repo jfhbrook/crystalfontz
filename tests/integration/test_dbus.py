@@ -44,7 +44,7 @@ def test_ping(dbus_cli: Cli) -> None:
     assert pong == b"pong"
 
 
-@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.skip
 def test_status(dbus_cli: Cli, snapshot) -> None:
     assert dbus_cli("status").stdout.strip() == snapshot
 
@@ -53,43 +53,42 @@ def test_versions(dbus_cli: Cli, snapshot) -> None:
     assert dbus_cli("versions").stdout.strip() == snapshot
 
 
-@pytest.mark.skip(reason="Privileged command")
 def test_reboot(dbus_cli: Cli, confirm) -> None:
     dbus_cli("--timeout", "1.0", "power", "reboot-lcd")
 
     confirm("Did the LCD reboot?")
 
 
-@pytest.mark.skip(reason="Privileged command")
+@pytest.mark.skip
 def test_detect() -> None:
     raise NotImplementedError("test_detect")
 
 
-@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.skip
 def test_listen() -> None:
     raise NotImplementedError("test_listen")
 
 
-@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.skip
 def test_listen_for(dbus_cli: Cli) -> None:
     dbus_cli("listen", "--for", "1.0")
 
 
-@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.skip
 def test_marquee() -> None:
     raise NotImplementedError("test_marquee")
 
 
-@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.skip
 def test_screensaver() -> None:
     raise NotImplementedError("test_marquee")
 
 
-@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.skip
 def test_read_user_flash() -> None:
     raise NotImplementedError("test_read_user_flash")
 
 
-@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.skip
 def test_poll_keypad() -> None:
     raise NotImplementedError("test_poll_keypad")
