@@ -1163,3 +1163,7 @@ async def screensaver(obj: Obj, client: Client, text: str) -> None:
     s = client.screensaver(text, tick=tick)
 
     await run_effect(s, client.loop, for_)
+
+
+if __name__ == "__main__":
+    main()
