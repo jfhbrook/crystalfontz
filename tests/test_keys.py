@@ -1,4 +1,7 @@
+import pytest
+
 from crystalfontz.keys import (
+    KeyActivity,
     KeyState,
     KeyStates,
     KP_DOWN,
@@ -39,3 +42,27 @@ def test_key_states_to_from_bytes(snapshot) -> None:
     from_bytes = KeyStates.from_bytes(as_bytes)
 
     assert from_bytes == key_states
+
+
+@pytest.mark.parametrize(
+    "activity",
+    [
+        KeyActivity.KEY_UP_PRESS,
+        KeyActivity.KEY_DOWN_PRESS,
+        KeyActivity.KEY_LEFT_PRESS,
+        KeyActivity.KEY_RIGHT_PRESS,
+        KeyActivity.KEY_ENTER_PRESS,
+        KeyActivity.KEY_EXIT_PRESS,
+        KeyActivity.KEY_UP_RELEASE,
+        KeyActivity.KEY_DOWN_RELEASE,
+        KeyActivity.KEY_LEFT_RELEASE,
+        KeyActivity.KEY_RIGHT_RELEASE,
+        KeyActivity.KEY_ENTER_RELEASE,
+        KeyActivity.KEY_EXIT_RELEASE,
+    ],
+)
+def test_key_activity_to_from_byte(activity: KeyActivity) -> None:
+    byte = activity.to_byte()
+    from_byte = KeyActivity.from_byte(byte)
+
+    assert from_byte == activity

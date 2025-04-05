@@ -5,6 +5,7 @@ from typing import List, Optional, Self
 from sdbus import (  # pyright: ignore [reportMissingModuleSource];; dbus_signal_async,
     dbus_method_async,
     dbus_property_async,
+    dbus_signal_async,
     DbusInterfaceCommonAsync,
     DbusUnprivilegedFlag,
 )
@@ -66,12 +67,16 @@ from crystalfontz.dbus.domain.response import (
     DowTransactionResultT,
     GpioReadM,
     GpioReadT,
+    KeyActivityReportM,
+    KeyActivityReportT,
     KeypadPolledM,
     KeypadPolledT,
     LcdMemoryM,
     LcdMemoryT,
     PongM,
     PongT,
+    TemperatureReportM,
+    TemperatureReportT,
     UserFlashAreaReadM,
     UserFlashAreaReadT,
     VersionsM,
@@ -79,6 +84,7 @@ from crystalfontz.dbus.domain.response import (
 )
 from crystalfontz.dbus.domain.temperature import TemperatureDisplayItemT
 from crystalfontz.error import ConnectionError
+from crystalfontz.report import KeyActivityReport, ReportHandler, TemperatureReport
 
 Ok = bool
 
@@ -93,6 +99,25 @@ async def load_client(config_file: Optional[str]) -> Client:
     client = await create_connection(config.port)
 
     return client
+
+
+class DbusReportHandler(ReportHandler):
+    def __init__(self: Self, iface: "DbusInterface") -> None:
+        self.iface = iface
+
+    async def on_key_activity(self: Self, report: KeyActivityReport) -> None:
+        """
+        This method is called on any new key activity report.
+        """
+
+        self.iface.key_activity_reports.emit(KeyActivityReportM.pack(report))
+
+    async def on_temperature(self: Self, report: TemperatureReport) -> None:
+        """
+        This method is called on any new temperature report.
+        """
+
+        self.iface.temperature_reports.emit(TemperatureReportM.pack(report))
 
 
 class DbusInterface(  # type: ignore
@@ -864,3 +889,19 @@ class DbusInterface(  # type: ignore
         )
 
         return GpioReadM.pack(read)
+
+    @dbus_signal_async(KeyActivityReportM.t)
+    def key_activity_reports(self: Self) -> KeyActivityReportT:
+        """
+        Listen for key activity reports
+        """
+
+        raise NotImplementedError("key_activity_reports")
+
+    @dbus_signal_async(TemperatureReportM.t)
+    def temperature_reports(self: Self) -> TemperatureReportT:
+        """
+        Listen for temperature reports
+        """
+
+        raise NotImplementedError("temperature_reports")
