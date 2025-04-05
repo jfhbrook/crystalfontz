@@ -24,7 +24,7 @@ ATX_SETTINGS = AtxPowerSwitchFunctionalitySettings(
 
 
 @pytest.mark.parametrize(
-    "device,status",
+    "device,status,size",
     [
         (
             CFA533(),
@@ -39,12 +39,16 @@ ATX_SETTINGS = AtxPowerSwitchFunctionalitySettings(
                 cfa633_contrast=0.2,
                 lcd_brightness=0.3,
             ),
+            15,
         )
     ],
 )
-def test_status_to_from_bytes(device: Device, status: DeviceStatus, snapshot) -> None:
+def test_status_to_from_bytes(
+    device: Device, status: DeviceStatus, size: int, snapshot
+) -> None:
     as_bytes = status.to_bytes(device)
 
+    assert len(as_bytes) == size
     assert as_bytes == snapshot
 
     from_bytes = status.__class__.from_bytes(as_bytes)
