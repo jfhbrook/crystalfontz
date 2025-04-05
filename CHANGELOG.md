@@ -33,7 +33,6 @@
     - Can be overridden with `CRYSTALFONTZ_CONFIG_FILE` environment variable
 - **NEW:** Dbus support:
   - `crystalfontz.dbus.DbusInterface` dbus Interface class, implementing most commands
-    - **NOTE:** `set_special_character_data` is unimplemented
     - **NOTE:** Reporting is unimplemented
     - **NOTE:** Effects are unimplemented
   - `crystalfontz.dbus.DbusClient` dbus client class
