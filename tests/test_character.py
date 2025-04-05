@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 
 from tests.helpers import special_character_as_rows
