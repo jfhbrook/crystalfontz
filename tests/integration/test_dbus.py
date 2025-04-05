@@ -44,7 +44,6 @@ def test_ping(dbus_cli: Cli) -> None:
     assert pong == b"pong"
 
 
-@pytest.mark.skip
 def test_status(dbus_cli: Cli, snapshot) -> None:
     assert dbus_cli("status").stdout.strip() == snapshot
 
