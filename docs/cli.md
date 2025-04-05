@@ -3,7 +3,7 @@
 This library has a CLI, which you can run like so:
 
 ```sh
-$ crystalfontz --help
+$ python3 -m crystalfontz --help
 Usage: crystalfontz [OPTIONS] COMMAND [ARGS]...
 
   Control your Crystalfontz device
@@ -61,3 +61,7 @@ Some CLI parameters encode raw bytes. In these cases, the inputs support [the sa
 ## Output Format
 
 This CLI supports two output formats: `text` and `json`. The former will output a human-readable format, and the latter will output JSON. When generating JSON output, bytes are encoded in base64.
+
+## Installing the `crystalfontz` Shim
+
+Included in this project is `./bin/crystalfontz`, a script that you can add to your PATH for convenience.

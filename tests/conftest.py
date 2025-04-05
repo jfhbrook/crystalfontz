@@ -50,15 +50,15 @@ def cli_env(config_file: str, log_level: str) -> EnvFactory:
 
 
 @pytest.fixture
-def crystalfontz(cli_env: EnvFactory) -> Cli:
-    return Cli("crystalfontz", env=cli_env())
+def cli(cli_env: EnvFactory) -> Cli:
+    return Cli(["python3", "-m", "crystalfontz"], env=cli_env())
 
 
 @pytest.fixture
-def crystalfontzd(
+def dbus_service(
     cli_env: EnvFactory, request: pytest.FixtureRequest
 ) -> Generator[None, None, None]:
-    cli = Cli("crystalfontzd", env=cli_env())
+    cli = Cli(["python3", "-m", "crystalfontz.dbus.service"], env=cli_env())
 
     if request.config.getoption("--system"):
         logger.info("Connecting to system bus")
@@ -70,12 +70,12 @@ def crystalfontzd(
 
 
 @pytest.fixture
-def crystalfontzctl(
-    cli_env: EnvFactory, crystalfontzd: None, request: pytest.FixtureRequest
+def dbus_cli(
+    cli_env: EnvFactory, dbus_service: None, request: pytest.FixtureRequest
 ) -> Cli:
-    argv: List[str] = list()
+    argv: List[str] = ["python3", "-m", "crystalfontz.dbus.client"]
 
     if not request.config.getoption("--system"):
         argv.append("--user")
 
-    return Cli("crystalfontzctl", argv=argv, env=cli_env())
+    return Cli(argv, env=cli_env())

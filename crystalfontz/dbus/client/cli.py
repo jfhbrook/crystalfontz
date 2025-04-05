@@ -3,7 +3,6 @@ from dataclasses import dataclass
 import functools
 import logging
 import os
-from pathlib import Path
 import shlex
 import shutil
 import subprocess
@@ -11,11 +10,6 @@ import sys
 from typing import cast, List, Optional, Tuple
 
 import click
-from sdbus import (  # pyright: ignore [reportMissingModuleSource]
-    sd_bus_open_system,
-    sd_bus_open_user,
-    SdBus,
-)
 
 from crystalfontz.atx import AtxPowerSwitchFunction
 from crystalfontz.baud import BaudRate
@@ -35,6 +29,7 @@ from crystalfontz.cli import (
     OutputMode,
     WATCHDOG_SETTING,
 )
+from crystalfontz.dbus.bus import bus_type_option, BusType, configure_bus
 from crystalfontz.dbus.client import DbusClient
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import (
@@ -74,7 +69,6 @@ class Obj:
     output: OutputMode
     timeout: TimeoutT
     retry_times: RetryTimesT
-    user: bool
 
 
 def pass_config(fn: AsyncCommand) -> AsyncCommand:
@@ -112,10 +106,10 @@ def should_sudo(config_file: str) -> bool:
 
 
 def run_config_command(obj: Obj, staged: StagedConfig, argv: List[str]) -> None:
-    crystalfontz_bin = str(Path(__file__).parent.parent / "cli.py")
     args: List[str] = [
         sys.executable,
-        crystalfontz_bin,
+        "-m",
+        "crystalfontz",
         "--config-file",
         staged.file,
         "--log-level",
@@ -178,9 +172,7 @@ def warn_dirty() -> None:
     envvar="CRYSTALFONTZ_RETRY_TIMES",
     help="How many times to retry a command if a response times out",
 )
-@click.option(
-    "--user/--no-user", type=bool, default=False, help="Connect to the user bus"
-)
+@bus_type_option
 @click.pass_context
 def main(
     ctx: click.Context,
@@ -188,7 +180,7 @@ def main(
     output: OutputMode,
     timeout: Optional[float],
     retry_times: Optional[int],
-    user: bool,
+    bus_type: BusType,
 ) -> None:
     """
     Control your Crystalfontz device.
@@ -200,15 +192,15 @@ def main(
     echo.mode = output
 
     async def load() -> None:
-        bus: SdBus = sd_bus_open_user() if user else sd_bus_open_system()
-        client = DbusClient(bus)
+        configure_bus(bus_type)
+
+        client = DbusClient()
         ctx.obj = Obj(
             client=client,
             log_level=log_level,
             output=output,
             timeout=TimeoutM.pack(timeout),
             retry_times=RetryTimesM.pack(retry_times),
-            user=user,
         )
 
     asyncio.run(load())
@@ -886,7 +878,3 @@ async def read_gpio(
 ) -> None:
     res = await client.read_gpio(index, timeout, retry_times)
     echo(GpioReadM.unpack(res))
-
-
-if __name__ == "__main__":
-    main()
