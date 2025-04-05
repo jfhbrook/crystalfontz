@@ -83,8 +83,9 @@ from crystalfontz.dbus.domain.response import (
     VersionsT,
 )
 from crystalfontz.dbus.domain.temperature import TemperatureDisplayItemT
+from crystalfontz.dbus.report import DbusInterfaceReportHandler
 from crystalfontz.error import ConnectionError
-from crystalfontz.report import KeyActivityReport, ReportHandler, TemperatureReport
+from crystalfontz.report import ReportHandler
 
 Ok = bool
 
@@ -93,25 +94,8 @@ logger = logging.getLogger(__name__)
 DBUS_NAME = "org.jfhbrook.crystalfontz"
 
 
-class DbusReportHandler(ReportHandler):
-    def __init__(self: Self) -> None:
-        self.iface: "Optional[DbusInterface]" = None
-
-    async def on_key_activity(self: Self, report: KeyActivityReport) -> None:
-        if not self.iface:
-            return
-
-        self.iface.key_activity_reports.emit(KeyActivityReportM.pack(report))
-
-    async def on_temperature(self: Self, report: TemperatureReport) -> None:
-        if not self.iface:
-            return
-
-        self.iface.temperature_reports.emit(TemperatureReportM.pack(report))
-
-
 async def load_client(
-    report_handler: Optional[DbusReportHandler], config_file: Optional[str]
+    report_handler: Optional[ReportHandler], config_file: Optional[str]
 ) -> Client:
     config: Config = Config.from_file(config_file)
 
@@ -130,17 +114,17 @@ class DbusInterface(  # type: ignore
     def __init__(
         self: Self,
         client: Client,
-        report_handler: Optional[DbusReportHandler] = None,
+        report_handler: Optional[ReportHandler] = None,
         config_file: Optional[str] = None,
     ) -> None:
         super().__init__()
         self._config: Config = Config.from_file(config_file)
         self.client: Client = client
         self._client_lock: asyncio.Lock = asyncio.Lock()
-        self._report_handler = report_handler
+        self.report_handler = report_handler
 
-        if self._report_handler:
-            self._report_handler.iface = self
+        if isinstance(self.report_handler, DbusInterfaceReportHandler):
+            self.report_handler.iface = self
 
     @dbus_property_async(ConfigM.t)
     def config(self: Self) -> ConfigT:

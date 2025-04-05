@@ -18,9 +18,9 @@ from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.interface import (
     DBUS_NAME,
     DbusInterface,
-    DbusReportHandler,
     load_client,
 )
+from crystalfontz.dbus.report import DbusInterfaceReportHandler
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ async def service(config_file: Optional[str] = None) -> DbusInterface:
     """
 
     client = await load_client(
-        report_handler=DbusReportHandler(), config_file=config_file
+        report_handler=DbusInterfaceReportHandler(), config_file=config_file
     )
     iface = DbusInterface(client, config_file=config_file)
 

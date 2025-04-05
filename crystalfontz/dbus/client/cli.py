@@ -52,6 +52,7 @@ from crystalfontz.dbus.domain import (
     VersionsM,
 )
 from crystalfontz.dbus.error import handle_dbus_error
+from crystalfontz.dbus.report import DbusClientCliReportHandler
 from crystalfontz.gpio import GpioDriveMode, GpioFunction
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import (
@@ -203,7 +204,10 @@ def main(
         elif user is None:
             select_system_bus()
 
-        client = DbusClient()
+        report_handler = DbusClientCliReportHandler()
+        report_handler.mode = output
+
+        client = DbusClient(report_handler=report_handler)
         ctx.obj = Obj(
             client=client,
             log_level=log_level,
