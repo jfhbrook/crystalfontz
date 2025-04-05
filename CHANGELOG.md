@@ -33,14 +33,15 @@
     - Can be overridden with `CRYSTALFONTZ_CONFIG_FILE` environment variable
 - **NEW:** Dbus support:
   - `crystalfontz.dbus.DbusInterface` dbus Interface class, implementing most commands
-    - **NOTE:** `get_status` is unimplemented
     - **NOTE:** `set_special_character_data` is unimplemented
     - **NOTE:** Reporting is unimplemented
     - **NOTE:** Effects are unimplemented
   - `crystalfontz.dbus.DbusClient` dbus client class
   - `crystalfontz.dbus.domain` API for mapping domain objects to dbus types
   - `python3 -m crystalfontz.dbus.service` dbus service CLI
+    - Optional unpackaged `crystalfontz.dbus.service` entry point at `./bin/crystalfontz-service`
   - `python3 -m crystalfontz.dbus.client` dbus client CLI
+    - Optional unpackaged `crystalfontz.dbus.client` entry point at `./bin/crystalfontz-dbus`
 
 ## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
