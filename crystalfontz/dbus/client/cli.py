@@ -3,7 +3,6 @@ from dataclasses import dataclass
 import functools
 import logging
 import os
-from pathlib import Path
 import shlex
 import shutil
 import subprocess
@@ -107,10 +106,10 @@ def should_sudo(config_file: str) -> bool:
 
 
 def run_config_command(obj: Obj, staged: StagedConfig, argv: List[str]) -> None:
-    crystalfontz_bin = str(Path(__file__).parent.parent / "cli.py")
     args: List[str] = [
         sys.executable,
-        crystalfontz_bin,
+        "-m",
+        "crystalfontz",
         "--config-file",
         staged.file,
         "--log-level",
