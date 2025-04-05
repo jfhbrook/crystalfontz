@@ -1,0 +1,17 @@
+# serializer version: 1
+# name: test_special_character_repr
+  '''
+        
+    ███ 
+   █ █ █
+   █ █ █
+   █████
+   █ █ █
+   ██ ██
+    ███ 
+  
+  '''
+# ---
+# name: test_special_character_to_from_bytes
+  b'\x00\x0e\x15\x15\x1f\x15\x1b\x0e'
+# ---

@@ -32,6 +32,18 @@ class SpecialCharacter:
 
         return cls(pixels)
 
+    @classmethod
+    def from_bytes(cls: Type[Self], character: bytes, device: DeviceProtocol) -> Self:
+        pixels: List[List[bool]] = []
+
+        for row in character:
+            pix: List[bool] = []
+            for j in range(device.character_width):
+                pix.insert(0, bool(row & (1 << j)))
+            pixels.append(pix)
+
+        return cls(pixels)
+
     def to_bytes(self: Self, device: DeviceProtocol) -> bytes:
         character: BitArray = BitArray()
 
@@ -53,6 +65,16 @@ class SpecialCharacter:
                 f"Character should be {device.character_width} × "
                 f"{device.character_height} pixels, is {width} × {height}"
             )
+
+    def __repr__(self: Self) -> str:
+        character = ""
+
+        for row in self.pixels:
+            for pixel in row:
+                character += "█" if pixel else " "
+            character += "\n"
+
+        return character
 
 
 SMILEY_FACE = SpecialCharacter.from_str(

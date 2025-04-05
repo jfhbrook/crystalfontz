@@ -501,7 +501,7 @@ async def set_line_2(
 
 @main.command(help="Interact with special characters")
 def character() -> None:
-    raise NotImplementedError("crystalfontzctl character")
+    raise NotImplementedError("character")
 
 
 @main.group(help="Interact directly with the LCD controller")
