@@ -16,7 +16,7 @@ Options:
                                   device before timing out
   --retry-times INTEGER           How many times to retry a command if a
                                   response times out
-  --user / --system               Connect to either the user or system bus
+  --user / --default              Connect to either the user or default bus
   --help                          Show this message and exit.
 
 Commands:

@@ -58,7 +58,7 @@ def cli(cli_env: EnvFactory) -> Cli:
 def dbus_service(
     cli_env: EnvFactory, request: pytest.FixtureRequest
 ) -> Generator[None, None, None]:
-    cli = Cli(["python3", "-m", "crystalfontz.dbus.service"], env=cli_env())
+    cli = Cli(["python3", "-m", "crystalfontz.dbus.service", "--user"], env=cli_env())
 
     if request.config.getoption("--system"):
         logger.info("Connecting to system bus")
@@ -73,7 +73,12 @@ def dbus_service(
 def dbus_cli(
     cli_env: EnvFactory, dbus_service: None, request: pytest.FixtureRequest
 ) -> Cli:
-    argv: List[str] = ["python3", "-m", "crystalfontz.dbus.client"]
+    argv: List[str] = [
+        "python3",
+        "-m",
+        "crystalfontz.dbus.client",
+        "--system" if request.config.getoption("--system") else "--user",
+    ]
 
     if not request.config.getoption("--system"):
         argv.append("--user")
