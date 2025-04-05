@@ -2,6 +2,8 @@ from typing import List
 
 import pytest
 
+from tests.helpers import special_character_as_rows
+
 from crystalfontz.character import inverse, SMILEY_FACE, SpecialCharacter, x_bar
 from crystalfontz.device import CFA533, CFA533_CHARACTER_ROM
 
@@ -34,10 +36,6 @@ def test_encode(input, expected) -> None:
     assert CFA533_CHARACTER_ROM.encode(input) == expected
 
 
-def _as_rows(character: SpecialCharacter) -> List[str]:
-    return ["".join(["█" if p else " " for p in row]) for row in character.pixels]
-
-
 def test_special_character_repr(snapshot) -> None:
     assert repr(SMILEY_FACE) == snapshot
 
@@ -50,7 +48,9 @@ def test_special_character_to_from_bytes(snapshot) -> None:
 
     from_bytes = SpecialCharacter.from_bytes(as_bytes, device)
 
-    assert _as_rows(from_bytes) == _as_rows(SMILEY_FACE)
+    assert special_character_as_rows(from_bytes) == special_character_as_rows(
+        SMILEY_FACE
+    )
 
 
 @pytest.mark.parametrize("special_character", [SMILEY_FACE])

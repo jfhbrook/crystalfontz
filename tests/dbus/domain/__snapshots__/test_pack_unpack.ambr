@@ -568,3 +568,11 @@
   Power Inverted: yes
   Power Pulse Length (seconds): 1.0
 # ---
+# name: test_special_character_pack_unpack
+  tuple(
+    'CFA533',
+    'h1.4',
+    'u1v2',
+    b'\x00\x0e\x15\x15\x1f\x15\x1b\x0e',
+  )
+# ---

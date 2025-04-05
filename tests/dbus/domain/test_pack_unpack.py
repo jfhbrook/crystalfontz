@@ -2,8 +2,11 @@ from typing import Any, Callable, cast, List, Optional
 
 import pytest
 
+from tests.helpers import special_character_as_rows
+
 from crystalfontz.atx import AtxPowerSwitchFunction
 from crystalfontz.baud import FAST_BAUD_RATE, SLOW_BAUD_RATE
+from crystalfontz.character import SMILEY_FACE
 from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.dbus.domain.atx import (
@@ -39,6 +42,7 @@ from crystalfontz.dbus.domain.command import (
     SetupLiveTemperatureDisplayM,
     SetupTemperatureReportingM,
     SimpleCommandM,
+    SpecialCharacterM,
     WriteUserFlashAreaM,
 )
 from crystalfontz.dbus.domain.config import ConfigM
@@ -63,7 +67,7 @@ from crystalfontz.dbus.domain.temperature import (
     TemperatureDigitsM,
     TemperatureDisplayItemM,
 )
-from crystalfontz.device import lookup_device
+from crystalfontz.device import CFA533
 from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings, GpioState
 from crystalfontz.keys import (
     KeyState,
@@ -136,7 +140,7 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
             None,
         ),
         (CursorStyle.BLINKING_UNDERSCORE, CursorStyleM, None),
-        (lookup_device("CFA533", "h1.4", "u1v2"), DeviceM, validate_is),
+        (CFA533(), DeviceM, validate_is),
         (
             GpioSettings(
                 function=GpioFunction.UNUSED,
@@ -222,6 +226,17 @@ def test_domain_pack_unpack(
             validate(unpacked, entity)
         else:
             assert unpacked == entity
+
+
+def test_special_character_pack_unpack(snapshot) -> None:
+    device = CFA533()
+    packed = SpecialCharacterM.pack(SMILEY_FACE, device)
+
+    assert packed == snapshot
+
+    unpacked = SpecialCharacterM.unpack(packed)
+
+    assert special_character_as_rows(unpacked) == special_character_as_rows(SMILEY_FACE)
 
 
 @pytest.mark.parametrize(
