@@ -96,6 +96,29 @@ class KeyStates:
             ),
         )
 
+    def to_bytes(self: Self) -> bytes:
+        pressed = 0x00
+        pressed_since = 0x00
+        released_since = 0x00
+
+        for state in [
+            self.up,
+            self.enter,
+            self.exit,
+            self.left,
+            self.right,
+            self.down,
+        ]:
+            pressed = (pressed ^ KP_UP) if state.pressed else pressed
+            pressed_since = (
+                (pressed_since ^ KP_UP) if state.pressed_since else pressed_since
+            )
+            released_since = (
+                (released_since ^ KP_UP) if state.released_since else released_since
+            )
+
+        return bytes([pressed, pressed_since, released_since])
+
     def __repr__(self: Self) -> str:
         repr_ = ""
         for name, state in asdict(self).items():

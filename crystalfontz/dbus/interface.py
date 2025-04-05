@@ -770,7 +770,7 @@ class DbusInterface(  # type: ignore
             *SimpleCommandM.unpack(timeout, retry_times)
         )
 
-        return DeviceStatusM.pack(status)
+        return DeviceStatusM.pack(status, self.client.device)
 
     @dbus_method_async(SendDataM.t, NoneM.t, flags=DbusUnprivilegedFlag)
     async def send_data(
