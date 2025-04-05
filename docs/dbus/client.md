@@ -1,10 +1,10 @@
 # DBus Client CLI
 
-Assuming `crystalfontzd` is running, you may interact with the service using `crystalfontzctl`:
+Assuming the DBus service is running, you may interact with the service using the client CLI:
 
 ```sh
-$ crystalfontzctl --help
-Usage: crystalfontzctl [OPTIONS] COMMAND [ARGS]...
+$ python -m crystalfontz.dbus.client --help
+Usage: python3 -m crystalfontz.dbus.client [OPTIONS] COMMAND [ARGS]...
 
   Control your Crystalfontz device.
 
@@ -12,7 +12,11 @@ Options:
   --log-level [DEBUG|INFO|WARNING|ERROR|CRITICAL]
                                   Set the log level
   --output [text|json]            Output either human-friendly text or JSON
-  --user / --no-user              Connect to the user bus
+  --timeout FLOAT                 How long to wait for a response from the
+                                  device before timing out
+  --retry-times INTEGER           How many times to retry a command if a
+                                  response times out
+  --user / --system               Connect to either the user or system bus
   --help                          Show this message and exit.
 
 Commands:
@@ -41,8 +45,8 @@ Commands:
   watchdog     29 (0x1D): Enable/Disable and Reset the Watchdog
 ```
 
-The interface is similar to the vanilla `crystalfontz` CLI. However, there are a few differences:
+The interface is similar to the vanilla CLI. However, there are a few differences:
 
-1. By default, `crystalfontzctl` will connect to the `system` bus. To connect to the local bus, set the `--user` flag.
-2. Configuration commands do not reload `crystalfontzctl`'s configuration. Instead, they will update the relevant config file, and show the differences between the file config and the service's loaded config.
-3. If the config file isn't owned by the user, `crystalfontzctl` will attempt to run editing commands with `sudo`.
+1. By default, the DBus client CLI will connect to the default bus. To connect to the user session bus, set the `--user` flag. To connect to the system bus, set the `--system` flag.
+2. Configuration commands do not reload the service's configuration. Instead, they will update the relevant config file, and show the differences between the file config and the service's loaded config.
+3. If the config file isn't owned by the user, the client CLI will attempt to run editing commands with `sudo`.
