@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_atx_settings_to_from_bytes[settings0]
+  b'! '
+# ---
