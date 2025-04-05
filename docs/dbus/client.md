@@ -50,3 +50,7 @@ The interface is similar to the vanilla CLI. However, there are a few difference
 1. By default, the DBus client CLI will connect to the default bus. To connect to the user session bus, set the `--user` flag. To connect to the system bus, set the `--system` flag.
 2. Configuration commands do not reload the service's configuration. Instead, they will update the relevant config file, and show the differences between the file config and the service's loaded config.
 3. If the config file isn't owned by the user, the client CLI will attempt to run editing commands with `sudo`.
+
+## Installing the `crystalfontz-dbus` Shim
+
+Included in this project is `./bin/crystalfontz-dbus`, a script that you can add to your PATH for convenience. If you primarily interact with the device through DBus, you may want to name this `crystalfontz` on your system.
