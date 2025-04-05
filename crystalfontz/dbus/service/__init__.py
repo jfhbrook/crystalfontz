@@ -15,7 +15,12 @@ from crystalfontz.dbus.bus import (
     select_system_bus,
 )
 from crystalfontz.dbus.error import handle_dbus_error
-from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface, load_client
+from crystalfontz.dbus.interface import (
+    DBUS_NAME,
+    DbusInterface,
+    DbusReportHandler,
+    load_client,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +30,9 @@ async def service(config_file: Optional[str] = None) -> DbusInterface:
     Create a configure DBus service with a supplied config file.
     """
 
-    client = await load_client(config_file)
+    client = await load_client(
+        report_handler=DbusReportHandler(), config_file=config_file
+    )
     iface = DbusInterface(client, config_file=config_file)
 
     logger.debug(f"Requesting bus name {DBUS_NAME}...")
