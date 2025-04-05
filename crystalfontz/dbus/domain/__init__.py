@@ -71,6 +71,7 @@ from crystalfontz.dbus.domain.base import (
 )
 from crystalfontz.dbus.domain.config import ConfigM, ConfigT
 from crystalfontz.dbus.domain.cursor import CursorStyleM, CursorStyleT
+from crystalfontz.dbus.domain.device import DeviceStatusM, DeviceStatusT
 from crystalfontz.dbus.domain.gpio import OptGpioSettingsM, OptGpioSettingsT
 from crystalfontz.dbus.domain.keys import (
     KeypadBrightnessM,
@@ -107,6 +108,8 @@ __all__: List[str] = [
     "ConfigT",
     "CursorStyleM",
     "CursorStyleT",
+    "DeviceStatusM",
+    "DeviceStatusT",
     "DowDeviceInformationM",
     "DowDeviceInformationT",
     "DowTransactionResultM",

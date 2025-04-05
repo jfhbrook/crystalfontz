@@ -34,6 +34,7 @@ from crystalfontz.dbus.client import DbusClient
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import (
     CursorStyleM,
+    DeviceStatusM,
     DowDeviceInformationM,
     DowTransactionResultM,
     GpioReadM,
@@ -783,9 +784,10 @@ async def watchdog(
 @pass_timeout_retry
 @pass_client
 async def status(
-    _client: DbusClient, _timeout: TimeoutT, _retry_times: RetryTimesT
+    client: DbusClient, timeout: TimeoutT, retry_times: RetryTimesT
 ) -> None:
-    raise NotImplementedError("status")
+    status = await client.read_status(timeout, retry_times)
+    echo(DeviceStatusM.unpack(status))
 
 
 @main.command(help="31 (0x1F): Send Data to LCD")

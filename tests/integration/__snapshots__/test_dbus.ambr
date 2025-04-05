@@ -1,4 +1,7 @@
 # serializer version: 1
+# name: test_status
+  b'CFA533 Status:\n--------------\nTemperature sensors enabled: \nKey states:\n  up: keypress=KP_UP, pressed=no, pressed_since=yes, released_since=yes\n  enter: keypress=KP_ENTER, pressed=no, pressed_since=yes, released_since=yes\n  exit: keypress=KP_EXIT, pressed=no, pressed_since=yes, released_since=yes\n  left: keypress=KP_LEFT, pressed=no, pressed_since=yes, released_since=yes\n  right: keypress=KP_RIGHT, pressed=no, pressed_since=yes, released_since=yes\n  down: keypress=KP_DOWN, pressed=no, pressed_since=yes, released_since=yes\nATX Power Switch Functionality Settings:\n  Functions enabled: \n  Auto-Polarity Enabled: no\n  Reset Inverted: no\n  Power Inverted: no\n  Power Pulse Length (seconds): None\nWatchdog Counter: 0\nContrast: 0.3137254901960784\nContrast (CFA633 Compatible): 0.24\nBacklight:\n  Keypad Brightness: 0.2\n  LCD Brightness: 0.2'
+# ---
 # name: test_versions
   b'CFA533: h1.4, u1v2'
 # ---
