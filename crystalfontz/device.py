@@ -9,7 +9,10 @@ from crystalfontz.atx import AtxPowerSwitchFunctionalitySettings
 from crystalfontz.character import CharacterRom, inverse, x_bar
 from crystalfontz.error import DecodeError, DeviceLookupError
 from crystalfontz.keys import KeyStates
-from crystalfontz.temperature import unpack_temperature_settings
+from crystalfontz.temperature import (
+    pack_temperature_settings,
+    unpack_temperature_settings,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -130,8 +133,67 @@ class CFA533Status:
     cfa633_contrast: float
     lcd_brightness: float
 
+    @classmethod
+    def from_bytes(cls: Type[Self], data: bytes) -> Self:
+        if len(data) != 15:
+            raise DecodeError(f"Status expected to be 15 bytes, is {len(data)} bytes")
+        # data[0] is reserved
+        enabled = unpack_temperature_settings(data[1:5])
+        key_states = KeyStates.from_bytes(b"\x00" + data[5:7])
+        atx_power = AtxPowerSwitchFunctionalitySettings.from_bytes(data[7:8])
+        watchdog_counter = data[8]
+        contrast = data[9] / 255
+        keypad_brightness = data[10] / 100
+        atx_sense_on_floppy = bool(data[11])
+        # data[12] is reserved
+        cfa633_contrast = data[13] / 50
+        lcd_brightness = data[14] / 100
+
+        return cls(
+            temperature_sensors_enabled=enabled,
+            key_states=key_states,
+            atx_power_switch_functionality_settings=atx_power,
+            watchdog_counter=watchdog_counter,
+            contrast=contrast,
+            keypad_brightness=keypad_brightness,
+            atx_sense_on_floppy=atx_sense_on_floppy,
+            cfa633_contrast=cfa633_contrast,
+            lcd_brightness=lcd_brightness,
+        )
+
+    def to_bytes(self: Self, device: Device) -> bytes:
+        data = b"\00"
+
+        enabled = pack_temperature_settings(self.temperature_sensors_enabled, device)
+        key_states = self.key_states.to_bytes()[1:]
+        atx_power = self.atx_power_switch_functionality_settings.to_bytes()[0]
+        watchdog_counter = self.watchdog_counter
+        contrast = int(self.contrast * 255)
+        keypad_brightness = int(self.keypad_brightness * 100)
+        atx_sense_on_floppy = int(self.keypad_brightness)
+        reserved = 0x00
+        cfa633_contrast = int(self.cfa633_contrast * 50)
+        lcd_brightness = int(self.lcd_brightness * 100)
+
+        data += enabled
+        data += key_states
+        data += bytes(
+            [
+                atx_power,
+                watchdog_counter,
+                contrast,
+                keypad_brightness,
+                atx_sense_on_floppy,
+                reserved,
+                cfa633_contrast,
+                lcd_brightness,
+            ]
+        )
+
+        return data
+
     def as_dict(self: Self) -> Dict[str, Any]:
-        atx = (self.atx_power_switch_functionality_settings.as_dict(),)
+        atx = self.atx_power_switch_functionality_settings.as_dict()
         return dict(
             temperature_sensors_enabled=list(self.temperature_sensors_enabled),
             key_states=asdict(self.key_states),
@@ -210,31 +272,7 @@ class CFA533(Device):
         return brightness
 
     def status(self: Self, data: bytes) -> DeviceStatus:
-        if len(data) != 15:
-            raise DecodeError(f"Status expected to be 15 bytes, is {len(data)} bytes")
-        # data[0] is reserved
-        enabled = unpack_temperature_settings(data[1:5])
-        key_states = KeyStates.from_bytes(b"\x00" + data[5:7])
-        atx_power = AtxPowerSwitchFunctionalitySettings.from_bytes(data[7:8])
-        watchdog_counter = data[8]
-        contrast = data[9] / 255
-        keypad_brightness = data[10] / 100
-        atx_sense_on_floppy = bool(data[11])
-        # data[12] is reserved
-        cfa633_contrast = data[13] / 50
-        lcd_brightness = data[14] / 100
-
-        return CFA533Status(
-            temperature_sensors_enabled=enabled,
-            key_states=key_states,
-            atx_power_switch_functionality_settings=atx_power,
-            watchdog_counter=watchdog_counter,
-            contrast=contrast,
-            keypad_brightness=keypad_brightness,
-            atx_sense_on_floppy=atx_sense_on_floppy,
-            cfa633_contrast=cfa633_contrast,
-            lcd_brightness=lcd_brightness,
-        )
+        return CFA533Status.from_bytes(data)
 
 
 class CFA633(Device):

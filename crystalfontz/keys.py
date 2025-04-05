@@ -1,6 +1,6 @@
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import List, Literal, Self, Type
+from typing import List, Literal, Self, Tuple, Type
 
 KeyPress = (
     Literal[0x01]
@@ -19,6 +19,17 @@ KP_RIGHT: KeyPress = 0x10
 KP_DOWN: KeyPress = 0x20
 
 
+def keypress_repr(keypress: KeyPress) -> str:
+    return {
+        KP_UP: "KP_UP",
+        KP_ENTER: "KP_ENTER",
+        KP_EXIT: "KP_EXIT",
+        KP_LEFT: "KP_LEFT",
+        KP_RIGHT: "KP_RIGHT",
+        KP_DOWN: "KP_DOWN",
+    }[keypress]
+
+
 @dataclass
 class KeyState:
     """
@@ -31,9 +42,30 @@ class KeyState:
                                poll.
     """
 
+    keypress: KeyPress
     pressed: bool
     pressed_since: bool
     released_since: bool
+
+    @classmethod
+    def from_bytes(cls: Type[Self], state: bytes, keypress: KeyPress) -> Self:
+        pressed = state[0]
+        pressed_since = state[1]
+        released_since = state[2]
+
+        return cls(
+            keypress=keypress,
+            pressed=bool(pressed & keypress),
+            pressed_since=bool(pressed_since & keypress),
+            released_since=bool(released_since & keypress),
+        )
+
+    def to_bytes(self: Self) -> Tuple[int, int, int]:
+        pressed = self.keypress if self.pressed else 0x00
+        pressed_since = self.keypress if self.pressed_since else 0x00
+        released_since = self.keypress if self.released_since else 0x00
+
+        return (pressed, pressed_since, released_since)
 
 
 @dataclass
@@ -59,47 +91,48 @@ class KeyStates:
 
     @classmethod
     def from_bytes(cls: Type[Self], state: bytes) -> Self:
-        pressed = state[0]
-        pressed_since = state[1]
-        released_since = state[2]
-
         return cls(
-            up=KeyState(
-                pressed=bool(pressed & KP_UP),
-                pressed_since=bool(pressed_since & KP_UP),
-                released_since=bool(released_since & KP_UP),
-            ),
-            enter=KeyState(
-                pressed=bool(pressed & KP_ENTER),
-                pressed_since=bool(pressed_since & KP_ENTER),
-                released_since=bool(released_since & KP_ENTER),
-            ),
-            exit=KeyState(
-                pressed=bool(pressed & KP_EXIT),
-                pressed_since=bool(pressed_since & KP_EXIT),
-                released_since=bool(released_since & KP_EXIT),
-            ),
-            left=KeyState(
-                pressed=bool(pressed & KP_LEFT),
-                pressed_since=bool(pressed_since & KP_LEFT),
-                released_since=bool(released_since & KP_LEFT),
-            ),
-            right=KeyState(
-                pressed=bool(pressed & KP_RIGHT),
-                pressed_since=bool(pressed_since & KP_RIGHT),
-                released_since=bool(released_since & KP_RIGHT),
-            ),
-            down=KeyState(
-                pressed=bool(pressed & KP_DOWN),
-                pressed_since=bool(pressed_since & KP_DOWN),
-                released_since=bool(released_since & KP_DOWN),
-            ),
+            up=KeyState.from_bytes(state, KP_UP),
+            enter=KeyState.from_bytes(state, KP_ENTER),
+            exit=KeyState.from_bytes(state, KP_EXIT),
+            left=KeyState.from_bytes(state, KP_LEFT),
+            right=KeyState.from_bytes(state, KP_RIGHT),
+            down=KeyState.from_bytes(state, KP_DOWN),
         )
+
+    def to_bytes(self: Self) -> bytes:
+        pressed = 0x00
+        pressed_since = 0x00
+        released_since = 0x00
+
+        for state in [
+            self.up,
+            self.enter,
+            self.exit,
+            self.left,
+            self.right,
+            self.down,
+        ]:
+            p, p_s, r_s = state.to_bytes()
+            pressed = pressed ^ p
+            pressed_since = pressed_since ^ p_s
+            released_since = released_since ^ r_s
+
+        return bytes([pressed, pressed_since, released_since])
 
     def __repr__(self: Self) -> str:
         repr_ = ""
         for name, state in asdict(self).items():
-            st = ", ".join([f"{n}={'yes' if s else 'no'}" for n, s in state.items()])
+            st = ", ".join(
+                [
+                    (
+                        f"{n}={'yes' if s else 'no'}"
+                        if isinstance(s, bool)
+                        else f"{n}={keypress_repr(s)}"
+                    )
+                    for n, s in state.items()
+                ]
+            )
             repr_ += f"{name}: {st}\n"
         return repr_[0:-1]
 

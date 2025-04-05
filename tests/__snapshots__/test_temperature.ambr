@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_status_to_from_bytes[enabled0-device0]
+  b'\x07\x00\x00\x00'
+# ---

@@ -47,10 +47,13 @@ class KeyStateM:
         return (state.pressed, state.pressed_since, state.released_since)
 
     @staticmethod
-    def unpack(state: KeyStateT) -> KeyState:
+    def unpack(state: KeyStateT, keypress: KeyPress) -> KeyState:
         pressed, pressed_since, released_since = state
         return KeyState(
-            pressed=pressed, pressed_since=pressed_since, released_since=released_since
+            keypress=keypress,
+            pressed=pressed,
+            pressed_since=pressed_since,
+            released_since=released_since,
         )
 
 
@@ -72,12 +75,12 @@ class KeyStatesM:
     def unpack(states: KeyStatesT) -> KeyStates:
         up, enter, exit, left, right, down = states
         return KeyStates(
-            up=KeyStateM.unpack(up),
-            enter=KeyStateM.unpack(enter),
-            exit=KeyStateM.unpack(exit),
-            left=KeyStateM.unpack(left),
-            right=KeyStateM.unpack(right),
-            down=KeyStateM.unpack(down),
+            up=KeyStateM.unpack(up, KP_UP),
+            enter=KeyStateM.unpack(enter, KP_ENTER),
+            exit=KeyStateM.unpack(exit, KP_EXIT),
+            left=KeyStateM.unpack(left, KP_LEFT),
+            right=KeyStateM.unpack(right, KP_RIGHT),
+            down=KeyStateM.unpack(down, KP_DOWN),
         )
 
 

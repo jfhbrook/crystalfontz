@@ -6,7 +6,16 @@ import pytest
 from crystalfontz.atx import AtxPowerSwitchFunction, AtxPowerSwitchFunctionalitySettings
 from crystalfontz.cli import as_json, parse_bytes
 from crystalfontz.device import CFA533Status
-from crystalfontz.keys import KeyState, KeyStates, KP_UP
+from crystalfontz.keys import (
+    KeyState,
+    KeyStates,
+    KP_DOWN,
+    KP_ENTER,
+    KP_EXIT,
+    KP_LEFT,
+    KP_RIGHT,
+    KP_UP,
+)
 from crystalfontz.response import (
     DowDeviceInformation,
     DowTransactionResult,
@@ -45,12 +54,30 @@ OBJECTS = [
     CFA533Status(
         temperature_sensors_enabled={1, 2},
         key_states=KeyStates(
-            up=KeyState(pressed=False, pressed_since=True, released_since=True),
-            enter=KeyState(pressed=False, pressed_since=True, released_since=True),
-            exit=KeyState(pressed=False, pressed_since=True, released_since=True),
-            left=KeyState(pressed=False, pressed_since=True, released_since=True),
-            right=KeyState(pressed=False, pressed_since=True, released_since=True),
-            down=KeyState(pressed=False, pressed_since=True, released_since=True),
+            up=KeyState(
+                keypress=KP_UP, pressed=False, pressed_since=True, released_since=True
+            ),
+            enter=KeyState(
+                keypress=KP_ENTER,
+                pressed=False,
+                pressed_since=True,
+                released_since=True,
+            ),
+            exit=KeyState(
+                keypress=KP_EXIT, pressed=False, pressed_since=True, released_since=True
+            ),
+            left=KeyState(
+                keypress=KP_LEFT, pressed=False, pressed_since=True, released_since=True
+            ),
+            right=KeyState(
+                keypress=KP_RIGHT,
+                pressed=False,
+                pressed_since=True,
+                released_since=True,
+            ),
+            down=KeyState(
+                keypress=KP_DOWN, pressed=False, pressed_since=True, released_since=True
+            ),
         ),
         atx_power_switch_functionality_settings=AtxPowerSwitchFunctionalitySettings(
             functions={AtxPowerSwitchFunction.KEYPAD_RESET},

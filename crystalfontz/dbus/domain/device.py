@@ -57,7 +57,6 @@ class DeviceM:
         return lookup_device(model, hardware_rev, firmware_rev)
 
 
-# Includes enough device info to unpack the status
 DeviceStatusT = Tuple[ModelT, RevisionT, RevisionT, bytes]
 
 
@@ -65,9 +64,16 @@ class DeviceStatusM:
     t: ClassVar[str] = t(ModelM, RevisionM, RevisionM, BytesM)
 
     @staticmethod
-    def pack(_status: DeviceStatus) -> DeviceStatusT:
-        raise NotImplementedError("pack")
+    def pack(status: DeviceStatus, device: Device) -> DeviceStatusT:
+        return (
+            device.model,
+            device.hardware_rev,
+            device.firmware_rev,
+            status.to_bytes(device),
+        )
 
     @staticmethod
-    def unpack(_status: DeviceStatusT) -> DeviceStatus:
-        raise NotImplementedError("unpack")
+    def unpack(status: DeviceStatusT) -> DeviceStatus:
+        model, hardware_rev, firmware_rev, data = status
+        device = lookup_device(model, hardware_rev, firmware_rev)
+        return device.status(data)
