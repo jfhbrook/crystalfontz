@@ -83,9 +83,8 @@ from crystalfontz.dbus.domain.response import (
     VersionsT,
 )
 from crystalfontz.dbus.domain.temperature import TemperatureDisplayItemT
-from crystalfontz.dbus.report import DbusInterfaceReportHandler
+from crystalfontz.dbus.report import DbusReportHandler
 from crystalfontz.error import ConnectionError
-from crystalfontz.report import ReportHandler
 
 Ok = bool
 
@@ -95,7 +94,7 @@ DBUS_NAME = "org.jfhbrook.crystalfontz"
 
 
 async def load_client(
-    report_handler: Optional[ReportHandler], config_file: Optional[str]
+    report_handler: Optional[DbusReportHandler], config_file: Optional[str]
 ) -> Client:
     config: Config = Config.from_file(config_file)
 
@@ -114,7 +113,7 @@ class DbusInterface(  # type: ignore
     def __init__(
         self: Self,
         client: Client,
-        report_handler: Optional[ReportHandler] = None,
+        report_handler: Optional[DbusReportHandler] = None,
         config_file: Optional[str] = None,
     ) -> None:
         super().__init__()
@@ -123,7 +122,7 @@ class DbusInterface(  # type: ignore
         self._client_lock: asyncio.Lock = asyncio.Lock()
         self.report_handler = report_handler
 
-        if isinstance(self.report_handler, DbusInterfaceReportHandler):
+        if self.report_handler:
             self.report_handler.iface = self
 
     @dbus_property_async(ConfigM.t)
