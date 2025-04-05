@@ -18,7 +18,7 @@ KEY_STATES = KeyStates(
         keypress=KP_UP, pressed=False, pressed_since=False, released_since=False
     ),
     enter=KeyState(
-        keypress=KP_ENTER, pressed=True, pressed_since=False, released_since=False
+        keypress=KP_ENTER, pressed=False, pressed_since=False, released_since=False
     ),
     exit=KeyState(
         keypress=KP_EXIT, pressed=False, pressed_since=True, released_since=False
@@ -27,10 +27,10 @@ KEY_STATES = KeyStates(
         keypress=KP_LEFT, pressed=False, pressed_since=False, released_since=True
     ),
     right=KeyState(
-        keypress=KP_RIGHT, pressed=True, pressed_since=True, released_since=False
+        keypress=KP_RIGHT, pressed=False, pressed_since=True, released_since=False
     ),
     down=KeyState(
-        keypress=KP_DOWN, pressed=True, pressed_since=False, released_since=True
+        keypress=KP_DOWN, pressed=False, pressed_since=False, released_since=True
     ),
 )
 
@@ -40,7 +40,6 @@ ATX_SETTINGS = AtxPowerSwitchFunctionalitySettings(
     auto_polarity=True,
     reset_invert=False,
     power_invert=False,
-    power_pulse_length_seconds=1.0,
 )
 
 
@@ -69,8 +68,8 @@ def test_status_to_from_bytes(
 ) -> None:
     as_bytes = status.to_bytes(device)
 
-    assert len(as_bytes) == size
     assert as_bytes == snapshot
+    assert len(as_bytes) == size
 
     from_bytes = status.__class__.from_bytes(as_bytes)
 

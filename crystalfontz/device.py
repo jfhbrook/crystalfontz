@@ -162,13 +162,11 @@ class CFA533Status:
         )
 
     def to_bytes(self: Self, device: Device) -> bytes:
-        data = b""
+        data = b"\00"
 
-        temperature_sensors_enabled = pack_temperature_settings(
-            self.temperature_sensors_enabled, device
-        )
+        enabled = pack_temperature_settings(self.temperature_sensors_enabled, device)
         key_states = self.key_states.to_bytes()[1:]
-        atx_power = self.atx_power_switch_functionality_settings.to_bytes()
+        atx_power = self.atx_power_switch_functionality_settings.to_bytes()[0]
         watchdog_counter = self.watchdog_counter
         contrast = int(self.contrast * 255)
         keypad_brightness = int(self.keypad_brightness * 100)
@@ -177,11 +175,11 @@ class CFA533Status:
         cfa633_contrast = int(self.cfa633_contrast * 50)
         lcd_brightness = int(self.lcd_brightness * 100)
 
-        data += temperature_sensors_enabled
+        data += enabled
         data += key_states
-        data += atx_power
         data += bytes(
             [
+                atx_power,
                 watchdog_counter,
                 contrast,
                 keypad_brightness,
