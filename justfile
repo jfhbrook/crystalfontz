@@ -57,7 +57,7 @@ run *argv:
 
 # Run crystalfontz cli
 start *argv:
-  uv run -- crystalfontz {{ argv }}
+  uv run -- python -m crystalfontz {{ argv }}
 
 # Format with black and isort
 format:
