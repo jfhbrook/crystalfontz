@@ -1,5 +1,5 @@
 - API Changes:
-  - **NEW** `Receiver` class
+  - **NEW:** `Receiver` class
     - A subclass of `asyncio.Queue`
   - `Client`:
     - `subscribe` and `unsubscribe` methods use new `Receiver` class
@@ -12,23 +12,25 @@
   - `SpecialCharacter` API:
     - Rename `as_bytes` method to `to_bytes`
     - Store pixels as `List[List[bool]]` instead of `List[List[int]]`
-- `crystalfontz` CLI changes:
+- CLI changes:
+  - **Breaking:** CLI now invoked through `python3 -m crystalfontz`
+    - Optional unpackaged `crystalfontz` entry point at `./bin/crystalfontz`
   - Use `configurence` library
   - Respect `CRYSTALFONTZ_CONFIG_FILE` environment variable
   - Improve error reporting for timeouts
   - Client now respects CLI settings
     - Cause was the `Client` constructor being called twice
   - Additional commands accept bytes as arguments
-    - `crystalfontz line 1`
-    - `crystalfontz line 2`
-    - `crystalfontz send`
-  - Help for `crystalfontz listen` `--for` option
+    - `python3 -m crystalfontz line 1`
+    - `python3 -m crystalfontz line 2`
+    - `python3 -m crystalfontz send`
+  - Help for `python3 -m crystalfontz listen` `--for` option
 - Integration tests:
   - Use `python-gak` plugin
   - Use snapshots
   - Leverage a config file at `./tests/fixtures/crystalfontz.yaml`
     - Can be overridden with `CRYSTALFONTZ_CONFIG_FILE` environment variable
-- **NEW** Dbus support:
+- **NEW:** Dbus support:
   - `crystalfontz.dbus.DbusInterface` dbus Interface class, implementing most commands
     - **NOTE:** `get_status` is unimplemented
     - **NOTE:** `set_special_character_data` is unimplemented
@@ -36,8 +38,8 @@
     - **NOTE:** Effects are unimplemented
   - `crystalfontz.dbus.DbusClient` dbus client class
   - `crystalfontz.dbus.domain` API for mapping domain objects to dbus types
-  - `crystalfontzd` dbus service CLI
-  - `crystalfontzctl` dbus client CLI
+  - `python3 -m crystalfontz.dbus.service` dbus service CLI
+  - `python3 -m crystalfontz.dbus.client` dbus client CLI
 
 ## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
