@@ -45,7 +45,16 @@ from crystalfontz.dbus.domain.config import ConfigM
 from crystalfontz.dbus.domain.cursor import CursorStyleM
 from crystalfontz.dbus.domain.device import DeviceM
 from crystalfontz.dbus.domain.gpio import GpioSettingsM, OptGpioSettingsM
-from crystalfontz.dbus.domain.keys import KeypadBrightnessM, KeyPressM
+from crystalfontz.dbus.domain.keys import (
+    KeypadBrightnessM,
+    KeyPressM,
+    KP_DOWN,
+    KP_ENTER,
+    KP_EXIT,
+    KP_LEFT,
+    KP_RIGHT,
+    KP_UP,
+)
 from crystalfontz.dbus.domain.lcd import LcdRegisterM
 from crystalfontz.dbus.domain.response import (
     DowDeviceInformationM,
@@ -181,12 +190,12 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
         (
             KeypadPolled(
                 KeyStates(
-                    up=KeyState(True, False, False),
-                    enter=KeyState(True, False, False),
-                    exit=KeyState(True, False, False),
-                    left=KeyState(True, False, False),
-                    right=KeyState(True, False, False),
-                    down=KeyState(True, False, False),
+                    up=KeyState(KP_UP, True, False, False),
+                    enter=KeyState(KP_DOWN, True, False, False),
+                    exit=KeyState(KP_EXIT, True, False, False),
+                    left=KeyState(KP_LEFT, True, False, False),
+                    right=KeyState(KP_RIGHT, True, False, False),
+                    down=KeyState(KP_DOWN, True, False, False),
                 )
             ),
             KeypadPolledM,

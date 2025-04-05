@@ -12,6 +12,7 @@
   - `SpecialCharacter` API:
     - Rename `as_bytes` method to `to_bytes`
     - Store pixels as `List[List[bool]]` instead of `List[List[int]]`
+  - `KeyState` includes `keypress: KeyPress` attribute
 - CLI changes:
   - **Breaking:** CLI now invoked through `python3 -m crystalfontz`
     - Optional unpackaged `crystalfontz` entry point at `./bin/crystalfontz`
