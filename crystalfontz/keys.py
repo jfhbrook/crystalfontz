@@ -35,6 +35,20 @@ class KeyState:
     pressed_since: bool
     released_since: bool
 
+    @classmethod
+    def from_bytes(cls: Type[Self], state: bytes, keypress: KeyPress) -> Self:
+        pressed = state[0]
+        pressed_since = state[1]
+        released_since = state[2]
+
+        return cls(
+            pressed=bool(pressed & keypress),
+            pressed_since=bool(pressed_since & keypress),
+            released_since=bool(released_since & keypress),
+        )
+
+    def to_bytes(self: Self, keypress: KeyPress) -> bytes: ...
+
 
 @dataclass
 class KeyStates:
@@ -59,41 +73,13 @@ class KeyStates:
 
     @classmethod
     def from_bytes(cls: Type[Self], state: bytes) -> Self:
-        pressed = state[0]
-        pressed_since = state[1]
-        released_since = state[2]
-
         return cls(
-            up=KeyState(
-                pressed=bool(pressed & KP_UP),
-                pressed_since=bool(pressed_since & KP_UP),
-                released_since=bool(released_since & KP_UP),
-            ),
-            enter=KeyState(
-                pressed=bool(pressed & KP_ENTER),
-                pressed_since=bool(pressed_since & KP_ENTER),
-                released_since=bool(released_since & KP_ENTER),
-            ),
-            exit=KeyState(
-                pressed=bool(pressed & KP_EXIT),
-                pressed_since=bool(pressed_since & KP_EXIT),
-                released_since=bool(released_since & KP_EXIT),
-            ),
-            left=KeyState(
-                pressed=bool(pressed & KP_LEFT),
-                pressed_since=bool(pressed_since & KP_LEFT),
-                released_since=bool(released_since & KP_LEFT),
-            ),
-            right=KeyState(
-                pressed=bool(pressed & KP_RIGHT),
-                pressed_since=bool(pressed_since & KP_RIGHT),
-                released_since=bool(released_since & KP_RIGHT),
-            ),
-            down=KeyState(
-                pressed=bool(pressed & KP_DOWN),
-                pressed_since=bool(pressed_since & KP_DOWN),
-                released_since=bool(released_since & KP_DOWN),
-            ),
+            up=KeyState.from_bytes(state, KP_UP),
+            enter=KeyState.from_bytes(state, KP_ENTER),
+            exit=KeyState.from_bytes(state, KP_EXIT),
+            left=KeyState.from_bytes(state, KP_LEFT),
+            right=KeyState.from_bytes(state, KP_RIGHT),
+            down=KeyState.from_bytes(state, KP_DOWN),
         )
 
     def to_bytes(self: Self) -> bytes:
@@ -101,20 +87,20 @@ class KeyStates:
         pressed_since = 0x00
         released_since = 0x00
 
-        for state in [
-            self.up,
-            self.enter,
-            self.exit,
-            self.left,
-            self.right,
-            self.down,
+        for state, keypress in [
+            (self.up, KP_UP),
+            (self.enter, KP_ENTER),
+            (self.exit, KP_EXIT),
+            (self.left, KP_LEFT),
+            (self.right, KP_RIGHT),
+            (self.down, KP_DOWN),
         ]:
-            pressed = (pressed ^ KP_UP) if state.pressed else pressed
+            pressed = (pressed ^ keypress) if state.pressed else pressed
             pressed_since = (
-                (pressed_since ^ KP_UP) if state.pressed_since else pressed_since
+                (pressed_since ^ keypress) if state.pressed_since else pressed_since
             )
             released_since = (
-                (released_since ^ KP_UP) if state.released_since else released_since
+                (released_since ^ keypress) if state.released_since else released_since
             )
 
         return bytes([pressed, pressed_since, released_since])
