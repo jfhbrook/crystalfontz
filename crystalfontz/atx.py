@@ -94,8 +94,6 @@ class AtxPowerSwitchFunctionalitySettings:
 
         as_["functions"] = [fn.value for fn in self.functions]
 
-        print(as_)
-
         return as_
 
     def __repr__(self: Self) -> str:

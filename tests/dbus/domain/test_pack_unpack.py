@@ -58,9 +58,11 @@ from crystalfontz.dbus.domain.response import (
     DowDeviceInformationM,
     DowTransactionResultM,
     GpioReadM,
+    KeyActivityReportM,
     KeypadPolledM,
     LcdMemoryM,
     PongM,
+    TemperatureReportM,
     VersionsM,
 )
 from crystalfontz.dbus.domain.temperature import (
@@ -70,6 +72,7 @@ from crystalfontz.dbus.domain.temperature import (
 from crystalfontz.device import CFA533
 from crystalfontz.gpio import GpioDriveMode, GpioFunction, GpioSettings, GpioState
 from crystalfontz.keys import (
+    KeyActivity,
     KeyState,
     KeyStates,
     KP_DOWN,
@@ -84,9 +87,11 @@ from crystalfontz.response import (
     DowDeviceInformation,
     DowTransactionResult,
     GpioRead,
+    KeyActivityReport,
     KeypadPolled,
     LcdMemory,
     Pong,
+    TemperatureReport,
     Versions,
 )
 from crystalfontz.temperature import TemperatureDisplayItem, TemperatureUnit
@@ -104,6 +109,16 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
         return
     assert actual.function == expected.function
     assert actual.mode == expected.mode
+
+
+def validate_key_activity_report(actual: Any, expected: Any) -> None:
+    assert actual.activity == expected.activity
+
+
+def validate_temperature_report(actual: Any, expected: Any) -> None:
+    assert actual.index == expected.index
+    assert abs(actual.celsius - expected.celsius) < 0.001, "celsius matches"
+    assert abs(actual.fahrenheit - expected.fahrenheit) < 0.001, "fahrenheit matches"
 
 
 @pytest.mark.parametrize(
@@ -211,6 +226,19 @@ def validate_gpio_settings(actual: Any, expected: Any) -> None:
         (LcdMemory(0x00, b"\00"), LcdMemoryM, validate_is),
         (Pong(b"ping"), PongM, validate_is),
         (Versions("CFA533", "h1.4", "u1v2"), VersionsM, validate_is),
+        #
+        # Reports
+        #
+        (
+            KeyActivityReport(KeyActivity.KEY_UP_PRESS),
+            KeyActivityReportM,
+            validate_key_activity_report,
+        ),
+        (
+            TemperatureReport(1, 30.0, 90.0),
+            TemperatureReportM,
+            validate_temperature_report,
+        ),
     ],
 )
 def test_domain_pack_unpack(

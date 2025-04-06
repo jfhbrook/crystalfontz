@@ -676,10 +676,11 @@ async def detect(
 @pass_client(run_forever=True, report_handler_cls=CliReportHandler)
 async def listen(client: Client, for_: Optional[float]) -> None:
     """
-    Listen for key and temperature reports.
+    Listen for key activity and temperature reports.
 
-    To configure which reports to receive, use 'crystalfontz keypad reporting' and
-    'crystalfontz temperature reporting' respectively.
+    To configure which reports to receive, use
+    'python -m crystalfontz keypad reporting' and
+    'python -m crystalfontz temperature reporting' respectively.
     """
 
     if for_ is not None:

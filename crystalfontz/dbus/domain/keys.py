@@ -2,6 +2,7 @@ from typing import ClassVar, Set, Tuple
 
 from crystalfontz.dbus.domain.base import ByteM, OptFloatM, OptFloatT, struct
 from crystalfontz.keys import (
+    KeyActivity,
     KeyPress,
     KeyState,
     KeyStates,
@@ -95,3 +96,22 @@ class KeypadBrightnessM(OptFloatM):
     """
 
     t: ClassVar[str] = OptFloatM.t
+
+
+KeyActivityT = int
+
+
+class KeyActivityM:
+    """
+    Map `KeyActivity` to and from `KeyActivityT` (`int`).
+    """
+
+    t: ClassVar[str] = ByteM.t
+
+    @staticmethod
+    def pack(activity: KeyActivity) -> KeyActivityT:
+        return activity.to_byte()
+
+    @staticmethod
+    def unpack(activity: KeyActivityT) -> KeyActivity:
+        return KeyActivity.from_byte(activity)

@@ -57,6 +57,10 @@ class LoggingReportHandler(ReportHandler):
 
 
 class CliReportHandler(ReportHandler):
+    """
+    A report handler intended for use by the command line interface.
+    """
+
     mode: Optional[OutputMode] = None
 
     async def on_key_activity(self: Self, report: KeyActivityReport) -> None:

@@ -157,8 +157,15 @@ class KeyActivity(Enum):
     KEY_EXIT_RELEASE = 12
 
     @classmethod
+    def from_byte(cls: Type[Self], activity: int) -> "KeyActivity":
+        return KEY_ACTIVITIES[activity - 1]
+
+    @classmethod
     def from_bytes(cls: Type[Self], activity: bytes) -> "KeyActivity":
-        return KEY_ACTIVITIES[activity[0] - 1]
+        return cls.from_byte(activity[0])
+
+    def to_byte(self: Self) -> int:
+        return self.value
 
 
 KEY_ACTIVITIES: List[KeyActivity] = [

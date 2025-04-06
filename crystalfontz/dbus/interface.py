@@ -5,6 +5,7 @@ from typing import List, Optional, Self
 from sdbus import (  # pyright: ignore [reportMissingModuleSource];; dbus_signal_async,
     dbus_method_async,
     dbus_property_async,
+    dbus_signal_async,
     DbusInterfaceCommonAsync,
     DbusUnprivilegedFlag,
 )
@@ -66,18 +67,23 @@ from crystalfontz.dbus.domain.response import (
     DowTransactionResultT,
     GpioReadM,
     GpioReadT,
+    KeyActivityReportM,
+    KeyActivityReportT,
     KeypadPolledM,
     KeypadPolledT,
     LcdMemoryM,
     LcdMemoryT,
     PongM,
     PongT,
+    TemperatureReportM,
+    TemperatureReportT,
     UserFlashAreaReadM,
     UserFlashAreaReadT,
     VersionsM,
     VersionsT,
 )
 from crystalfontz.dbus.domain.temperature import TemperatureDisplayItemT
+from crystalfontz.dbus.report import DbusReportHandler
 from crystalfontz.error import ConnectionError
 
 Ok = bool
@@ -87,10 +93,12 @@ logger = logging.getLogger(__name__)
 DBUS_NAME = "org.jfhbrook.crystalfontz"
 
 
-async def load_client(config_file: Optional[str]) -> Client:
+async def load_client(
+    report_handler: Optional[DbusReportHandler], config_file: Optional[str]
+) -> Client:
     config: Config = Config.from_file(config_file)
 
-    client = await create_connection(config.port)
+    client = await create_connection(config.port, report_handler=report_handler)
 
     return client
 
@@ -102,11 +110,20 @@ class DbusInterface(  # type: ignore
     A DBus interface for controlling the Crystalfontz device.
     """
 
-    def __init__(self: Self, client: Client, config_file: Optional[str] = None) -> None:
+    def __init__(
+        self: Self,
+        client: Client,
+        report_handler: Optional[DbusReportHandler] = None,
+        config_file: Optional[str] = None,
+    ) -> None:
         super().__init__()
         self._config: Config = Config.from_file(config_file)
         self.client: Client = client
         self._client_lock: asyncio.Lock = asyncio.Lock()
+        self.report_handler = report_handler
+
+        if self.report_handler:
+            self.report_handler.iface = self
 
     @dbus_property_async(ConfigM.t)
     def config(self: Self) -> ConfigT:
@@ -864,3 +881,22 @@ class DbusInterface(  # type: ignore
         )
 
         return GpioReadM.pack(read)
+
+    @dbus_signal_async(KeyActivityReportM.t)
+    def key_activity_reports(self: Self) -> KeyActivityReportT:
+        """
+        Listen for key activity reports.
+        """
+
+        raise NotImplementedError("key_activity_reports")
+
+    @dbus_signal_async(TemperatureReportM.t)
+    def temperature_reports(self: Self) -> TemperatureReportT:
+        """
+        Listen for temperature reports.
+        """
+
+        raise NotImplementedError("temperature_reports")
+
+
+__all__ = ["DbusInterface", "DBUS_NAME"]

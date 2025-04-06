@@ -23,14 +23,21 @@ from crystalfontz.dbus.domain.gpio import (
     GpioStateM,
     GpioStateT,
 )
-from crystalfontz.dbus.domain.keys import KeyStatesM, KeyStatesT
+from crystalfontz.dbus.domain.keys import (
+    KeyActivityM,
+    KeyActivityT,
+    KeyStatesM,
+    KeyStatesT,
+)
 from crystalfontz.response import (
     DowDeviceInformation,
     DowTransactionResult,
     GpioRead,
+    KeyActivityReport,
     KeypadPolled,
     LcdMemory,
     Pong,
+    TemperatureReport,
     UserFlashAreaRead,
     Versions,
 )
@@ -240,3 +247,42 @@ class GpioReadM:
             requested_level=requested_level,
             settings=GpioSettingsM.unpack(settings),
         )
+
+
+KeyActivityReportT = KeyActivityT
+
+
+class KeyActivityReportM:
+    """
+    Map `KeyActivityReport` to and from `KeyActivityReportT`
+    """
+
+    t: ClassVar[str] = KeyActivityM.t
+
+    @staticmethod
+    def pack(report: KeyActivityReport) -> KeyActivityReportT:
+        return KeyActivityM.pack(report.activity)
+
+    @staticmethod
+    def unpack(report: KeyActivityReportT) -> KeyActivityReport:
+        return KeyActivityReport(KeyActivityM.unpack(report))
+
+
+TemperatureReportT = Tuple[IndexT, float, float]
+
+
+class TemperatureReportM:
+    """
+    Map `TemperatureReport` to and from `KeyActivityReportT`
+    """
+
+    t: ClassVar[str] = t(IndexM, "dd")
+
+    @staticmethod
+    def pack(report: TemperatureReport) -> TemperatureReportT:
+        return (report.index, report.celsius, report.fahrenheit)
+
+    @staticmethod
+    def unpack(report: TemperatureReportT) -> TemperatureReport:
+        index, celsius, fahrenheit = report
+        return TemperatureReport(index, celsius, fahrenheit)

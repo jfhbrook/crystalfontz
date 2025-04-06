@@ -29,7 +29,6 @@ from crystalfontz.cli import (
     OutputMode,
     WATCHDOG_SETTING,
 )
-from crystalfontz.dbus.bus import select_session_bus, select_system_bus
 from crystalfontz.dbus.client import DbusClient
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import (
@@ -52,6 +51,12 @@ from crystalfontz.dbus.domain import (
     VersionsM,
 )
 from crystalfontz.dbus.error import handle_dbus_error
+from crystalfontz.dbus.report import DbusClientCliReportHandler
+from crystalfontz.dbus.select import (
+    select_default_bus,
+    select_session_bus,
+    select_system_bus,
+)
 from crystalfontz.gpio import GpioDriveMode, GpioFunction
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import (
@@ -70,6 +75,7 @@ class Obj:
     output: OutputMode
     timeout: TimeoutT
     retry_times: RetryTimesT
+    report_handler: DbusClientCliReportHandler
 
 
 def pass_config(fn: AsyncCommand) -> AsyncCommand:
@@ -97,6 +103,15 @@ def pass_client(fn: AsyncCommand) -> AsyncCommand:
     async def wrapped(obj: Obj, *args, **kwargs) -> None:
         async with handle_dbus_error(logger):
             await fn(obj.client, *args, **kwargs)
+
+    return wrapped
+
+
+def pass_report_handler(fn: AsyncCommand) -> AsyncCommand:
+    @click.pass_obj
+    @functools.wraps(fn)
+    async def wrapped(obj: Obj, *args, **kwargs) -> None:
+        await fn(obj.report_handler, *args, **kwargs)
 
     return wrapped
 
@@ -202,14 +217,20 @@ def main(
             select_session_bus()
         elif user is None:
             select_system_bus()
+        else:
+            select_default_bus()
 
-        client = DbusClient()
+        report_handler = DbusClientCliReportHandler()
+        report_handler.mode = output
+
+        client = DbusClient(report_handler=report_handler)
         ctx.obj = Obj(
             client=client,
             log_level=log_level,
             output=output,
             timeout=TimeoutM.pack(timeout),
             retry_times=RetryTimesM.pack(retry_times),
+            report_handler=report_handler,
         )
 
     asyncio.run(load())
@@ -355,8 +376,13 @@ async def detect(
 @main.command()
 @click.option("--for", "for_", type=float, help="Amount of time to listen for reports")
 @async_command
+@pass_report_handler
 @pass_client
-async def listen(client: DbusClient, for_: Optional[float]) -> None:
+async def listen(
+    client: DbusClient,
+    report_handler: DbusClientCliReportHandler,
+    for_: Optional[float],
+) -> None:
     """
     Listen for key and temperature reports.
 
@@ -364,7 +390,12 @@ async def listen(client: DbusClient, for_: Optional[float]) -> None:
     'crystalfontz temperature reporting' respectively.
     """
 
-    raise NotImplementedError("listen")
+    await report_handler.listen()
+
+    if for_ is not None:
+        await asyncio.sleep(for_)
+        report_handler.stop()
+    await report_handler.done
 
 
 @main.command(help="0 (0x00): Ping command")

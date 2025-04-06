@@ -158,6 +158,16 @@
     'u1v2',
   )
 # ---
+# name: test_domain_pack_unpack[entity28-KeyActivityReportM-validate_key_activity_report]
+  1
+# ---
+# name: test_domain_pack_unpack[entity29-TemperatureReportM-validate_temperature_report]
+  tuple(
+    1,
+    30.0,
+    90.0,
+  )
+# ---
 # name: test_domain_pack_unpack[hello-OptBytesM-None]
   b'hello'
 # ---
