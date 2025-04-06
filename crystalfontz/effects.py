@@ -61,14 +61,6 @@ class EffectClient(Protocol):
         retry_times: Optional[int] = None,
     ) -> BacklightSet: ...
 
-    async def send_command_to_lcd_controller(
-        self: Self,
-        location: LcdRegister,
-        data: int | bytes,
-        timeout: Optional[float] = None,
-        retry_times: Optional[int] = None,
-    ) -> CommandSentToLcdController: ...
-
     async def send_data(
         self: Self,
         row: int,
