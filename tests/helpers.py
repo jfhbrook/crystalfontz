@@ -30,10 +30,10 @@ class Cli:
         )
 
     @contextmanager
-    def bg(self: Self, *argv: str) -> Generator[None, None, None]:
+    def bg(self: Self, *argv: str, quiet: bool = True) -> Generator[None, None, None]:
         proc = subprocess.Popen(
             self.argv + list(argv),
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL if quiet else None,
             env=self.env,
         )
 

@@ -64,7 +64,7 @@ def test_detect() -> None:
 
 
 def test_listen(dbus_cli, confirm) -> None:
-    with dbus_cli.bg("listen"):
+    with dbus_cli.bg("listen", quiet=False):
         confirm("Mash some buttons. Are events showing up?")
 
 
