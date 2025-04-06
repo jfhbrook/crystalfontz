@@ -71,6 +71,7 @@ class Obj:
     output: OutputMode
     timeout: TimeoutT
     retry_times: RetryTimesT
+    report_handler: DbusClientCliReportHandler
 
 
 def pass_config(fn: AsyncCommand) -> AsyncCommand:
@@ -98,6 +99,15 @@ def pass_client(fn: AsyncCommand) -> AsyncCommand:
     async def wrapped(obj: Obj, *args, **kwargs) -> None:
         async with handle_dbus_error(logger):
             await fn(obj.client, *args, **kwargs)
+
+    return wrapped
+
+
+def pass_report_handler(fn: AsyncCommand) -> AsyncCommand:
+    @click.pass_obj
+    @functools.wraps(fn)
+    async def wrapped(obj: Obj, *args, **kwargs) -> None:
+        await fn(obj.report_handler, *args, **kwargs)
 
     return wrapped
 
@@ -214,6 +224,7 @@ def main(
             output=output,
             timeout=TimeoutM.pack(timeout),
             retry_times=RetryTimesM.pack(retry_times),
+            report_handler=report_handler,
         )
 
     asyncio.run(load())
@@ -359,8 +370,13 @@ async def detect(
 @main.command()
 @click.option("--for", "for_", type=float, help="Amount of time to listen for reports")
 @async_command
+@pass_report_handler
 @pass_client
-async def listen(client: DbusClient, for_: Optional[float]) -> None:
+async def listen(
+    client: DbusClient,
+    report_handler: DbusClientCliReportHandler,
+    for_: Optional[float],
+) -> None:
     """
     Listen for key and temperature reports.
 
@@ -368,7 +384,12 @@ async def listen(client: DbusClient, for_: Optional[float]) -> None:
     'crystalfontz temperature reporting' respectively.
     """
 
-    raise NotImplementedError("listen")
+    await report_handler.listen()
+
+    if for_ is not None:
+        await asyncio.sleep(for_)
+        report_handler.stop()
+    await report_handler.done
 
 
 @main.command(help="0 (0x00): Ping command")
