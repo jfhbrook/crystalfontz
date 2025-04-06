@@ -6,6 +6,9 @@
     - Emit unmatched exceptions on expecting receivers instead of resolving `client.closed`
     - `detect_baud_rate` exposes `timeout` and `retry_times` arguments
     - Document `detect_baud_rate`
+  - **Breaking:** `ClientProtocol`/`EffectClient`
+    - `crystalfontz.protocol.ClientProtocol` type has been replaced by `crystalfontz.effects.EffectClient`
+    - `EffectClient` enforces a smaller API than `ClientProtocol` did previously
   - `Response`:
     - `Response.from_bytes` accepts bytes as from packets, rather than `__init__`
     - `Response.__init__` accepts properties as arguments

@@ -7,7 +7,7 @@ from crystalfontz.command import Command
 from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus
-from crystalfontz.effects import Effect, Marquee, Screensaver
+from crystalfontz.effects import Effect, EffectClient, Marquee, Screensaver
 from crystalfontz.error import (
     ConnectionError,
     CrystalfontzError,
@@ -38,7 +38,6 @@ from crystalfontz.keys import (
 )
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.packet import Packet
-from crystalfontz.protocol import ClientProtocol
 from crystalfontz.receiver import Receiver
 from crystalfontz.report import LoggingReportHandler, NoopReportHandler, ReportHandler
 from crystalfontz.response import (
@@ -85,7 +84,6 @@ __all__: List[str] = [
     "BootStateStored",
     "ClearedScreen",
     "Client",
-    "ClientProtocol",
     "Command",
     "CommandSentToLcdController",
     "Config",
@@ -104,6 +102,7 @@ __all__: List[str] = [
     "DeviceLookupError",
     "DeviceStatus",
     "Effect",
+    "EffectClient",
     "EncodeError",
     "FAST_BAUD_RATE",
     "GPIO_HIGH",
