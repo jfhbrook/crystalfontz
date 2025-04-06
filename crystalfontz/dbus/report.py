@@ -129,7 +129,7 @@ class DbusClientReportHandler(DbusReportHandler):
             self._temperature_task.cancel()
 
 
-class DbusLoggingReportHandler(DbusClientReportHandler):
+class DbusClientLoggingReportHandler(DbusClientReportHandler):
     """
     A DBus client report handler which logs, using Python's logging module.
     """

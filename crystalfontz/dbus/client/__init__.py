@@ -7,7 +7,7 @@ from crystalfontz.config import Config
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import ConfigM
 from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
-from crystalfontz.dbus.report import DbusReportHandler
+from crystalfontz.dbus.report import DbusClientReportHandler
 
 
 class DbusClient(DbusInterface):
@@ -18,7 +18,7 @@ class DbusClient(DbusInterface):
     def __init__(
         self: Self,
         bus: Optional[SdBus] = None,
-        report_handler: Optional[DbusReportHandler] = None,
+        report_handler: Optional[DbusClientReportHandler] = None,
     ) -> None:
         client = Mock(name="client", side_effect=NotImplementedError("client"))
         self.subscribe = Mock(name="client.subscribe")
