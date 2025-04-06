@@ -257,7 +257,7 @@ class KeyActivityReportM:
     Map `KeyActivityReport` to and from `KeyActivityReportT`
     """
 
-    t: ClassVar[str] = ""
+    t: ClassVar[str] = KeyActivityM.t
 
     @staticmethod
     def pack(report: KeyActivityReport) -> KeyActivityReportT:
