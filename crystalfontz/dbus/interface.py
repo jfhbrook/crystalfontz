@@ -885,7 +885,7 @@ class DbusInterface(  # type: ignore
     @dbus_signal_async(KeyActivityReportM.t)
     def key_activity_reports(self: Self) -> KeyActivityReportT:
         """
-        Listen for key activity reports
+        Listen for key activity reports.
         """
 
         raise NotImplementedError("key_activity_reports")
@@ -893,7 +893,10 @@ class DbusInterface(  # type: ignore
     @dbus_signal_async(TemperatureReportM.t)
     def temperature_reports(self: Self) -> TemperatureReportT:
         """
-        Listen for temperature reports
+        Listen for temperature reports.
         """
 
         raise NotImplementedError("temperature_reports")
+
+
+__all__ = ["DbusInterface", "DBUS_NAME"]

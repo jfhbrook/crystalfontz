@@ -4,6 +4,4 @@ DBus uses a collection of types that are documented [in the specification](https
 
 To facilitate this, `crystalfontz` includes a submodule for mapping between domain objects and DBus types, at `crystalfontz.dbus.domain`. This module exports both aliases for the types used by the DBus interface, and mapper classes for packing and unpacking domain objects to and from DBus types.
 
-For information on the main DBus API, check out [its API documentation](./crystalfontz.dbus.md).
-
 ::: crystalfontz.dbus.domain

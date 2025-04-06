@@ -29,7 +29,6 @@ from crystalfontz.cli import (
     OutputMode,
     WATCHDOG_SETTING,
 )
-from crystalfontz.dbus.bus import select_session_bus, select_system_bus
 from crystalfontz.dbus.client import DbusClient
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import (
@@ -53,6 +52,7 @@ from crystalfontz.dbus.domain import (
 )
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.report import DbusClientCliReportHandler
+from crystalfontz.dbus.select import select_session_bus, select_system_bus
 from crystalfontz.gpio import GpioDriveMode, GpioFunction
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import (

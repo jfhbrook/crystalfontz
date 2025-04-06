@@ -1,3 +1,16 @@
+"""
+Manage a DBus service configuration.
+
+Configuration for the DBus service is a little different than for the serial client.
+This is because the DBus service doesn't live reload a config after it changes. In
+other words, if you edit the config file, the DBus service's loaded config will
+show drift.
+
+This is captured in the `StagedConfig` class, which holds both the config as served
+by the live DBus service, and the config as loaded from the same file. These are
+called the "active" and "target" config, respectively.
+"""
+
 from dataclasses import asdict, dataclass, fields
 import json
 from typing import Any, Dict, Generic, Literal, Self, TypeVar
@@ -20,6 +33,11 @@ class StagedAttr(Generic[T]):
     """
     A staged attribute. Shows both the active and target value, and how the value is
     expected to change when applied.
+
+    Attributes:
+        type (StageType): The type of staged change. Either "set", "unset" or None.
+        active (T): The attribute value from the active config.
+        target (T): The attribute value from the target config.
     """
 
     type: StageType
@@ -45,6 +63,14 @@ class StagedConfig:
     """
     A staged configuration. Shows both the active and target configurations, and how
     the attributes are expected to change.
+
+    Attributes:
+        active_config (Config): The active configuration, as loaded from the live
+                                DBus service.
+
+        target_config (Config): The target configuration, as loaded from the service's
+                                config file.
+        dirty (bool): When true, there is drift between the active and target config.
     """
 
     def __init__(self: Self, active_config: Config, target_config: Config) -> None:
@@ -72,6 +98,10 @@ class StagedConfig:
 
     @property
     def file(self: Self) -> str:
+        """
+        The path to the config file.
+        """
+
         file = self.target_config.file
         assert file is not None, "Target config must be from a file"
         return file

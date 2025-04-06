@@ -1,19 +1,24 @@
-import asyncio
+"""
+Functions for creating and serving a DBus service.
+
+Typically, the DBus service will be executed through the CLI interface, for
+instance with:
+
+```bash
+python3 -m crystalfontz.dbus.service
+```
+
+However, these functions may be useful if you want to embed the DBus service within
+another program.
+"""
+
 import logging
-import os
 from typing import Optional
 
-import click
 from sdbus import (  # pyright: ignore [reportMissingModuleSource]
     request_default_bus_name_async,
 )
 
-from crystalfontz.cli import LogLevel
-from crystalfontz.config import GLOBAL_FILE
-from crystalfontz.dbus.bus import (
-    select_session_bus,
-    select_system_bus,
-)
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.interface import (
     DBUS_NAME,
@@ -30,10 +35,11 @@ async def service(config_file: Optional[str] = None) -> DbusInterface:
     Create a configure DBus service with a supplied config file.
     """
 
-    client = await load_client(
-        report_handler=DbusInterfaceReportHandler(), config_file=config_file
+    report_handler = DbusInterfaceReportHandler()
+    client = await load_client(report_handler=report_handler, config_file=config_file)
+    iface = DbusInterface(
+        client, report_handler=report_handler, config_file=config_file
     )
-    iface = DbusInterface(client, config_file=config_file)
 
     logger.debug(f"Requesting bus name {DBUS_NAME}...")
     await request_default_bus_name_async(DBUS_NAME)
@@ -58,57 +64,4 @@ async def serve(config_file: Optional[str] = None) -> None:
         await srv.closed
 
 
-@click.command
-@click.option(
-    "--global/--no-global",
-    "global_",
-    default=os.geteuid() == 0,
-    help=f"Load the global config file at {GLOBAL_FILE} "
-    "(default true when called with sudo)",
-)
-@click.option(
-    "--config-file",
-    "-C",
-    envvar="CRYSTALFONTZ_CONFIG_FILE",
-    default=GLOBAL_FILE,
-    type=click.Path(),
-    help="A path to a config file",
-)
-@click.option(
-    "--log-level",
-    envvar="CRYSTALFONTZ_LOG_LEVEL",
-    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
-    default="INFO",
-    help="Set the log level",
-)
-@click.option(
-    "--user/--system",
-    type=click.BOOL,
-    default=None,
-    help="Connect to either the user or system bus",
-)
-def main(
-    global_: bool, config_file: str, log_level: LogLevel, user: Optional[bool]
-) -> None:
-    """
-    Expose the Crystalfontz device as a DBus service.
-    """
-
-    logging.basicConfig(level=getattr(logging, log_level))
-
-    file = None
-    if config_file:
-        if global_:
-            logger.debug(
-                "--config-file is specified, so --global flag will be ignored."
-            )
-        file = config_file
-    elif global_:
-        file = GLOBAL_FILE
-
-    if user:
-        select_session_bus()
-    elif user is False:
-        select_system_bus()
-
-    asyncio.run(serve(file))
+__all__ = ["service", "serve"]

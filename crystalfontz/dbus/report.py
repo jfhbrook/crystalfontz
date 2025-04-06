@@ -1,5 +1,9 @@
 """
-ReportHandler derived classes for use with DBus interfaces.
+`ReportHandler` derived classes for use with DBus interfaces.
+
+This module is most likely to be used with the `DbusClient`. Of particular interest
+will be the `DbusClientReportHandler`, and its subclasses
+`DbusClientLoggingReportHandler` and `DbusClientCliReportHandler`.
 """
 
 from abc import ABC
@@ -31,21 +35,11 @@ class DbusInterfaceProtocol(Protocol):
 
 
 class DbusReportHandler(ReportHandler, ABC):
-    """
-    A base class for DBus-aware report handlers.
-    """
-
     def __init__(self: Self) -> None:
         self.iface: Optional[DbusInterfaceProtocol] = None
 
 
 class DbusInterfaceReportHandler(DbusReportHandler):
-    """
-    A DBus report handler which emits reports on a supplied interface.
-
-    This class is for use by services exposing the DBus interface.
-    """
-
     def __init__(self: Self) -> None:
         self.iface: Optional[DbusInterfaceProtocol] = None
 
