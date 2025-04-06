@@ -41,19 +41,26 @@ class DbusReportHandler(ReportHandler, ABC):
 
 class DbusInterfaceReportHandler(DbusReportHandler):
     def __init__(self: Self) -> None:
+        self.logger = logging.getLogger(__name__)
         self.iface: Optional[DbusInterfaceProtocol] = None
 
     async def on_key_activity(self: Self, report: KeyActivityReport) -> None:
         if not self.iface:
             return
 
-        self.iface.key_activity_reports.emit(KeyActivityReportM.pack(report))
+        try:
+            self.iface.key_activity_reports.emit(KeyActivityReportM.pack(report))
+        except Exception as exc:
+            self.logger.error(exc)
 
     async def on_temperature(self: Self, report: TemperatureReport) -> None:
         if not self.iface:
             return
 
-        self.iface.temperature_reports.emit(TemperatureReportM.pack(report))
+        try:
+            self.iface.temperature_reports.emit(TemperatureReportM.pack(report))
+        except Exception as exc:
+            self.logger.error(exc)
 
 
 class DbusClientReportHandler(DbusReportHandler):
