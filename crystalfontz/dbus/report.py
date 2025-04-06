@@ -1,3 +1,7 @@
+"""
+ReportHandler derived classes for use with DBus interfaces.
+"""
+
 from abc import ABC
 import asyncio
 import json
@@ -28,7 +32,7 @@ class DbusInterfaceProtocol(Protocol):
 
 class DbusReportHandler(ReportHandler, ABC):
     """
-    A base class for interface-aware report handlers.
+    A base class for DBus-aware report handlers.
     """
 
     def __init__(self: Self) -> None:
@@ -37,7 +41,9 @@ class DbusReportHandler(ReportHandler, ABC):
 
 class DbusInterfaceReportHandler(DbusReportHandler):
     """
-    A report handler which emits reports on a supplied interface.
+    A DBus report handler which emits reports on a supplied interface.
+
+    This class is for use by services exposing the DBus interface.
     """
 
     def __init__(self: Self) -> None:
@@ -58,7 +64,9 @@ class DbusInterfaceReportHandler(DbusReportHandler):
 
 class DbusClientReportHandler(DbusReportHandler):
     """
-    A report handler which listens to reports emitted by a dbus interface.
+    A DBus report handler which listens to reports emitted by a dbus interface.
+
+    This report handler is for use by DBus clients.
     """
 
     def __init__(self: Self) -> None:
@@ -123,7 +131,7 @@ class DbusClientReportHandler(DbusReportHandler):
 
 class DbusLoggingReportHandler(DbusClientReportHandler):
     """
-    A dbus client report handler which logs, using Python's logging module.
+    A DBus client report handler which logs, using Python's logging module.
     """
 
     def __init__(self: Self) -> None:
@@ -139,7 +147,7 @@ class DbusLoggingReportHandler(DbusClientReportHandler):
 
 class DbusClientCliReportHandler(DbusClientReportHandler):
     """
-    A report handler intended for use by the dbus client command line interface.
+    A DBus report handler intended for use by the client command line interface.
     """
 
     mode: Optional[OutputMode] = None
