@@ -63,12 +63,11 @@ def test_detect() -> None:
     raise NotImplementedError("test_detect")
 
 
-@pytest.mark.skip
-def test_listen() -> None:
-    raise NotImplementedError("test_listen")
+def test_listen(dbus_cli, confirm) -> None:
+    with dbus_cli.bg("listen"):
+        confirm("Mash some buttons. Are events showing up?")
 
 
-@pytest.mark.skip
 def test_listen_for(dbus_cli: Cli) -> None:
     dbus_cli("listen", "--for", "1.0")
 
