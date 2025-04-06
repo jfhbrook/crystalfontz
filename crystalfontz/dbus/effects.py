@@ -5,7 +5,9 @@ from crystalfontz.dbus.domain import (
     CursorStyleM,
     KeypadBrightnessM,
     RetryTimesM,
+    RetryTimesT,
     TimeoutM,
+    TimeoutT,
     VersionsM,
 )
 from crystalfontz.dbus.interface import DbusInterface
@@ -30,12 +32,10 @@ class DbusEffectClient(EffectClient):
     async def load(
         cls: Type[Self],
         client: DbusInterface,
-        timeout: Optional[float] = None,
-        retry_times: Optional[int] = None,
+        timeout: TimeoutT = TimeoutM.none,
+        retry_times: RetryTimesT = RetryTimesM.none,
     ) -> Self:
-        versions = VersionsM.unpack(
-            await client.versions(TimeoutM.pack(timeout), RetryTimesM.pack(retry_times))
-        )
+        versions = VersionsM.unpack(await client.versions(timeout, retry_times))
         device = lookup_device(
             versions.model, versions.hardware_rev, versions.firmware_rev
         )
