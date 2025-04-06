@@ -8,6 +8,7 @@ import click
 from crystalfontz.cli import LogLevel
 from crystalfontz.config import GLOBAL_FILE
 from crystalfontz.dbus.select import (
+    select_default_bus,
     select_session_bus,
     select_system_bus,
 )
@@ -68,5 +69,7 @@ def main(
         select_session_bus()
     elif user is False:
         select_system_bus()
+    else:
+        select_default_bus()
 
     asyncio.run(serve(file))

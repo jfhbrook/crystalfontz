@@ -52,7 +52,11 @@ from crystalfontz.dbus.domain import (
 )
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.report import DbusClientCliReportHandler
-from crystalfontz.dbus.select import select_session_bus, select_system_bus
+from crystalfontz.dbus.select import (
+    select_default_bus,
+    select_session_bus,
+    select_system_bus,
+)
 from crystalfontz.gpio import GpioDriveMode, GpioFunction
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import (
@@ -213,6 +217,8 @@ def main(
             select_session_bus()
         elif user is None:
             select_system_bus()
+        else:
+            select_default_bus()
 
         report_handler = DbusClientCliReportHandler()
         report_handler.mode = output

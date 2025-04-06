@@ -55,3 +55,11 @@ def select_system_bus() -> None:
 
     logger.debug("Selecting the system bus")
     set_default_bus(sd_bus_open_system())
+
+
+def select_default_bus() -> None:
+    """
+    Log that the standard default bus is being used.
+    """
+
+    logger.debug("Selecting the default bus")
