@@ -55,9 +55,18 @@ _clean-compile:
 run *argv:
   uv run {{ argv }}
 
-# Run crystalfontz cli
-start *argv:
+# Run crystalfontz client cli
+client *argv:
   uv run -- python -m crystalfontz {{ argv }}
+
+# Run crystalfontz.dbus.service cli
+service *argv:
+  uv run -- python -m crystalfontz.dbus.service {{ argv }}
+
+# Run crystalfontz.dbus.client cli
+dbus-client *argv:
+  uv run -- python -m crystalfontz.dbus.client {{ argv }}
+
 
 # Format with black and isort
 format:
