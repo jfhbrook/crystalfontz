@@ -6,11 +6,9 @@ from typing import Optional, Protocol, Self
 
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device
-from crystalfontz.lcd import LcdRegister
 from crystalfontz.response import (
     BacklightSet,
     ClearedScreen,
-    CommandSentToLcdController,
     ContrastSet,
     CursorPositionSet,
     CursorStyleSet,
