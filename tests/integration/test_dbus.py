@@ -72,14 +72,22 @@ def test_listen_for(dbus_cli: Cli) -> None:
     dbus_cli("listen", "--for", "1.0")
 
 
-@pytest.mark.skip
-def test_marquee() -> None:
-    raise NotImplementedError("test_marquee")
+def test_marquee(dbus_cli, confirm) -> None:
+    with dbus_cli.bg("effects", "marquee", "0", "Josh is cool"):
+        confirm("Is the LCD showing a marquee effect?")
 
 
-@pytest.mark.skip
-def test_screensaver() -> None:
-    raise NotImplementedError("test_marquee")
+def test_marquee_for(dbus_cli: Cli) -> None:
+    dbus_cli("effects", "--for", "1.0", "marquee", "1", "Josh is cool")
+
+
+def test_screensaver(dbus_cli, confirm) -> None:
+    with dbus_cli.bg("effects", "screensaver", "Josh!"):
+        confirm("Is the LCD showing a screensaver effect?")
+
+
+def test_screensaver_for(dbus_cli: Cli) -> None:
+    dbus_cli("effects", "--for", "1.0", "screensaver", "Josh!")
 
 
 @pytest.mark.skip
