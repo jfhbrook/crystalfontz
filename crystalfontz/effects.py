@@ -252,21 +252,11 @@ class DanceParty(Effect):
     def __init__(
         self: Self,
         client: EffectClient,
-        text: str,
         tick: Optional[float] = None,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
-        device = client.device
-        buffer = device.character_rom.encode(text.center(device.columns))
-
-        if len(buffer) > device.columns:
-            raise ValueError(
-                f"Text length {len(buffer)} is too long to fit onto the device's "
-                f"{device.columns} columns"
-            )
-
         super().__init__(
             client=client,
             tick=tick if tick is not None else 0.5,
@@ -275,16 +265,11 @@ class DanceParty(Effect):
             loop=loop,
         )
 
-        self.text: bytes = buffer
-
     def _random_contrast(self: Self) -> float:
         return random.uniform(0.4, 0.6)
 
     def _random_brightness(self: Self) -> float:
         return random.uniform(0.2, 0.8)
-
-    async def start(self: Self) -> None:
-        await self.client.send_data(0, 0, self.text)
 
     async def render(self: Self) -> None:
         await asyncio.gather(
