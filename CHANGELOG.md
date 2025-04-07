@@ -36,8 +36,6 @@
     - Can be overridden with `CRYSTALFONTZ_CONFIG_FILE` environment variable
 - **NEW:** Dbus support:
   - `crystalfontz.dbus.DbusInterface` dbus Interface class, implementing most commands
-    - **NOTE:** Reporting is unimplemented
-    - **NOTE:** Effects are unimplemented
   - `crystalfontz.dbus.DbusClient` dbus client class
   - `crystalfontz.dbus.domain` API for mapping domain objects to dbus types
   - `python3 -m crystalfontz.dbus.service` dbus service CLI
