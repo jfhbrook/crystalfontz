@@ -1148,7 +1148,10 @@ async def marquee(
 ) -> None:
     tick = obj.effect_options.tick if obj.effect_options else None
     for_ = obj.effect_options.for_ if obj.effect_options else None
+
     m = client.marquee(row, text, pause=pause, tick=tick)
+
+    await client.clear_screen()
 
     await run_effect(m, client.loop, for_)
 
@@ -1162,6 +1165,23 @@ async def screensaver(obj: Obj, client: Client, text: str) -> None:
     tick = obj.effect_options.tick if obj.effect_options else None
     for_ = obj.effect_options.for_ if obj.effect_options else None
     s = client.screensaver(text, tick=tick)
+
+    await client.clear_screen()
+
+    await run_effect(s, client.loop, for_)
+
+
+@effects.command(help="Have a dance party!")
+@click.argument("text")
+@async_command
+@pass_client()
+@click.pass_obj
+async def dance_party(obj: Obj, client: Client, text: str) -> None:
+    tick = obj.effect_options.tick if obj.effect_options else None
+    for_ = obj.effect_options.for_ if obj.effect_options else None
+    s = client.dance_party(text=text, tick=tick)
+
+    await client.clear_screen()
 
     await run_effect(s, client.loop, for_)
 

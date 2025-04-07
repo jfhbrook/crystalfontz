@@ -53,7 +53,7 @@ class EffectClient(Protocol):
 
     async def set_backlight(
         self: Self,
-        lcd_brightness: int,
+        lcd_brightness: float,
         keypad_brightness: Optional[int] = None,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
@@ -182,7 +182,7 @@ class Marquee(Effect):
             self.row, 0, buffer, timeout=self.timeout, retry_times=self.retry_times
         )
         self.shift += 1
-        if self.shift >= device.columns:
+        if self.shift > device.columns:
             self.shift = 0
 
     def _line(self: Self) -> bytes:
@@ -195,6 +195,11 @@ class Marquee(Effect):
 
 
 class Screensaver(Effect):
+    """
+    A screensaver effect. Prints text at a random position, and moves it around the
+    screen on an interval.
+    """
+
     def __init__(
         self: Self,
         client: EffectClient,
@@ -207,7 +212,7 @@ class Screensaver(Effect):
         device = client.device
         buffer = device.character_rom.encode(text)
 
-        if len(buffer) >= device.columns:
+        if len(buffer) > device.columns:
             raise ValueError(
                 f"Text length {len(buffer)} is too long to fit onto the device's "
                 f"{device.columns} columns"
@@ -235,4 +240,54 @@ class Screensaver(Effect):
 
         await self.client.send_data(
             row, column, self.text, timeout=self.timeout, retry_times=self.retry_times
+        )
+
+
+class DanceParty(Effect):
+    """
+    A dance party effect. Randomly changes the backlight and contrast settings on
+    an interval.
+    """
+
+    def __init__(
+        self: Self,
+        client: EffectClient,
+        text: str,
+        tick: Optional[float] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+    ) -> None:
+        device = client.device
+        buffer = device.character_rom.encode(text.center(device.columns))
+
+        if len(buffer) > device.columns:
+            raise ValueError(
+                f"Text length {len(buffer)} is too long to fit onto the device's "
+                f"{device.columns} columns"
+            )
+
+        super().__init__(
+            client=client,
+            tick=tick if tick is not None else 0.5,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=loop,
+        )
+
+        self.text: bytes = buffer
+
+    def _random_contrast(self: Self) -> float:
+        return random.uniform(0.4, 0.6)
+
+    def _random_brightness(self: Self) -> float:
+        return random.uniform(0.2, 0.8)
+
+    async def start(self: Self) -> None:
+        await self.client.send_data(0, 0, self.text)
+
+    async def render(self: Self) -> None:
+        await asyncio.gather(
+            self.client.set_contrast(self._random_contrast()),
+            self.client.set_backlight(self._random_brightness()),
         )
