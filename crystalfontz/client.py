@@ -1351,9 +1351,9 @@ class Client(asyncio.Protocol):
         """
 
         return Marquee(
-            row,
-            text,
             client=self,
+            row=row,
+            text=text,
             pause=pause,
             tick=tick,
             timeout=timeout,
@@ -1373,8 +1373,8 @@ class Client(asyncio.Protocol):
         """
 
         return Screensaver(
-            text,
             client=self,
+            text=text,
             tick=tick,
             timeout=timeout,
             retry_times=retry_times,

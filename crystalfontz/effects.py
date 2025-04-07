@@ -143,9 +143,9 @@ class Marquee(Effect):
 
     def __init__(
         self: Self,
+        client: EffectClient,
         row: int,
         text: str,
-        client: EffectClient,
         pause: Optional[float] = None,
         tick: Optional[float] = None,
         timeout: Optional[float] = None,
@@ -197,8 +197,8 @@ class Marquee(Effect):
 class Screensaver(Effect):
     def __init__(
         self: Self,
-        text: str,
         client: EffectClient,
+        text: str,
         tick: Optional[float] = None,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
