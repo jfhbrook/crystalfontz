@@ -266,10 +266,10 @@ class DanceParty(Effect):
         )
 
     def _random_contrast(self: Self) -> float:
-        return random.uniform(0.4, 0.6)
+        return random.choice([0.4, 0.5, 0.6])
 
     def _random_brightness(self: Self) -> float:
-        return random.uniform(0.2, 0.8)
+        return random.choice([0.2, 0.4, 0.6, 0.8])
 
     async def render(self: Self) -> None:
         await asyncio.gather(
