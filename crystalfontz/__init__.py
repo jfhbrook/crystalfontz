@@ -7,7 +7,7 @@ from crystalfontz.command import Command
 from crystalfontz.config import Config
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus
-from crystalfontz.effects import Effect, EffectClient, Marquee, Screensaver
+from crystalfontz.effects import DanceParty, Effect, EffectClient, Marquee, Screensaver
 from crystalfontz.error import (
     ConnectionError,
     CrystalfontzError,
@@ -95,6 +95,7 @@ __all__: List[str] = [
     "CursorPositionSet",
     "CursorStyle",
     "CursorStyleSet",
+    "DanceParty",
     "DataSent",
     "DecodeError",
     "Device",

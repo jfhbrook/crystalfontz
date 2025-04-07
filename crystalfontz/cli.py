@@ -1166,5 +1166,17 @@ async def screensaver(obj: Obj, client: Client, text: str) -> None:
     await run_effect(s, client.loop, for_)
 
 
+@effects.command(help="Have a dance party!")
+@async_command
+@pass_client()
+@click.pass_obj
+async def dance_party(obj: Obj, client: Client) -> None:
+    tick = obj.effect_options.tick if obj.effect_options else None
+    for_ = obj.effect_options.for_ if obj.effect_options else None
+    s = client.dance_party(tick=tick)
+
+    await run_effect(s, client.loop, for_)
+
+
 if __name__ == "__main__":
     main()

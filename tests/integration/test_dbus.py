@@ -90,6 +90,12 @@ def test_screensaver_for(dbus_cli: Cli) -> None:
     dbus_cli("effects", "--for", "1.0", "screensaver", "Josh!")
 
 
+def test_dance_party(dbus_cli, confirm) -> None:
+    with dbus_cli.bg("effects", "marquee", "0", "Carameldansen!!"):
+        with dbus_cli.bg("effects", "dance-party"):
+            confirm("Is the LCD showing a dance party effect?")
+
+
 @pytest.mark.skip
 def test_read_user_flash() -> None:
     raise NotImplementedError("test_read_user_flash")

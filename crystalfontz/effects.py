@@ -53,7 +53,7 @@ class EffectClient(Protocol):
 
     async def set_backlight(
         self: Self,
-        lcd_brightness: int,
+        lcd_brightness: float,
         keypad_brightness: Optional[int] = None,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
@@ -195,6 +195,11 @@ class Marquee(Effect):
 
 
 class Screensaver(Effect):
+    """
+    A screensaver effect. Prints text at a random position, and moves it around the
+    screen on an interval.
+    """
+
     def __init__(
         self: Self,
         client: EffectClient,
@@ -235,4 +240,36 @@ class Screensaver(Effect):
 
         await self.client.send_data(
             row, column, self.text, timeout=self.timeout, retry_times=self.retry_times
+        )
+
+
+class DanceParty(Effect):
+    """
+    A dance party effect. Randomly changes the backlight and contrast settings on
+    an interval.
+    """
+
+    def __init__(
+        self: Self,
+        client: EffectClient,
+        tick: Optional[float] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+    ) -> None:
+        super().__init__(
+            client=client,
+            tick=tick if tick is not None else 1.0,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=loop,
+        )
+
+    def _random_setting(self: Self) -> float:
+        return random.uniform(0.0, 1.0)
+
+    async def render(self: Self) -> None:
+        await asyncio.gather(
+            self.client.set_contrast(self._random_setting()),
+            self.client.set_backlight(self._random_setting()),
         )

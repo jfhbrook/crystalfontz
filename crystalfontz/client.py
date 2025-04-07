@@ -94,7 +94,7 @@ from crystalfontz.command import (
 )
 from crystalfontz.cursor import CursorStyle
 from crystalfontz.device import Device, DeviceStatus, lookup_device
-from crystalfontz.effects import Marquee, Screensaver
+from crystalfontz.effects import DanceParty, Marquee, Screensaver
 from crystalfontz.error import (
     ConnectionError,
     CrystalfontzError,
@@ -1375,6 +1375,24 @@ class Client(asyncio.Protocol):
         return Screensaver(
             client=self,
             text=text,
+            tick=tick,
+            timeout=timeout,
+            retry_times=retry_times,
+            loop=self.loop,
+        )
+
+    def dance_party(
+        self: Self,
+        tick: Optional[float] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> DanceParty:
+        """
+        Display a dance party effect on the LCD screen.
+        """
+
+        return DanceParty(
+            client=self,
             tick=tick,
             timeout=timeout,
             retry_times=retry_times,

@@ -95,7 +95,7 @@ class DbusEffectClient(EffectClient):
 
     async def set_backlight(
         self: Self,
-        lcd_brightness: int,
+        lcd_brightness: float,
         keypad_brightness: Optional[int] = None,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,

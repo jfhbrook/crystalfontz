@@ -60,7 +60,7 @@ from crystalfontz.dbus.select import (
     select_session_bus,
     select_system_bus,
 )
-from crystalfontz.effects import Marquee, Screensaver
+from crystalfontz.effects import DanceParty, Marquee, Screensaver
 from crystalfontz.gpio import GpioDriveMode, GpioFunction
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import (
@@ -976,3 +976,16 @@ async def screensaver(obj: Obj, client: DbusEffectClient, text: str) -> None:
     s = Screensaver(client=client, text=text, tick=tick)
 
     await run_effect(s, asyncio.get_running_loop(), for_)
+
+
+@effects.command(help="Have a dance party!")
+@async_command
+@pass_effect_client
+@click.pass_obj
+async def dance_party(obj: Obj, client: DbusEffectClient) -> None:
+    tick = obj.effect_options.tick if obj.effect_options else None
+    for_ = obj.effect_options.for_ if obj.effect_options else None
+
+    d = DanceParty(client=client, tick=tick)
+
+    await run_effect(d, asyncio.get_running_loop(), for_)
