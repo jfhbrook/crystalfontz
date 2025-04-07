@@ -35,6 +35,10 @@ class DbusEffectClient(EffectClient):
         timeout: TimeoutT = TimeoutM.none,
         retry_times: RetryTimesT = RetryTimesM.none,
     ) -> Self:
+        """
+        Given a DBusClient, create a DbusEffectClient.
+        """
+
         versions = VersionsM.unpack(await client.versions(timeout, retry_times))
         device = lookup_device(
             versions.model, versions.hardware_rev, versions.firmware_rev
@@ -42,8 +46,6 @@ class DbusEffectClient(EffectClient):
         return cls(client, device)
 
     def __init__(self: Self, client: DbusInterface, device: Device) -> None:
-        # This takes a DbusInterface, rather than a DbusClient, to avoid
-        # circular import issues. In practice, it is a DbusClient.
         self.client: DbusInterface = client
         self.device: Device = device
 

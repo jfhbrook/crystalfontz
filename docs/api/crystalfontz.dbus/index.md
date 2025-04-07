@@ -26,6 +26,12 @@ Like the main serial client in [`crystalfontz`](../crystalfontz.md), the `DbusIn
 
 For more information, view the API docs for [`crystalfontz.dbus.report`](./crystalfontz.dbus.report.md).
 
+## crystalfontz.dbus.effects
+
+This module contains abstractions for running effects with DBus. The core of this is a class implementing the `crystalfontz.effects.EffectClient` protocol. Note that the `DbusClient` doesn't implement effect convenience methods the same way the main `Client` does.
+
+For more information, view the API docs for [`crystalfontz.dbus.effects`](./crystalfontz.dbus.effects.md).
+
 ## crystalfontz.dbus.config
 
 Configuration for the DBus service is a little different than for the serial client. This is because the DBus service doesn't live reload a config after it changes. In other words, if you edit the config file, the DBus service's loaded config will show drift. This module helps track the drift between these sources.
