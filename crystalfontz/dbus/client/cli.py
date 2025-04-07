@@ -22,11 +22,13 @@ from crystalfontz.cli import (
     CursorStyle,
     DRIVE_MODE,
     echo,
+    EffectOptions,
     FUNCTION,
     KEYPRESSES,
     load_gpio_settings,
     LogLevel,
     OutputMode,
+    run_effect,
     WATCHDOG_SETTING,
 )
 from crystalfontz.dbus.client import DbusClient
@@ -50,6 +52,7 @@ from crystalfontz.dbus.domain import (
     TimeoutT,
     VersionsM,
 )
+from crystalfontz.dbus.effects import DbusEffectClient
 from crystalfontz.dbus.error import handle_dbus_error
 from crystalfontz.dbus.report import DbusClientCliReportHandler
 from crystalfontz.dbus.select import (
@@ -57,6 +60,7 @@ from crystalfontz.dbus.select import (
     select_session_bus,
     select_system_bus,
 )
+from crystalfontz.effects import Marquee, Screensaver
 from crystalfontz.gpio import GpioDriveMode, GpioFunction
 from crystalfontz.lcd import LcdRegister
 from crystalfontz.temperature import (
@@ -76,6 +80,7 @@ class Obj:
     timeout: TimeoutT
     retry_times: RetryTimesT
     report_handler: DbusClientCliReportHandler
+    effect_options: Optional[EffectOptions] = None
 
 
 def pass_config(fn: AsyncCommand) -> AsyncCommand:
@@ -919,3 +924,55 @@ async def read_gpio(
 ) -> None:
     res = await client.read_gpio(index, timeout, retry_times)
     echo(GpioReadM.unpack(res))
+
+
+@main.group(help="Run various effects, such as marquees")
+@click.option("--tick", type=float, help="How often to update the effect")
+@click.option("--for", "for_", type=float, help="Amount of time to run the effect for")
+@click.pass_obj
+def effects(obj: Obj, tick: Optional[float], for_: Optional[float]) -> None:
+    obj.effect_options = EffectOptions(tick=tick, for_=for_)
+
+
+def pass_effect_client(fn: AsyncCommand) -> AsyncCommand:
+    @pass_client
+    @functools.wraps(fn)
+    async def wrapper(client: DbusClient, *args, **kwargs) -> None:
+        effect_client = await DbusEffectClient.load(client)
+        await fn(effect_client, *args, **kwargs)
+
+    return wrapper
+
+
+@effects.command(help="Display a marquee effect")
+@click.argument("row", type=int)
+@click.argument("text")
+@click.option(
+    "--pause", type=float, help="An amount of time to pause before starting the effect"
+)
+@async_command
+@pass_effect_client
+@click.pass_obj
+async def marquee(
+    obj: Obj, client: DbusEffectClient, row: int, text: str, pause: Optional[float]
+) -> None:
+    tick = obj.effect_options.tick if obj.effect_options else None
+    for_ = obj.effect_options.for_ if obj.effect_options else None
+
+    m = Marquee(client=client, row=row, text=text, pause=pause, tick=tick)
+
+    await run_effect(m, asyncio.get_running_loop(), for_)
+
+
+@effects.command(help="Display a screensaver-like effect")
+@click.argument("text")
+@async_command
+@pass_effect_client
+@click.pass_obj
+async def screensaver(obj: Obj, client: DbusEffectClient, text: str) -> None:
+    tick = obj.effect_options.tick if obj.effect_options else None
+    for_ = obj.effect_options.for_ if obj.effect_options else None
+
+    s = Screensaver(client=client, text=text, tick=tick)
+
+    await run_effect(s, asyncio.get_running_loop(), for_)

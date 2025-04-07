@@ -2,9 +2,71 @@ from abc import ABC, abstractmethod
 import asyncio
 import random
 import time
-from typing import Optional, Self
+from typing import Optional, Protocol, Self
 
-from crystalfontz.protocol import ClientProtocol
+from crystalfontz.cursor import CursorStyle
+from crystalfontz.device import Device
+from crystalfontz.response import (
+    BacklightSet,
+    ClearedScreen,
+    ContrastSet,
+    CursorPositionSet,
+    CursorStyleSet,
+    DataSent,
+)
+
+
+class EffectClient(Protocol):
+    """
+    A protocol for any client used by effects.
+
+    This protocol covers a subset of the `Client` class which may be used by effects.
+    """
+
+    device: Device
+
+    async def clear_screen(
+        self: Self, timeout: Optional[float] = None, retry_times: Optional[int] = None
+    ) -> ClearedScreen: ...
+
+    async def set_cursor_position(
+        self: Self,
+        row: int,
+        column: int,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> CursorPositionSet: ...
+
+    async def set_cursor_style(
+        self: Self,
+        style: CursorStyle,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> CursorStyleSet: ...
+
+    async def set_contrast(
+        self: Self,
+        contrast: float,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> ContrastSet: ...
+
+    async def set_backlight(
+        self: Self,
+        lcd_brightness: int,
+        keypad_brightness: Optional[int] = None,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> BacklightSet: ...
+
+    async def send_data(
+        self: Self,
+        row: int,
+        column: int,
+        data: str | bytes,
+        timeout: Optional[float] = None,
+        retry_times: Optional[int] = None,
+    ) -> DataSent: ...
 
 
 class Effect(ABC):
@@ -15,7 +77,7 @@ class Effect(ABC):
 
     def __init__(
         self: Self,
-        client: ClientProtocol,
+        client: EffectClient,
         tick: float = 1.0,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
@@ -27,7 +89,7 @@ class Effect(ABC):
         self.timeout: Optional[float] = timeout
         self.retry_times: Optional[int] = retry_times
 
-        self.client: ClientProtocol = client
+        self.client: EffectClient = client
         self._running: bool = False
         self._tick: float = tick
         self._task: Optional[asyncio.Task[None]] = None
@@ -81,9 +143,9 @@ class Marquee(Effect):
 
     def __init__(
         self: Self,
+        client: EffectClient,
         row: int,
         text: str,
-        client: ClientProtocol,
         pause: Optional[float] = None,
         tick: Optional[float] = None,
         timeout: Optional[float] = None,
@@ -135,8 +197,8 @@ class Marquee(Effect):
 class Screensaver(Effect):
     def __init__(
         self: Self,
+        client: EffectClient,
         text: str,
-        client: ClientProtocol,
         tick: Optional[float] = None,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,

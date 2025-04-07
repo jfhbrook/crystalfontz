@@ -6,6 +6,7 @@ from sdbus import SdBus  # pyright: ignore [reportMissingModuleSource]
 from crystalfontz.config import Config
 from crystalfontz.dbus.config import StagedConfig
 from crystalfontz.dbus.domain import ConfigM
+from crystalfontz.dbus.effects import DbusEffectClient
 from crystalfontz.dbus.interface import DBUS_NAME, DbusInterface
 from crystalfontz.dbus.report import DbusClientReportHandler
 
@@ -22,6 +23,8 @@ class DbusClient(DbusInterface):
     ) -> None:
         client = Mock(name="client", side_effect=NotImplementedError("client"))
         self.subscribe = Mock(name="client.subscribe")
+        self._effect_client: Optional[DbusEffectClient] = None
+
         super().__init__(client, report_handler=report_handler)
 
         cast(Any, self)._proxify(DBUS_NAME, "/", bus=bus)
