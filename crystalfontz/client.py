@@ -1383,6 +1383,7 @@ class Client(asyncio.Protocol):
 
     def dance_party(
         self: Self,
+        text: str,
         tick: Optional[float] = None,
         timeout: Optional[float] = None,
         retry_times: Optional[int] = None,
@@ -1393,6 +1394,7 @@ class Client(asyncio.Protocol):
 
         return DanceParty(
             client=self,
+            text=text,
             tick=tick,
             timeout=timeout,
             retry_times=retry_times,

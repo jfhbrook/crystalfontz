@@ -91,9 +91,8 @@ def test_screensaver_for(cli: Cli) -> None:
 
 
 def test_dance_party(cli, confirm) -> None:
-    with cli.bg("effects", "marquee", "0", "Carameldansen!!"):
-        with cli.bg("effects", "dance-party"):
-            confirm("Is the LCD showing a dance party effect?")
+    with cli.bg("effects", "dance-party", "Carameldansen!!"):
+        confirm("Is the LCD showing a dance party effect?")
 
 
 @pytest.mark.skip

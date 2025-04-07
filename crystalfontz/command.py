@@ -220,7 +220,6 @@ class SetContrast(Command):
 
     def __init__(self: Self, contrast: float, device: Device) -> None:
         self.contrast = device.contrast(contrast)
-        print(self.contrast[0], self.contrast[1])
 
     def to_packet(self: Self) -> Packet:
         return (self.command, self.contrast)
