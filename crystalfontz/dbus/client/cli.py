@@ -934,6 +934,16 @@ def effects(obj: Obj, tick: Optional[float], for_: Optional[float]) -> None:
     obj.effect_options = EffectOptions(tick=tick, for_=for_)
 
 
+def pass_effect_client(fn: AsyncCommand) -> AsyncCommand:
+    @pass_client
+    @functools.wraps(fn)
+    async def wrapper(client: DbusClient, *args, **kwargs) -> None:
+        effect_client = await DbusEffectClient.load(client)
+        await fn(effect_client, *args, **kwargs)
+
+    return wrapper
+
+
 @effects.command(help="Display a marquee effect")
 @click.argument("row", type=int)
 @click.argument("text")
@@ -941,17 +951,15 @@ def effects(obj: Obj, tick: Optional[float], for_: Optional[float]) -> None:
     "--pause", type=float, help="An amount of time to pause before starting the effect"
 )
 @async_command
-@pass_client
+@pass_effect_client
 @click.pass_obj
 async def marquee(
-    obj: Obj, client: DbusClient, row: int, text: str, pause: Optional[float]
+    obj: Obj, client: DbusEffectClient, row: int, text: str, pause: Optional[float]
 ) -> None:
     tick = obj.effect_options.tick if obj.effect_options else None
     for_ = obj.effect_options.for_ if obj.effect_options else None
 
-    effect_client = await DbusEffectClient.load(client)
-
-    m = Marquee(client=effect_client, row=row, text=text, pause=pause, tick=tick)
+    m = Marquee(client=client, row=row, text=text, pause=pause, tick=tick)
 
     await run_effect(m, asyncio.get_running_loop(), for_)
 
@@ -959,14 +967,12 @@ async def marquee(
 @effects.command(help="Display a screensaver-like effect")
 @click.argument("text")
 @async_command
-@pass_client
+@pass_effect_client
 @click.pass_obj
-async def screensaver(obj: Obj, client: DbusClient, text: str) -> None:
+async def screensaver(obj: Obj, client: DbusEffectClient, text: str) -> None:
     tick = obj.effect_options.tick if obj.effect_options else None
     for_ = obj.effect_options.for_ if obj.effect_options else None
 
-    effect_client = await DbusEffectClient.load(client)
-
-    s = Screensaver(client=effect_client, text=text, tick=tick)
+    s = Screensaver(client=client, text=text, tick=tick)
 
     await run_effect(s, asyncio.get_running_loop(), for_)
