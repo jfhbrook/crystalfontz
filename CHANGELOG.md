@@ -1,4 +1,4 @@
-## 2025/04/08 Release 5.0.0
+## 2025/04/08 Version 5.0.0-1
 - API Changes:
   - **NEW:** `Receiver` class
     - A subclass of `asyncio.Queue`
