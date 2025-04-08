@@ -1,4 +1,5 @@
-## 2025/04/08 Version 5.0.0-1
+2025/04/08 Version 5.0.0-1
+--------------------------
 - API Changes:
   - **NEW:** `Receiver` class
     - A subclass of `asyncio.Queue`
@@ -55,7 +56,8 @@
   - Leverage a config file at `./tests/fixtures/crystalfontz.yaml`
     - Can be overridden with `CRYSTALFONTZ_CONFIG_FILE` environment variable
 
-## 2025/01/12 Version 4.0.0
+2025/01/12 Version 4.0.0
+--------------------------
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>
 - Client API Changes:
   - Rename `client.load_device` to `client.detect_device`
@@ -76,12 +78,12 @@
   - Export `Config` class used by CLI
   - Add `get`, `set` and `unset` methods to `Config` class
 
-## 2025/01/09 Version 3.0.1
-
+2025/01/09 Version 3.0.1
+------------------------
 - Remove development dependencies from extras
 
-## 2025/01/08 Version 3.0.0
-
+2025/01/08 Version 3.0.0
+------------------------
 - API changes:
   - Renamed `client` contextmanager to `connection`
   - Renamed `TemperatureReport`'s `idx` attribute to `index`
@@ -97,8 +99,8 @@
   - Improved help text
 - Docstrings, plus documentation hosted at <https://crystalfontz.readthedocs.io/>
 
-## 2025/01/06 Version 2.0.0
-
+2025/01/06 Version 2.0.0
+------------------------
 - API changes:
   - Expose `pause` argument for marquee effect in client and CLI
   - Rename `client.poke` and `Poked` to `client.read_lcd_memory` and `LcdMemory` respectively
@@ -140,6 +142,6 @@
   - Add PyPI classifiers
   - Updated documentation in README.md
 
-## 2025/01/04 Version 1.0.0
-
+2025/01/04 Version 1.0.0
+------------------------
 - First version of `crystalfontz`
