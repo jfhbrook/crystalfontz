@@ -4,6 +4,9 @@ set -euo pipefail
 
 VERSION="${1}"
 RELEASE="${2}"
+
+# Pulls the existing changelog already in the spec file. This is generated
+# by Tito.
 CHANGELOG="$(./scripts/spec-changelog.py)"
 
 export VERSION
