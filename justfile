@@ -148,7 +148,7 @@ generate-dbus-iface-docs *ARGV:
 build:
   uv build
 
-_clean-build:
+clean-build:
   rm -rf dist
 
 # Generate crystalfontz.spec
