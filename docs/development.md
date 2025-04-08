@@ -46,7 +46,9 @@
 ### Interactive
 
 - `run` - Thin wrapper around `uv run`
-- `start` - Run `crystalfontz` CLI
+- `client` - Run `crystalfontz` serial client CLI
+- `service` - Run `crystalfontz.dbus.service` DBus service on user session bus
+- `dbus-client` - Run `crystalfontz.dbus.client` DBus client CLI on user session bus
 - `console` - Run a Python repl
 - `shell` - Start a bash shell with a sourced virtualenv
 
