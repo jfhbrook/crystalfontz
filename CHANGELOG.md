@@ -47,6 +47,7 @@
     - **BREAKING:** Includes shim bin `crystalfontz` -> `python3 -m crystalfontz.dbus.client`
   - Tito based release tagging
   - GitHub release tarball
+  - **BREAKING:** Release under MPL-2.0 license
 - Integration tests:
   - Use `python-gak` plugin
   - Use snapshots
