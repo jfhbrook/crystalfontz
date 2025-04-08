@@ -1,23 +1,24 @@
+## 2025/04/08 Release 5.0.0
 - API Changes:
   - **NEW:** `Receiver` class
     - A subclass of `asyncio.Queue`
   - `Client`:
-    - `subscribe` and `unsubscribe` methods use new `Receiver` class
+    - **BREAKING:** `subscribe` and `unsubscribe` methods use new `Receiver` class
     - Emit unmatched exceptions on expecting receivers instead of resolving `client.closed`
     - `detect_baud_rate` exposes `timeout` and `retry_times` arguments
     - Document `detect_baud_rate`
-  - **Breaking:** `ClientProtocol`/`EffectClient`
+  - **BREAKING:** `ClientProtocol`/`EffectClient`
     - `crystalfontz.protocol.ClientProtocol` type has been replaced by `crystalfontz.effects.EffectClient`
     - `EffectClient` enforces a smaller API than `ClientProtocol` did previously
-  - `Response`:
+  - **BREAKING:** `Response`:
     - `Response.from_bytes` accepts bytes as from packets, rather than `__init__`
     - `Response.__init__` accepts properties as arguments
-  - `SpecialCharacter` API:
+  - **BREAKING:** `SpecialCharacter` API:
     - Rename `as_bytes` method to `to_bytes`
     - Store pixels as `List[List[bool]]` instead of `List[List[int]]`
   - `KeyState` includes `keypress: KeyPress` attribute
 - CLI changes:
-  - **Breaking:** CLI now invoked through `python3 -m crystalfontz`
+  - **BREAKING:** CLI now invoked through `python3 -m crystalfontz`
     - Optional unpackaged `crystalfontz` entry point at `./bin/crystalfontz`
   - Use `configurence` library
   - Respect `CRYSTALFONTZ_CONFIG_FILE` environment variable
@@ -29,11 +30,6 @@
     - `python3 -m crystalfontz line 2`
     - `python3 -m crystalfontz send`
   - Help for `python3 -m crystalfontz listen` `--for` option
-- Integration tests:
-  - Use `python-gak` plugin
-  - Use snapshots
-  - Leverage a config file at `./tests/fixtures/crystalfontz.yaml`
-    - Can be overridden with `CRYSTALFONTZ_CONFIG_FILE` environment variable
 - **NEW:** Dbus support:
   - `crystalfontz.dbus.DbusInterface` dbus Interface class, implementing most commands
   - `crystalfontz.dbus.DbusClient` dbus client class
@@ -42,6 +38,22 @@
     - Optional unpackaged `crystalfontz.dbus.service` entry point at `./bin/crystalfontz-service`
   - `python3 -m crystalfontz.dbus.client` dbus client CLI
     - Optional unpackaged `crystalfontz.dbus.client` entry point at `./bin/crystalfontz-dbus`
+- Packaging and Releases:
+  - `python-crystalfontz` COPR package spec
+    - This has been moved from <https://github.com/jfhbrook/public>
+  - **NEW:** `crystalfontz` COPR package
+    - Depends on `python-crystalfontz` COPR package
+    - Includes systemd unit for `python3 -m crystalfontz.dbus.service`
+    - **BREAKING:** Includes shim bin `crystalfontz` -> `python3 -m crystalfontz.dbus.client`
+  - Tito based release tagging
+  - GitHub release tarball
+  - Improved PyPI classifiers
+  - **BREAKING:** Release under MPL-2.0 license
+- Integration tests:
+  - Use `python-gak` plugin
+  - Use snapshots
+  - Leverage a config file at `./tests/fixtures/crystalfontz.yaml`
+    - Can be overridden with `CRYSTALFONTZ_CONFIG_FILE` environment variable
 
 ## 2025/01/12 Version 4.0.0
 - Fedora package on COPR: <https://copr.fedorainfracloud.org/coprs/jfhbrook/joshiverse/package/python-crystalfontz/>

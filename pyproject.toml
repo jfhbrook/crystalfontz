@@ -2,28 +2,36 @@
 requires = ["setuptools", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.rpm]
+# Generally this is "1", but can be incremented to roll up bugfixes in the
+# top-level `crystalfontz` Fedora package.
+release = "1"
+
 [project]
 name = "crystalfontz"
 version = "4.0.0"
 authors = [
   {name = "Josh Holbrook", email = "josh.holbrook@gmail.com"}
 ]
-description = "Library for interacting with crystalfontz LCD displays"
+description = "Serial client and Linux service for Crystalfontz LCD displays"
 readme = "README.md"
 keywords = []
-license = { text = "Apache-2.0" }
+license = { text = "MPL-2.0" }
 classifiers = [
     "Programming Language :: Python",
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
     "Operating System :: OS Independent",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Topic :: Other/Nonlisted Topic",
+    "Topic :: System :: Hardware",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+    "Topic :: Terminals :: Serial",
 ]
 requires-python = ">=3.11"
 dependencies = [
