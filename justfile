@@ -179,10 +179,6 @@ check-main-branch:
 tag:
   ./scripts/tag.sh
 
-# Bundle the package for GitHub release
-bundle-gh-release:
-  ./scripts/bundle-gh-release.sh "$(./scripts/version.py)-$(./scripts/release-version.py)"
-
 # Clean up the release package
 clean-release:
   rm -f "crystalfontz-*-*.tar.gz"
@@ -224,7 +220,6 @@ publish:
   if [[ "$(./scripts/release-version.py)" == '1' ]]; then just clean-build; fi
   @just clean-release
   if [[ "$(./scripts/release-version.py)" == '1' ]]; then just build; fi
-  @just bundle-gh-release
   # Publish package and release
   @just gh-release
   if [[ "$(./scripts/release-version.py)" == '1' ]]; then just publish-pypi; fi
