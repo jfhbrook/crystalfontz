@@ -1,5 +1,5 @@
 Name: crystalfontz
-Version: 4.0.0
+Version: 5.0.0
 Release: 1
 License: MPL-2.0
 Summary: Serial client and Linux service for Crystalfontz LCD displays
