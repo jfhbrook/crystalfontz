@@ -2,7 +2,7 @@ Name: crystalfontz
 Version: 4.0.0
 Release: 1
 License: MPL-2.0
-Summary: Serial client and Linux service for Plus Deck 2C PC Cassette Deck
+Summary: Serial client and Linux service for Crystalfontz LCD displays
 
 URL: https://github.com/jfhbrook/crystalfontz
 Source0: %{name}-%{version}.tar.gz
