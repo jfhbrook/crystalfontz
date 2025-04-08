@@ -179,10 +179,6 @@ check-main-branch:
 tag:
   ./scripts/tag.sh
 
-# Clean up the release package
-clean-release:
-  rm -f "crystalfontz-*-*.tar.gz"
-
 # Push main and tags
 push:
   git push origin main --follow-tags
@@ -218,7 +214,6 @@ publish:
   @just push
   # Build package and bundle release
   if [[ "$(./scripts/release-version.py)" == '1' ]]; then just clean-build; fi
-  @just clean-release
   if [[ "$(./scripts/release-version.py)" == '1' ]]; then just build; fi
   # Publish package and release
   @just gh-release
