@@ -24,8 +24,10 @@ tar -xzf %{SOURCE0}
 
 %install
 mkdir -p %{buildroot}%{_prefix}/lib/systemd/system
+mkdir -p %{buildroot}%{_bindir}
 install -p -D -m 0644 systemd/crystalfontz.service %{buildroot}%{_prefix}/lib/systemd/system/crystalfontz.service
 install -p -D -m 0644 dbus/org.jfhbrook.crystalfontz.conf %{buildroot}%{_prefix}/share/dbus-1/system.d/org.jfhbrook.crystalfontz.conf
+install -p -m 755 bin/crystalfontz-dbus %{buildroot}%{_bindir}/crystalfontz
 
 %check
 
@@ -33,6 +35,7 @@ install -p -D -m 0644 dbus/org.jfhbrook.crystalfontz.conf %{buildroot}%{_prefix}
 %files
 %{_prefix}/lib/systemd/system/crystalfontz.service
 %{_prefix}/share/dbus-1/system.d/org.jfhbrook.crystalfontz.conf
+%{_bindir}/crystalfontz
 
 %changelog
 {{ .Env.CHANGELOG }}
