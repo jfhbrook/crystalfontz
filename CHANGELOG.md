@@ -46,7 +46,7 @@
     - Includes systemd unit for `python3 -m crystalfontz.dbus.service`
     - **BREAKING:** Includes shim bin `crystalfontz` -> `python3 -m crystalfontz.dbus.client`
   - Tito based release tagging
-  - GitHub release tarball
+  - GitHub release
   - Improved PyPI classifiers
   - **BREAKING:** Release under MPL-2.0 license
 - Integration tests:
