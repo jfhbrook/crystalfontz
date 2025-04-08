@@ -1,0 +1,38 @@
+Name: crystalfontz
+Version: 4.0.0
+Release: 1
+License: MPL-2.0
+Summary: Serial client and Linux service for Plus Deck 2C PC Cassette Deck
+
+URL: https://github.com/jfhbrook/crystalfontz
+Source0: %{name}-%{version}.tar.gz
+BuildArch: noarch
+
+Requires: python-crystalfontz
+Requires: python-sdbus
+
+%description
+
+
+%prep
+%autosetup
+
+
+%build
+tar -xzf %{SOURCE0}
+
+
+%install
+mkdir -p %{buildroot}%{_prefix}/lib/systemd/system
+install -p -D -m 0644 systemd/crystalfontz.service %{buildroot}%{_prefix}/lib/systemd/system/crystalfontz.service
+install -p -D -m 0644 dbus/org.jfhbrook.crystalfontz.conf %{buildroot}%{_prefix}/share/dbus-1/system.d/org.jfhbrook.crystalfontz.conf
+
+%check
+
+
+%files
+%{_prefix}/lib/systemd/system/crystalfontz.service
+%{_prefix}/share/dbus-1/system.d/org.jfhbrook.crystalfontz.conf
+
+%changelog
+

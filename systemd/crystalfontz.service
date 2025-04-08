@@ -1,0 +1,13 @@
+[Unit]
+Description=Crystalfontz LCD
+Requires=dbus.socket
+After=dbus.socket
+
+[Service]
+Type=dbus
+BusName=org.jfhbrook.crystalfontz
+ExecStart=/usr/bin/python3 -m crystalfontz.dbus.service --system
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -101,6 +101,15 @@ _clean-test:
   rm -f pytest_runner-*.egg
   rm -rf tests/__pycache__
 
+# Install systemd service files and dbus config for development purposes
+install-service:
+  sudo install -p -D -m 0644 systemd/crystalfontz.service /usr/lib/systemd/system/crystalfontz.service
+  sudo install -p -D -m 0644 dbus/org.jfhbrook.crystalfontz.conf /usr/share/dbus-1/system.d/org.jfhbrook.crystalfontz.conf
+
+# Pull the crystalfontz service's logs with journalctl
+service-logs:
+  journalctl -xeu crystalfontz.service
+
 # Display the raw XML introspection of the live dbus service
 print-iface:
   dbus-send --system --dest=org.jfhbrook.crystalfontz "/" --print-reply org.freedesktop.DBus.Introspectable.Introspect
@@ -114,7 +123,6 @@ shell:
 
 console:
   uv run jupyter console
-
 
 #
 # Documentation
@@ -143,13 +151,88 @@ build:
 _clean-build:
   rm -rf dist
 
-# Tag the release in git
-tag:
-  uv run git tag -a "$(python3 -c 'import toml; print(toml.load(open("pyproject.toml", "r"))["project"]["version"])')" -m "Release $(python3 -c 'import toml; print(toml.load(open("pyproject.toml", "r"))["project"]["version"])')"
+# Generate crystalfontz.spec
+generate-spec:
+  ./scripts/generate-spec.sh "$(./scripts/version.py)" "$(./scripts/release-version.py)"
 
-# Build the package and publish it to PyPI
-publish: build
-  uv publish
+# Update the package version in ./copr/python-crystalfontz.yml
+copr-update-version:
+  VERSION="$(./scripts/version.py)" yq -i '.spec.packageversion = strenv(VERSION)' ./copr/python-crystalfontz.yml
+
+# Commit generated files
+commit-generated-files:
+  git add requirements.txt
+  git add requirements_dev.txt
+  git add crystalfontz.spec
+  git add ./copr
+  git commit -m 'Update generated files' || echo 'No changes to files'
+
+# Fail if there are uncommitted files
+check-dirty:
+  ./scripts/is-dirty.sh
+
+# Fail if not on the main branch
+check-main-branch:
+  ./scripts/is-main-branch.sh
+
+# Tag the release with tito
+tag:
+  ./scripts/tag.sh
+
+# Bundle the package for GitHub release
+bundle-gh-release:
+  ./scripts/bundle-gh-release.sh "$(./scripts/version.py)-$(./scripts/release-version.py)"
+
+# Clean up the release package
+clean-release:
+  rm -f "crystalfontz-*-*.tar.gz"
+
+# Push main and tags
+push:
+  git push origin main --follow-tags
+
+# Publish package to PyPI
+publish-pypi: build
+  uv publish -t "$(op item get 'PyPI' --fields 'API Token' --reveal)"
+
+# Create a GitHub release
+gh-release:
+  bash ./scripts/gh-release.sh "$(python ./scripts/version.py)-$(python ./scripts/release-version.py)"
+
+# Apply a COPR package configuration
+apply-copr package:
+  coprctl apply -f ./copr/{{ package }}.yml
+
+# Build a COPR package
+build-copr package:
+  copr build-package jfhbrook/joshiverse --name '{{ package }}'
+
+# Publish the release on PyPI, GitHub and Copr
+publish:
+  # Generate files and commit
+  @just compile
+  @just generate-spec
+  @just copr-update-version
+  @just commit-generated-files
+  # Ensure git is in a good state
+  @just check-main-branch
+  @just check-dirty
+  # Tag and push
+  @just tag
+  @just push
+  # Build package and bundle release
+  if [[ "$(./scripts/release-version.py)" == '1' ]]; then just clean-build; fi
+  @just clean-release
+  if [[ "$(./scripts/release-version.py)" == '1' ]]; then just build; fi
+  @just bundle-gh-release
+  # Publish package and release
+  @just gh-release
+  if [[ "$(./scripts/release-version.py)" == '1' ]]; then just publish-pypi; fi
+  # Update packages on COPR
+  if [[ "$(./scripts/release-version.py)" == '1' ]]; then just apply-copr python-crystalfontz; fi
+  @just apply-copr crystalfontz
+  if [[ "$(./scripts/release-version.py)" == '1' ]]; then just build-copr python-crystalfontz; fi
+  @just build-copr crystalfontz
 
 # Clean up loose files
 clean: _clean-venv _clean-compile _clean-test

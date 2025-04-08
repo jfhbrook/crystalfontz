@@ -2,13 +2,18 @@
 requires = ["setuptools", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.rpm]
+# Generally this is "1", but can be incremented to roll up bugfixes in the
+# top-level `crystalfontz` Fedora package.
+release = "1"
+
 [project]
 name = "crystalfontz"
 version = "4.0.0"
 authors = [
   {name = "Josh Holbrook", email = "josh.holbrook@gmail.com"}
 ]
-description = "Library for interacting with crystalfontz LCD displays"
+description = "Serial client and Linux service for Crystalfontz LCD displays"
 readme = "README.md"
 keywords = []
 license = { text = "Apache-2.0" }
