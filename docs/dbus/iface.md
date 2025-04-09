@@ -14,11 +14,19 @@
 
 **Returns:** `void`
 
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
+
 ### Method: ConfigureWatchdog
 
 **Arguments:** `y`, `d`, `x`
 
 **Returns:** `void`
+
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
 
 ### Method: DetectBaudRate
 
@@ -26,11 +34,19 @@
 
 **Returns:** `q`
 
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
+
 ### Method: DetectDevice
 
 **Arguments:** `d`, `x`
 
 **Returns:** `(sssqqqqq)`
+
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
 
 ### Method: DowTransaction
 
@@ -54,7 +70,7 @@
 
 **Arguments:** `y`, `d`, `x`
 
-**Returns:** `ay`
+**Returns:** `t`
 
 ### Method: ReadGpio
 
@@ -86,11 +102,19 @@
 
 **Returns:** `void`
 
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
+
 ### Method: ResetHost
 
 **Arguments:** `d`, `x`
 
 **Returns:** `void`
+
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
 
 ### Method: SendCommandToLcdController
 
@@ -110,6 +134,10 @@
 
 **Returns:** `void`
 
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
+
 ### Method: SetBacklight
 
 **Arguments:** `d`, `d`, `d`, `x`
@@ -121,6 +149,10 @@
 **Arguments:** `q`, `d`, `x`
 
 **Returns:** `void`
+
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
 
 ### Method: SetContrast
 
@@ -146,6 +178,10 @@
 
 **Returns:** `void`
 
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
+
 ### Method: SetLine1
 
 **Arguments:** `ay`, `d`, `x`
@@ -164,11 +200,19 @@
 
 **Returns:** `void`
 
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
+
 ### Method: SetSpecialCharacterEncoding
 
 **Arguments:** `s`, `y`
 
 **Returns:** `void`
+
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
 
 ### Method: SetupLiveTemperatureDisplay
 
@@ -182,17 +226,29 @@
 
 **Returns:** `void`
 
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
+
 ### Method: ShutdownHost
 
 **Arguments:** `d`, `x`
 
 **Returns:** `void`
 
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
+
 ### Method: StoreBootState
 
 **Arguments:** `d`, `x`
 
 **Returns:** `void`
+
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
 
 ### Method: TestConnection
 
@@ -212,6 +268,10 @@
 
 **Returns:** `void`
 
+**Annotations:**
+
+- org.freedesktop.systemd1.Privileged: `true`
+
 ### Property: Config
 
 **Type:** `(sssssqdx)`
@@ -221,4 +281,12 @@
 **Annotations:**
 
 - org.freedesktop.DBus.Property.EmitsChangedSignal: `false`
+
+### Signal: KeyActivityReports
+
+**Type**: `y`
+
+### Signal: TemperatureReports
+
+**Type**: `d`
 

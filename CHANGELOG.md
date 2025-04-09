@@ -1,3 +1,8 @@
+yyyy/mm/dd Version x.y.z-1
+--------------------------
+- Updated interface docs
+
+
 2025/04/08 Version 5.0.0-1
 --------------------------
 - API Changes:
