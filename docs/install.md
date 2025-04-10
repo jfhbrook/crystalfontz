@@ -10,6 +10,12 @@
 pip install crystalfontz
 ```
 
+To install support for DBus, run:
+
+```sh
+pip install crystalfontz[dbus]
+```
+
 This package contains the Python library, with the CLIs exposed with Python's `-m` flag (ie. `python3 -m crystalfontz`).
 
 ## COPR Packages

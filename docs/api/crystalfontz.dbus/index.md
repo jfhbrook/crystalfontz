@@ -1,6 +1,6 @@
 # DBus API Overview
 
-The `crystalfontz` library includes a DBus service and client. This service allows for multitenancy on Linux - the centralized service controls the serial bus, and clients - including `crystalfontzctl` - can connect to the service.
+The `crystalfontz` library includes a DBus service and client. This service allows for multitenancy on Linux - the centralized service controls the serial bus, and clients - including `python3 -m crystalfontz.dbus.client` - can connect to the service.
 
 The DBus APIs largely depend on the [sdbus](https://pypi.org/project/sdbus/) Python library, which in turn depends on the [sd-bus](https://www.freedesktop.org/software/systemd/man/latest/sd-bus.html) library. This means that, effectively, the DBus API is only available on Linux. `sdbus` is therefore an optional dependency, under the `dbus` extra.
 
