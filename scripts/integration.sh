@@ -11,7 +11,7 @@ Run integration tests for the supplied components. By default, runs cli tests.
 
 Components:
     cli   Run crystalfontz cli integration tests
-    dbus  Start cystalfontzd and run crystalfontzctl integration tests
+    dbus  Start crystalfontzd dbus integration tests
 
 Options:
     --help             Show this help text
@@ -23,7 +23,7 @@ Options:
 Environment:
     CRYSTALFONTZ_CONFIG_FILE  Use an alternative config file. The default is
                               ./tests/fixtures/crystalfontz.yaml.
-    CRYSTALTONTZ_LOG_LEVEL    
+    CRYSTALFONTZ_LOG_LEVEL    
 '
 
 while [[ $# -gt 0 ]]; do

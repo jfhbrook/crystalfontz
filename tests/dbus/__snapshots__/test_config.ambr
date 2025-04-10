@@ -1,0 +1,115 @@
+# serializer version: 1
+# name: test_staged_config_as_dict[active_config0-target_config0]
+  dict({
+    'baud_rate': dict({
+      'active': 115200,
+      'target': 115200,
+      'type': None,
+    }),
+    'file': dict({
+      'active': '/etc/crystalfontz.yaml',
+      'target': '/etc/crystalfontz.yaml',
+      'type': None,
+    }),
+    'firmware_rev': dict({
+      'active': 'u1v2',
+      'target': 'u1v2',
+      'type': None,
+    }),
+    'hardware_rev': dict({
+      'active': 'h1.4',
+      'target': 'h1.4',
+      'type': None,
+    }),
+    'model': dict({
+      'active': 'CFA533',
+      'target': 'CFA533',
+      'type': None,
+    }),
+    'port': dict({
+      'active': '/dev/ttyS0',
+      'target': '/dev/ttyS0',
+      'type': None,
+    }),
+    'retry_times': dict({
+      'active': 1,
+      'target': 1,
+      'type': None,
+    }),
+    'timeout': dict({
+      'active': 0.25,
+      'target': 0.25,
+      'type': None,
+    }),
+  })
+# ---
+# name: test_staged_config_as_dict[active_config1-target_config1]
+  dict({
+    'baud_rate': dict({
+      'active': 115200,
+      'target': 19200,
+      'type': 'set',
+    }),
+    'file': dict({
+      'active': '/etc/crystalfontz.yaml',
+      'target': '/etc/crystalfontz.yaml',
+      'type': None,
+    }),
+    'firmware_rev': dict({
+      'active': 'u1v2',
+      'target': 'u1v2',
+      'type': None,
+    }),
+    'hardware_rev': dict({
+      'active': 'h1.4',
+      'target': 'h1.4',
+      'type': None,
+    }),
+    'model': dict({
+      'active': 'CFA533',
+      'target': 'CFA533',
+      'type': None,
+    }),
+    'port': dict({
+      'active': '/dev/ttyS0',
+      'target': '/dev/ttyS4',
+      'type': 'set',
+    }),
+    'retry_times': dict({
+      'active': 1,
+      'target': 1,
+      'type': None,
+    }),
+    'timeout': dict({
+      'active': 0.25,
+      'target': 0.25,
+      'type': None,
+    }),
+  })
+# ---
+# name: test_staged_config_repr[active_config0-target_config0]
+  '''
+    baud_rate: '115200'
+    file: /etc/crystalfontz.yaml
+    firmware_rev: u1v2
+    hardware_rev: h1.4
+    model: CFA533
+    port: /dev/ttyS0
+    retry_times: '1'
+    timeout: '0.25'
+    
+  '''
+# ---
+# name: test_staged_config_repr[active_config1-target_config1]
+  '''
+  ~ baud_rate: 115200 ~> 19200
+    file: /etc/crystalfontz.yaml
+    firmware_rev: u1v2
+    hardware_rev: h1.4
+    model: CFA533
+  ~ port: /dev/ttyS0 ~> /dev/ttyS4
+    retry_times: '1'
+    timeout: '0.25'
+    
+  '''
+# ---
