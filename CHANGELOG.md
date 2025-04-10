@@ -1,6 +1,11 @@
 yyyy/mm/dd Version x.y.z-1
 --------------------------
-- Updated interface docs
+- Documentation updates:
+  - Updated interface docs based on live system service
+  - Fixed minor inaccuracies in DBus docs
+  - Added directions for installing dbus extra with `pip`
+- Testing updates:
+  - New test for `StagedConfig`
 
 
 2025/04/08 Version 5.0.0-1
