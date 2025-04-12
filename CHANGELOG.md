@@ -6,6 +6,8 @@ yyyy/mm/dd Version x.y.z-1
   - Added directions for installing dbus extra with `pip`
 - Testing updates:
   - New test for `StagedConfig`
+- CLI updates:
+  - `--version` flag
 
 
 2025/04/08 Version 5.0.0-1

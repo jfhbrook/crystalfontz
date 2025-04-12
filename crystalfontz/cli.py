@@ -521,6 +521,7 @@ def pass_config(fn: Callable[..., R]) -> Callable[..., R]:
     envvar="CRYSTALFONTZ_BAUD_RATE",
     help="The baud rate to use when connecting to the device",
 )
+@click.version_option()
 @click.pass_context
 def main(
     ctx: click.Context,
