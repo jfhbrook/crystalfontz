@@ -67,7 +67,6 @@ service *argv:
 dbus-client *argv:
   uv run -- python -m crystalfontz.dbus.client --user {{ argv }}
 
-
 # Format with black and isort
 format:
   uv run  black './crystalfontz' ./tests
